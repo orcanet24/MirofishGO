@@ -1,0 +1,99 @@
+[2026-11-06 11:44:38] INFO [mirofish.local_graph] train extract episode ep_d59ca (len=34)
+[2026-11-06 11:44:38] INFO [mirofish.local_graph] Batch batch_6d sin ontología; extracción omitida
+[2026-11-06 11:44:38] INFO [mirofish.local_graph] Batch batch_3a sin ontología; extracción omitida
+[2026-11-06 12:03:45] INFO [mirofish.local_graph] train extract episode ep_d962e (len=34)
+[2026-11-06 12:03:46] INFO [mirofish.local_graph] Batch batch_11 sin ontología; extracción omitida
+[2026-11-06 12:03:46] INFO [mirofish.local_graph] Batch batch_67 sin ontología; extracción omitida
+[2026-11-06 12:19:05] INFO [mirofish.local_graph] train extract episode ep_8d7dd (len=34)
+[2026-11-06 12:19:05] INFO [mirofish.local_graph] Batch batch_a6 sin ontología; extracción omitida
+[2026-11-06 12:19:05] INFO [mirofish.local_graph] Batch batch_e0 sin ontología; extracción omitida
+[2026-11-06 12:22:09] INFO [mirofish.local_graph] train extract episode ep_754ba (len=34)
+[2026-11-06 12:22:09] INFO [mirofish.local_graph] Batch batch_50 sin ontología; extracción omitida
+[2026-11-06 12:22:09] INFO [mirofish.local_graph] Batch batch_78 sin ontología; extracción omitida
+[2026-11-06 16:10:22] INFO [mirofish.local_graph] train extract episode ep_f0ca3 (len=34)
+[2026-11-06 16:10:22] INFO [mirofish.local_graph] Batch batch_d1 sin ontología; extracción omitida
+[2026-11-06 16:10:22] INFO [mirofish.local_graph] Batch batch_04 sin ontología; extracción omitida
+[2026-11-06 19:32:37] INFO [mirofish.local_graph] train extract episode ep_8dc6c (len=34)
+[2026-11-06 19:32:37] WARNING [mirofish.local_graph] Persistencia de extracción de ep_8dc6c falló: sql: database is closed
+[2026-11-06 19:32:37] INFO [mirofish.local_graph] Batch batch_7f sin ontología; extracción omitida
+[2026-11-06 19:32:38] INFO [mirofish.local_graph] Batch batch_e3 sin ontología; extracción omitida
+[2026-11-06 19:33:15] INFO [mirofish.local_graph] train extract episode ep_11ce5 (len=34)
+[2026-11-06 19:33:16] INFO [mirofish.local_graph] Batch batch_b8 sin ontología; extracción omitida
+[2026-11-06 19:33:16] INFO [mirofish.local_graph] train extract episode ep_fcdb4 (len=34)
+[2026-11-06 19:33:16] INFO [mirofish.local_graph] Batch batch_2c sin ontología; extracción omitida
+[2026-11-06 19:33:16] INFO [mirofish.local_graph] train extract episode ep_c8c6b (len=34)
+[2026-11-06 19:33:16] INFO [mirofish.local_graph] Batch batch_5b sin ontología; extracción omitida
+[2026-11-06 19:33:16] INFO [mirofish.local_graph] train extract episode ep_bc9f5 (len=34)
+[2026-11-06 19:33:16] INFO [mirofish.local_graph] Batch batch_5f sin ontología; extracción omitida
+[2026-11-06 19:33:16] INFO [mirofish.local_graph] train extract episode ep_e41d1 (len=34)
+[2026-11-06 19:33:17] INFO [mirofish.local_graph] Batch batch_1b sin ontología; extracción omitida
+[2026-11-06 19:33:17] INFO [mirofish.local_graph] train extract episode ep_4a82f (len=34)
+[2026-11-06 19:33:17] INFO [mirofish.local_graph] Batch batch_95 sin ontología; extracción omitida
+[2026-11-06 19:33:17] INFO [mirofish.local_graph] train extract episode ep_d6f7a (len=34)
+[2026-11-06 19:33:17] INFO [mirofish.local_graph] Batch batch_19 sin ontología; extracción omitida
+[2026-11-06 19:33:17] INFO [mirofish.local_graph] train extract episode ep_eeca8 (len=34)
+[2026-11-06 19:33:17] INFO [mirofish.local_graph] Batch batch_1a sin ontología; extracción omitida
+[2026-11-06 19:33:17] INFO [mirofish.local_graph] train extract episode ep_f699a (len=34)
+[2026-11-06 19:33:17] INFO [mirofish.local_graph] Batch batch_9e sin ontología; extracción omitida
+[2026-11-06 19:33:17] INFO [mirofish.local_graph] train extract episode ep_15a05 (len=34)
+[2026-11-06 19:33:18] INFO [mirofish.local_graph] Batch batch_41 sin ontología; extracción omitida
+[2026-11-06 19:44:10] INFO [mirofish.local_graph] train extract episode ep_aa16f (len=34)
+[2026-11-06 19:44:11] INFO [mirofish.local_graph] Batch batch_64 sin ontología; extracción omitida
+[2026-11-06 19:44:11] INFO [mirofish.local_graph] Batch batch_94 sin ontología; extracción omitida
+[2026-11-06 19:45:08] INFO [mirofish.local_graph] train extract episode ep_77366 (len=34)
+[2026-11-06 19:45:08] INFO [mirofish.local_graph] Batch batch_1b sin ontología; extracción omitida
+[2026-11-06 19:45:08] INFO [mirofish.local_graph] Batch batch_ed sin ontología; extracción omitida
+[2026-11-06 19:46:05] INFO [mirofish.local_graph] train extract episode ep_46d86 (len=34)
+[2026-11-06 19:46:05] INFO [mirofish.local_graph] Batch batch_c7 sin ontología; extracción omitida
+[2026-11-06 19:46:06] INFO [mirofish.local_graph] Batch batch_4f sin ontología; extracción omitida
+[2026-11-06 19:51:05] INFO [mirofish.local_graph] train extract episode ep_3ac76 (len=34)
+[2026-11-06 19:51:05] INFO [mirofish.local_graph] Batch batch_ec sin ontología; extracción omitida
+[2026-11-06 19:51:05] INFO [mirofish.local_graph] Batch batch_eb sin ontología; extracción omitida
+[2026-11-06 19:52:20] INFO [mirofish.local_graph] train extract episode ep_ce050 (len=34)
+[2026-11-06 19:52:21] INFO [mirofish.local_graph] Batch batch_12 sin ontología; extracción omitida
+[2026-11-06 19:52:21] INFO [mirofish.local_graph] Batch batch_e0 sin ontología; extracción omitida
+[2026-11-06 19:52:57] INFO [mirofish.local_graph] train extract episode ep_05164 (len=34)
+[2026-11-06 19:52:57] INFO [mirofish.local_graph] Batch batch_0c sin ontología; extracción omitida
+[2026-11-06 19:52:58] INFO [mirofish.local_graph] Batch batch_a3 sin ontología; extracción omitida
+[2026-11-06 20:05:08] INFO [mirofish.local_graph] train extract episode ep_08ccb (len=34)
+[2026-11-06 20:05:08] INFO [mirofish.local_graph] Batch batch_22 sin ontología; extracción omitida
+[2026-11-06 20:05:09] INFO [mirofish.local_graph] Batch batch_53 sin ontología; extracción omitida
+[2026-11-06 20:05:32] INFO [mirofish.local_graph] train extract episode ep_70d0d (len=34)
+[2026-11-06 20:05:32] INFO [mirofish.local_graph] Batch batch_b3 sin ontología; extracción omitida
+[2026-11-06 20:05:33] INFO [mirofish.local_graph] Batch batch_a5 sin ontología; extracción omitida
+[2026-11-06 20:06:50] INFO [mirofish.local_graph] train extract episode ep_99def (len=34)
+[2026-11-06 20:06:50] INFO [mirofish.local_graph] Batch batch_86 sin ontología; extracción omitida
+[2026-11-06 20:06:50] INFO [mirofish.local_graph] Batch batch_1e sin ontología; extracción omitida
+[2026-11-06 20:24:22] INFO [mirofish.local_graph] train extract episode ep_6fbf6 (len=34)
+[2026-11-06 20:24:23] INFO [mirofish.local_graph] Batch batch_8e sin ontología; extracción omitida
+[2026-11-06 20:24:24] INFO [mirofish.local_graph] Batch batch_c2 sin ontología; extracción omitida
+[2026-11-06 20:24:52] INFO [mirofish.local_graph] train extract episode ep_32dc4 (len=34)
+[2026-11-06 20:24:53] INFO [mirofish.local_graph] Batch batch_1f sin ontología; extracción omitida
+[2026-11-06 20:24:55] INFO [mirofish.local_graph] Batch batch_51 sin ontología; extracción omitida
+[2026-11-06 20:26:15] INFO [mirofish.local_graph] train extract episode ep_58b82 (len=34)
+[2026-11-06 20:26:16] INFO [mirofish.local_graph] Batch batch_9b sin ontología; extracción omitida
+[2026-11-06 20:26:17] INFO [mirofish.local_graph] Batch batch_3b sin ontología; extracción omitida
+[2026-11-06 20:26:54] INFO [mirofish.local_graph] train extract episode ep_b3459 (len=34)
+[2026-11-06 20:26:55] INFO [mirofish.local_graph] Batch batch_d7 sin ontología; extracción omitida
+[2026-11-06 20:27:00] INFO [mirofish.local_graph] Batch batch_75 sin ontología; extracción omitida
+[2026-11-06 20:31:55] INFO [mirofish.local_graph] train extract episode ep_627e9 (len=34)
+[2026-11-06 20:31:56] INFO [mirofish.local_graph] Batch batch_43 sin ontología; extracción omitida
+[2026-11-06 20:31:58] INFO [mirofish.local_graph] Batch batch_5b sin ontología; extracción omitida
+[2026-11-06 20:32:16] INFO [mirofish.local_graph] train extract episode ep_3ddf2 (len=34)
+[2026-11-06 20:32:17] INFO [mirofish.local_graph] Batch batch_d9 sin ontología; extracción omitida
+[2026-11-06 20:32:18] INFO [mirofish.local_graph] Batch batch_a6 sin ontología; extracción omitida
+[2026-11-06 21:04:07] INFO [mirofish.local_graph] train extract episode ep_e36ea (len=34)
+[2026-11-06 21:04:08] INFO [mirofish.local_graph] Batch batch_c6 sin ontología; extracción omitida
+[2026-11-06 21:04:09] INFO [mirofish.local_graph] Batch batch_3b sin ontología; extracción omitida
+[2026-11-06 21:06:19] INFO [mirofish.local_graph] train extract episode ep_7a9f9 (len=34)
+[2026-11-06 21:06:19] INFO [mirofish.local_graph] Batch batch_4d sin ontología; extracción omitida
+[2026-11-06 21:06:22] INFO [mirofish.local_graph] Batch batch_3d sin ontología; extracción omitida
+[2026-11-06 21:09:52] INFO [mirofish.local_graph] train extract episode ep_c1c0d (len=34)
+[2026-11-06 21:09:58] INFO [mirofish.local_graph] Batch batch_b1 sin ontología; extracción omitida
+[2026-11-06 21:10:02] INFO [mirofish.local_graph] Batch batch_e0 sin ontología; extracción omitida
+[2026-11-06 21:29:27] INFO [mirofish.local_graph] train extract episode ep_d7e4a (len=34)
+[2026-11-06 21:29:27] INFO [mirofish.local_graph] Batch batch_31 sin ontología; extracción omitida
+[2026-11-06 21:29:30] INFO [mirofish.local_graph] Batch batch_6a sin ontología; extracción omitida
+[2026-11-06 21:30:01] INFO [mirofish.local_graph] train extract episode ep_e6b7e (len=34)
+[2026-11-06 21:30:02] INFO [mirofish.local_graph] Batch batch_a0 sin ontología; extracción omitida
+[2026-11-06 21:30:03] INFO [mirofish.local_graph] Batch batch_e8 sin ontología; extracción omitida

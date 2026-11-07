@@ -1,0 +1,153 @@
+# Prospecto — MiroFish "como servicio" para terceros (estudios pagos)
+
+> Estado: **borrador de decisión** — documento interno para decidir si se abre la línea de servicio
+> **"Estudio de Validación Teórica"** y a qué precio. Versión: 2026-11-06.
+> Pregunta abierta a discusión: **¿US$5 por estudio es aceptable, debería ser más barato, o puede ser más caro según el valor aportado?**
+
+---
+
+## 1. Resumen ejecutivo (respuesta corta)
+
+**US$5 por estudio es un buen precio de *entrada*, pero casi seguramente es un precio *demasiado bajo* para el valor entregado.** La estructura recomendable es: lanzar a US$5–10 como precio beta para generar casos reales y testimonios, con una lista de precios objetivo ya definida por niveles (US$9 / US$29 / US$149) hacia la que escalar en 60–90 días.
+
+El razonamiento en tres líneas:
+
+- Un **estudio de mercado tradicional** para validar campaña/producto cuesta **US$500–US$10.000+** (focus groups, consultoras, paneles).
+- Una **simulación social con miles de agentes** y reporte predictivo compite contra *no saber qué va a pasar*: no contra encuestas (que no predicen).
+- El costo variable principal es el **consumo de LLM**, no el tiempo humano. Si un estudio consume ~US$0,5–3 de API, a US$5 el margen existe pero es fino, y no queda espacio para soporte humano, reintentos ni fees de cobro.
+
+---
+
+## 2. Qué se vende exactamente
+
+**Producto:** "Estudio MiroFish" = simulación de validación teórica de una idea antes de salir al mercado.
+
+| Paso | Componente | Entregable |
+|---|---|---|
+| 1 | Ingesta | El cliente sube su material: brief de campaña, copys, fichas de producto, competencia, voces de clientes (mismo formato que `doc/demo/documentos_ejemplo/`) |
+| 2 | Construcción del mundo | MiroFish arma el mundo digital paralelo: GraphRAG + personas generadas + memoria colectiva |
+| 3 | Simulación | N agentes interactúan por R rondas, con memoria temporal y estado social |
+| 4 | Inyección de variables | Desde "vista de dios": precios, mensajes, planes de cambio (ej.: "¿qué pasa si subo 15% toda la línea?") |
+| 5 | Reporte | Informe predictivo del ReportAgent + world chat interactivo |
+
+**El entregable mínimo incluye:**
+
+1. Reporte final (PDF/markdown) con la trayectoria predicha: resonancia, señales de riesgo, contra-reacciones.
+2. Acceso de lectura al mundo simulado: poder chatear con los agentes después de la simulación.
+3. 1 simulación, o un paquete (ver niveles en sección 6).
+
+---
+
+## 3. A quién se le quiere hacer la simulación (segmentos objetivo)
+
+Ordenados por probabilidad de compra temprana; todos comparten la necesidad de **validar teóricamente antes de salir al mercado**:
+
+| Segmento | Pregunta que le hacen a MiroFish | Qué cuesta hoy validar eso sin MiroFish |
+|---|---|---|
+| Emprendedores individuales | ¿Vendrá mi producto? ¿A qué precio? | US$0 — no valida nada |
+| Tiendas online / PyMEs | ¿Si ofrezco envío gratis sobre US$45 sube el ticket o erosiona el margen? | US$200–1.000 en consultoría, o error real |
+| Agencias de marketing chico | ¿Qué copys resuenan? ¿Suena mi campaña a promises o a ruido? | US$1.000–3.000 por test |
+| ONGs / campañas de opinión | ¿Cómo reacciona el público a esta campaña de concientización? | US$500–2.000 |
+| Política / discursos y fundraising | ¿Cómo afecta mi mensaje a distintos segmentos? | US$1.000–5.000 |
+| Product teams / startups | ¿Atrapamos el mercado si hacemos este pivote? | US$500–2.000 |
+
+> **Segmento ancla** (el que paga con US$5–20 más hablado): dueño de negocio chico + agencia independiente.
+> **El segmento que justifica precios altos:** agencia mediana y ONG/política, porque el equivalente que conocen cuesta miles. A US$5 *sospecharán de calidad*.
+
+---
+
+## 4. Análisis del precio: los tres escenarios
+
+### Escenario A — "US$5 está bien" (precio de entrada)
+- **Pros:** elimina fracción de fricción; es "un café de lujo"; máxima velocidad de captación de primeros clientes y de datos reales de costeo.
+- **Contras:**
+  1. **No cubre el consumo real**: la propia documentación de MiroFish advierte *"High consumption, try simulations with fewer than 40 rounds first"*. Un estudio serio (40+ rondas, cientos de agentes, modelos fuertes) puede consumir **US$1–5+ de API** por corrida.
+  2. **Manda una señal de valor equivocada**: para el segmento empresa/ONG, US$5 **desautoriza** el producto. El cerebro humano asume que algo que cuesta casi nada no puede predecir el futuro.
+  3. **No escala**: si se quiere un revisor humano detrás de cada estudio, la unidad económica no da.
+
+### Escenario B — "Debe ser más barato (US$1–2, gratis o con crédito)"
+- Solo tiene sentido si el objetivo de esta fase no es facturar, sino **generar corpus de validación**: 20–50 estudios de regalo elegidos a mano para demostrar precisión y publicar casos de insección.
+- **Riesgo importante:** anclar el valor del producto en "prácticamente gratis" — después es muy difícil subir el precio. **No recomendable salvo para los estudios de muestra tomados con un propósito, con límite definido.**
+
+### Escenario C — "Es más caro de lo que decís, según el valor" (US$15–150)
+- **El producto no es un reporte: es una decisión evitada.** Sirve para prevenir errores de marketing costosos, fijar precios con datos y no desperdiciar campañas.
+
+| Decisión que el estudio ayuda a evitar | Costo del equivalente hoy |
+|---|---|
+| Lanzar una campaña que no resuena | US$2.000–10.000 ejecutados y perdidos |
+| Fijar mal el precio y erosionar el margen | margen perdido por meses |
+| Elegir mal posicionamiento | subirlo después cuesta el doble |
+
+- **US$15–30 por estudio es perfectamente defendido al segmento emprendedor/PyME si el reporte es visual y confiable.**
+- **US$50–149 por paquete** (hasta 5 escenarios + sesión de Q&A con los agentes) para agencia/ONG/política.
+
+---
+
+## 5. El costo real de producir 1 estudio (el número que gobierna el precio)
+
+Costo variable estimado (a validar con instrumentación propia de las corridas de `mirofish-go`):
+
+| Componente | Rango por corrida | Nota |
+|---|---|---|
+| LLM API — construcción del mundo (GraphRAG + personas + memoria) | US$0,3–1,5 | depende del tamaño de los documentos semilla |
+| LLM API — simulación R rondas × N agentes | US$0,5–3 | el principal; # rondas y modelo mandan |
+| LLM API — reporte ReportAgent | US$0,1–0,5 | — |
+| Infraestructura / hosting / almacenaje | ~US$0,05 | — |
+| **Costo variable total** | **≈ US$1–5** | **sin incluir revisión humana** |
+
+Con costo variable US$1–5 → a US$5, el margen bruto es **US$0–4 por estudio**:
+- Si un estudio consume US$4 de API, ganas **US$1**. Un reintento por crash lo deja **en negativo**.
+- Si consume US$1, ganas US$4 — pero no alcanzan para fees de cobro (5–10% en Stripe/PayPal/MercadoPago), arreglos de bugs reales ni soporte.
+- Si se agrega un revisor humano (curación del reporte), el costo sube ~US$3–10 por estudio y el precio de US$5 queda inviable.
+
+**Conclusión operativa:** US$5 es viable únicamente como precio de captación, con simulaciones acotadas (≤40 rondas, modelo económico tipo Qwen-plus), y con **recarga por corrida extra** cada vez que el cliente pide "probemos otra vez con otro precio".
+
+---
+
+## 6. Lista de precios recomendada (propuesta inicial a decidir)
+
+| Nivel | Precio | Qué incluye | Para quién |
+|---|---|---|---|
+| **Beta (30 primeros clientes)** | **US$5** | 1 simulación ≤40 rondas, modelo económico, reporte estándar, chat del mundo por 72 hs | primeros clientes y testimonios |
+| **Estudio básico** | **US$9–15** | 1 simulación estándar + revisión del reporte por el equipo | emprendedor individual |
+| **Estudio + 2 escenarios** | **US$29–49** | 3 simulaciones (baseline + 2 variaciones de precio/mensaje) + tabla comparativa | PyME, agencia chica |
+| **Paquete profesional** | **US$99–149** | hasta 5 simulaciones, corpus personalizado con voces de los clientes reales, sesión de Q&A con los agentes, reporte ejecutivo | agencias, ONG, política, producto/startup |
+
+**Reglas auxiliares:**
+- **Recarga por corrida extra:** US$5 cada una (protege el margen si el consumo supera lo esperado).
+- **Suscripción mensual para agencias:** US$300–500/mes por ~10 estudios + prioridad → es la forma de tener *recurring revenue* en lugar de estudios sueltos.
+- **White-label** (la agencia vende el "estudio predictivo" como propio, el equipo de MiroFish es el back-office): precio x2–3 del paquete profesional.
+
+---
+
+## 7. Preguntas que hay que responder antes de fijar el precio final
+
+Este prospecto no decide el precio: define el marco de decisión. Faltan datos:
+
+1. **Consumo real por corrida:** ¿cuántos tokens consume un estudio promedio con Qwen-plus a 40 rondas hoy? → instrumentar el costeo por corrida en `mirofish-go` y registrar lo real.
+2. **Disposición a pagar:** hacer 5 entrevistas de precio (no encuestas) a clientes reales con las tres alternativas: ¿pagarías US$5? ¿US$25? ¿US$100? ¿por qué?
+3. **Medios de cobro:** ¿Stripe sirve para el país objetivo? ¿MercadoPago/cripto para LatAm? Los fees de cobro (2–10%) se calculan dentro del precio, no fuera.
+4. **¿Hay revisión humana en cada estudio?** Si la hay, el piso del nivel básico sube automáticamente.
+5. **¿Pricing por valor?** Para cliente político/ONG el mismo estudio sirve para una campaña de US$10.000+. Considerar "2% del presupuesto de la campaña" como lógica de precio para el nivel pro, en lugar de cobrar por estudio.
+
+---
+
+## 8. Próximos pasos accionables
+
+- [ ] Instrumentar costeo por corrida (tokens y costo por estudio) en `mirofish-go` — ~1 semana.
+- [ ] Correr internamente 5 estudios de muestra con wollo de la carpeta `documentos_ejemplo` y registrar el costo real de cada uno → corregir la tabla de la sección 5 con el número verdadero.
+- [ ] Definir los límites exactos del "Estudio beta" a US$5 (máx. rondas, máx. agentes, sin reintentos) y armar la página de venta.
+- [ ] Conseguir 10 clientes beta a US$5 → medir: consumo real, calidad percibida, si vuelven a pedir.
+- [ ] Si se repiten (repeat sale) → escalar a la tabla de la sección 6. Target: **60–90 días**, precio mínimo de salida US$9.
+
+---
+
+## 9. Anexo — objeciones de precio probables y respuestas
+
+| Objeción del cliente | Respuesta |
+|---|---|
+| "Es muy caro (US$29) para mi" | "¿Cuánto te costó el último error de marketing que no validaste? El estudio equivale el 1–2% de un lanzamiento." |
+| "Muy barato (US$5) no puede ser fiable" | "Es precio beta para los primeros 30 estudios, no el precio final. Estamos en fase de validación de producto." |
+| "Mi negocio es distinto/raro" | "MiroFish construye el mundo específico desde **tus** materiales (voces de clientes, competencia real), no usa un modelo genérico." |
+| "Prefiero una encuesta" | "La encuesta le pregunta a 200 personas que ya saben que las miran. MiroFish simula miles que reaccionan entre sí y evolucionan — sin vigilancia percibida." |
+| "¿Puedo ver algo antes de pagar?" | Demo público `mirofish-live-demo` + reporte de ejemplo de un estudio terminado (el de la carpeta `documentos_ejemplo`). |

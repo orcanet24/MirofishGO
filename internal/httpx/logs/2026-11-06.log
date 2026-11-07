@@ -1,0 +1,621 @@
+[2026-11-06 12:17:23] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 12:17:23] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 12:17:23] INFO [mirofish.local_graph] Batch batch_7a: sub-lote 1 listo (2/2 episodios)
+[2026-11-06 12:17:37] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 12:17:37] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 12:17:37] INFO [mirofish.local_graph] Batch batch_02: sub-lote 1 listo (2/2 episodios)
+[2026-11-06 12:19:07] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 12:19:07] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 12:19:07] INFO [mirofish.local_graph] Batch batch_40: sub-lote 1 listo (2/2 episodios)
+[2026-11-06 12:22:14] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 12:22:14] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 12:22:14] INFO [mirofish.local_graph] Batch batch_c2: sub-lote 1 listo (2/2 episodios)
+[2026-11-06 16:10:24] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 16:10:24] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 16:10:24] INFO [mirofish.local_graph] Batch batch_ca: sub-lote 1 listo (2/2 episodios)
+[2026-11-06 19:32:37] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 19:32:37] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 19:32:37] INFO [mirofish.local_graph] Batch batch_fc: sub-lote 1 listo (2/2 episodios)
+[2026-11-06 19:44:10] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 19:44:10] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 19:44:10] INFO [mirofish.local_graph] Batch batch_c7: sub-lote 1 listo (2/2 episodios)
+[2026-11-06 19:44:14] INFO [mirofish.simx] 创建模拟: sim_692720382161, project=proj_8f4d3a711019, graph=mirofish_test_sim
+[2026-11-06 19:44:14] INFO [mirofish.simx] [1/4] 生成时间配置...
+[2026-11-06 19:44:14] WARNING [mirofish.simx] agents_per_hour_max (6) 超过总Agent数 (2)，已修正
+[2026-11-06 19:44:14] INFO [mirofish.simx] [2/4] 生成事件配置和热点话题...
+[2026-11-06 19:44:14] INFO [mirofish.simx] [3/4] 生成Agent配置 (1-2/2)...
+[2026-11-06 19:44:14] INFO [mirofish.simx] 初始帖子分配: poster_type='person' -> agent_id=1
+[2026-11-06 19:44:14] INFO [mirofish.simx] [4/4] 生成平台配置...
+[2026-11-06 19:44:14] INFO [mirofish.simx] 模拟配置生成完成: 2 个Agent配置
+[2026-11-06 19:44:14] INFO [mirofish.simx] 模拟准备完成: sim_692720382161, entities=2, profiles=2
+[2026-11-06 19:45:10] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 19:45:10] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 19:45:10] INFO [mirofish.local_graph] Batch batch_c0: sub-lote 1 listo (2/2 episodios)
+[2026-11-06 19:45:14] INFO [mirofish.simx] 创建模拟: sim_debc6420101c, project=proj_4aa1a405ef17, graph=mirofish_test_sim
+[2026-11-06 19:45:14] INFO [mirofish.simx] [1/4] 生成时间配置...
+[2026-11-06 19:45:14] WARNING [mirofish.simx] agents_per_hour_max (6) 超过总Agent数 (2)，已修正
+[2026-11-06 19:45:14] INFO [mirofish.simx] [2/4] 生成事件配置和热点话题...
+[2026-11-06 19:45:14] INFO [mirofish.simx] [3/4] 生成Agent配置 (1-2/2)...
+[2026-11-06 19:45:14] INFO [mirofish.simx] 初始帖子分配: poster_type='person' -> agent_id=1
+[2026-11-06 19:45:14] INFO [mirofish.simx] [4/4] 生成平台配置...
+[2026-11-06 19:45:14] INFO [mirofish.simx] 模拟配置生成完成: 2 个Agent配置
+[2026-11-06 19:45:14] INFO [mirofish.simx] 模拟准备完成: sim_debc6420101c, entities=2, profiles=2
+[2026-11-06 19:46:06] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 19:46:06] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 19:46:06] INFO [mirofish.local_graph] Batch batch_dd: sub-lote 1 listo (2/2 episodios)
+[2026-11-06 19:46:09] INFO [mirofish.simx] 创建模拟: sim_cb371620b91a, project=proj_20ab26f9c96f, graph=mirofish_test_sim
+[2026-11-06 19:46:09] INFO [mirofish.simx] [1/4] 生成时间配置...
+[2026-11-06 19:46:09] WARNING [mirofish.simx] agents_per_hour_max (6) 超过总Agent数 (2)，已修正
+[2026-11-06 19:46:09] INFO [mirofish.simx] [2/4] 生成事件配置和热点话题...
+[2026-11-06 19:46:09] INFO [mirofish.simx] [3/4] 生成Agent配置 (1-2/2)...
+[2026-11-06 19:46:09] INFO [mirofish.simx] 初始帖子分配: poster_type='person' -> agent_id=0
+[2026-11-06 19:46:09] INFO [mirofish.simx] [4/4] 生成平台配置...
+[2026-11-06 19:46:09] INFO [mirofish.simx] 模拟配置生成完成: 2 个Agent配置
+[2026-11-06 19:46:09] INFO [mirofish.simx] 模拟准备完成: sim_cb371620b91a, entities=2, profiles=2
+[2026-11-06 19:51:04] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 19:51:04] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 19:51:05] INFO [mirofish.local_graph] Batch batch_3d: sub-lote 1 listo (2/2 episodios)
+[2026-11-06 19:51:09] INFO [mirofish.simx] 创建模拟: sim_e1bedc986584, project=proj_969fa2012f2c, graph=mirofish_test_sim
+[2026-11-06 19:51:10] INFO [mirofish.simx] [1/4] 生成时间配置...
+[2026-11-06 19:51:10] WARNING [mirofish.simx] agents_per_hour_max (6) 超过总Agent数 (2)，已修正
+[2026-11-06 19:51:10] INFO [mirofish.simx] [2/4] 生成事件配置和热点话题...
+[2026-11-06 19:51:10] INFO [mirofish.simx] [3/4] 生成Agent配置 (1-2/2)...
+[2026-11-06 19:51:10] INFO [mirofish.simx] 初始帖子分配: poster_type='person' -> agent_id=1
+[2026-11-06 19:51:10] INFO [mirofish.simx] [4/4] 生成平台配置...
+[2026-11-06 19:51:10] INFO [mirofish.simx] 模拟配置生成完成: 2 个Agent配置
+[2026-11-06 19:51:10] INFO [mirofish.simx] 模拟准备完成: sim_e1bedc986584, entities=2, profiles=2
+[2026-11-06 19:52:20] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 19:52:20] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 19:52:20] INFO [mirofish.local_graph] Batch batch_a6: sub-lote 1 listo (2/2 episodios)
+[2026-11-06 19:52:25] INFO [mirofish.simx] 创建模拟: sim_b63aa8bcc34a, project=proj_68b08561d121, graph=mirofish_test_sim
+[2026-11-06 19:52:25] INFO [mirofish.simx] [1/4] 生成时间配置...
+[2026-11-06 19:52:25] WARNING [mirofish.simx] agents_per_hour_max (6) 超过总Agent数 (2)，已修正
+[2026-11-06 19:52:25] INFO [mirofish.simx] [2/4] 生成事件配置和热点话题...
+[2026-11-06 19:52:25] INFO [mirofish.simx] [3/4] 生成Agent配置 (1-2/2)...
+[2026-11-06 19:52:25] INFO [mirofish.simx] 初始帖子分配: poster_type='person' -> agent_id=0
+[2026-11-06 19:52:25] INFO [mirofish.simx] [4/4] 生成平台配置...
+[2026-11-06 19:52:25] INFO [mirofish.simx] 模拟配置生成完成: 2 个Agent配置
+[2026-11-06 19:52:25] INFO [mirofish.simx] 模拟准备完成: sim_b63aa8bcc34a, entities=2, profiles=2
+[2026-11-06 19:52:57] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 19:52:57] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 19:52:57] INFO [mirofish.local_graph] Batch batch_eb: sub-lote 1 listo (2/2 episodios)
+[2026-11-06 19:53:01] INFO [mirofish.simx] 创建模拟: sim_f1dca1b449b9, project=proj_70bc31f353ce, graph=mirofish_test_sim
+[2026-11-06 19:53:01] INFO [mirofish.simx] [1/4] 生成时间配置...
+[2026-11-06 19:53:01] WARNING [mirofish.simx] agents_per_hour_max (6) 超过总Agent数 (2)，已修正
+[2026-11-06 19:53:01] INFO [mirofish.simx] [2/4] 生成事件配置和热点话题...
+[2026-11-06 19:53:01] INFO [mirofish.simx] [3/4] 生成Agent配置 (1-2/2)...
+[2026-11-06 19:53:01] INFO [mirofish.simx] 初始帖子分配: poster_type='person' -> agent_id=0
+[2026-11-06 19:53:01] INFO [mirofish.simx] [4/4] 生成平台配置...
+[2026-11-06 19:53:01] INFO [mirofish.simx] 模拟配置生成完成: 2 个Agent配置
+[2026-11-06 19:53:01] INFO [mirofish.simx] 模拟准备完成: sim_f1dca1b449b9, entities=2, profiles=2
+[2026-11-06 20:03:43] INFO [mirofish.simx] 创建模拟: sim_62447ff2d48a, project=proj_20fc744d17d6, graph=mirofish_report_test
+[2026-11-06 20:03:43] INFO [mirofish.simx] 创建模拟: sim_f25e45442590, project=proj_20fc744d17d6, graph=mirofish_report_test
+[2026-11-06 20:03:43] INFO [mirofish.simx] 创建模拟: sim_ea09995b6eaa, project=proj_609ee3007e6c, graph=mirofish_report_test
+[2026-11-06 20:03:43] INFO [mirofish.simx] 创建模拟: sim_5cd39db42f5e, project=proj_77310a749c37, graph=mirofish_report_test
+[2026-11-06 20:03:43] INFO [mirofish.simx] 创建模拟: sim_0d1630897e59, project=proj_d78c9e83f747, graph=mirofish_report_test
+[2026-11-06 20:04:55] INFO [mirofish.simx] 创建模拟: sim_aea989777fea, project=proj_fe894ee2b797, graph=mirofish_report_test
+[2026-11-06 20:04:55] INFO [mirofish.simx] 创建模拟: sim_20181a127169, project=proj_fe894ee2b797, graph=mirofish_report_test
+[2026-11-06 20:04:55] INFO [mirofish.simx] 创建模拟: sim_bb3d2fc4d6e5, project=proj_f5bcda8922db, graph=mirofish_report_test
+[2026-11-06 20:04:56] INFO [mirofish.simx] 创建模拟: sim_99ea06189d5f, project=proj_2fab96f9d249, graph=mirofish_report_test
+[2026-11-06 20:04:56] INFO [mirofish.simx] 创建模拟: sim_daf70d640db0, project=proj_1ff85b6ef9b9, graph=mirofish_report_test
+[2026-11-06 20:05:10] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 20:05:10] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 20:05:10] INFO [mirofish.local_graph] Batch batch_c6: sub-lote 1 listo (2/2 episodios)
+[2026-11-06 20:05:13] INFO [mirofish.simx] 创建模拟: sim_19d28e72696d, project=proj_50ef969e81e7, graph=mirofish_report_test
+[2026-11-06 20:05:13] INFO [mirofish.simx] 创建模拟: sim_a2f039f36971, project=proj_50ef969e81e7, graph=mirofish_report_test
+[2026-11-06 20:05:13] INFO [mirofish.simx] 创建模拟: sim_8d273da16ece, project=proj_a33a7c9aa0ff, graph=mirofish_report_test
+[2026-11-06 20:05:14] INFO [mirofish.simx] 创建模拟: sim_0df3b9624552, project=proj_66573865eeb0, graph=mirofish_report_test
+[2026-11-06 20:05:14] INFO [mirofish.simx] 创建模拟: sim_d2f89e9cb152, project=proj_b24c3095d8bb, graph=mirofish_report_test
+[2026-11-06 20:05:14] INFO [mirofish.simx] 创建模拟: sim_c974a45c9378, project=proj_11780838ffa2, graph=mirofish_test_sim
+[2026-11-06 20:05:14] INFO [mirofish.simx] [1/4] 生成时间配置...
+[2026-11-06 20:05:14] WARNING [mirofish.simx] agents_per_hour_max (6) 超过总Agent数 (2)，已修正
+[2026-11-06 20:05:14] INFO [mirofish.simx] [2/4] 生成事件配置和热点话题...
+[2026-11-06 20:05:14] INFO [mirofish.simx] [3/4] 生成Agent配置 (1-2/2)...
+[2026-11-06 20:05:14] INFO [mirofish.simx] 初始帖子分配: poster_type='person' -> agent_id=0
+[2026-11-06 20:05:14] INFO [mirofish.simx] [4/4] 生成平台配置...
+[2026-11-06 20:05:14] INFO [mirofish.simx] 模拟配置生成完成: 2 个Agent配置
+[2026-11-06 20:05:14] INFO [mirofish.simx] 模拟准备完成: sim_c974a45c9378, entities=2, profiles=2
+[2026-11-06 20:05:34] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 20:05:34] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 20:05:34] INFO [mirofish.local_graph] Batch batch_f2: sub-lote 1 listo (2/2 episodios)
+[2026-11-06 20:05:39] INFO [mirofish.simx] 创建模拟: sim_b4b884b1ce9b, project=proj_ef7ad1e9675c, graph=mirofish_report_test
+[2026-11-06 20:05:39] INFO [mirofish.simx] 创建模拟: sim_ed3f86ce75b7, project=proj_ef7ad1e9675c, graph=mirofish_report_test
+[2026-11-06 20:05:40] INFO [mirofish.simx] 创建模拟: sim_c116f1c945ad, project=proj_6378f4bc52f7, graph=mirofish_report_test
+[2026-11-06 20:05:41] INFO [mirofish.simx] 创建模拟: sim_7e4ff78098b9, project=proj_06ffe006639b, graph=mirofish_report_test
+[2026-11-06 20:05:42] INFO [mirofish.simx] 创建模拟: sim_5be50ba7c959, project=proj_5aba8cf5e6c0, graph=mirofish_report_test
+[2026-11-06 20:05:44] INFO [mirofish.simx] 创建模拟: sim_ab67ffb33d2d, project=proj_feb486f3523d, graph=mirofish_test_sim
+[2026-11-06 20:05:44] INFO [mirofish.simx] [1/4] 生成时间配置...
+[2026-11-06 20:05:44] WARNING [mirofish.simx] agents_per_hour_max (6) 超过总Agent数 (2)，已修正
+[2026-11-06 20:05:44] INFO [mirofish.simx] [2/4] 生成事件配置和热点话题...
+[2026-11-06 20:05:44] INFO [mirofish.simx] [3/4] 生成Agent配置 (1-2/2)...
+[2026-11-06 20:05:44] INFO [mirofish.simx] 初始帖子分配: poster_type='person' -> agent_id=1
+[2026-11-06 20:05:44] INFO [mirofish.simx] [4/4] 生成平台配置...
+[2026-11-06 20:05:44] INFO [mirofish.simx] 模拟配置生成完成: 2 个Agent配置
+[2026-11-06 20:05:44] INFO [mirofish.simx] 模拟准备完成: sim_ab67ffb33d2d, entities=2, profiles=2
+[2026-11-06 20:06:50] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 20:06:50] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 20:06:50] INFO [mirofish.local_graph] Batch batch_56: sub-lote 1 listo (2/2 episodios)
+[2026-11-06 20:06:53] INFO [mirofish.simx] 创建模拟: sim_33a0f6f44554, project=proj_b2ca2d6a12f1, graph=mirofish_report_test
+[2026-11-06 20:06:53] INFO [mirofish.simx] 创建模拟: sim_1347edfc0904, project=proj_b2ca2d6a12f1, graph=mirofish_report_test
+[2026-11-06 20:06:54] INFO [mirofish.simx] 创建模拟: sim_095c8765ddc1, project=proj_d150d15cb77a, graph=mirofish_report_test
+[2026-11-06 20:06:54] INFO [mirofish.simx] 创建模拟: sim_6191b89818e0, project=proj_85e65c798e29, graph=mirofish_report_test
+[2026-11-06 20:06:54] INFO [mirofish.simx] 创建模拟: sim_53c219a1ae7a, project=proj_5ccddd7cb465, graph=mirofish_report_test
+[2026-11-06 20:06:54] INFO [mirofish.simx] 创建模拟: sim_7e86fd2705e2, project=proj_75e62fac08c4, graph=mirofish_test_sim
+[2026-11-06 20:06:54] INFO [mirofish.simx] [1/4] 生成时间配置...
+[2026-11-06 20:06:54] WARNING [mirofish.simx] agents_per_hour_max (6) 超过总Agent数 (2)，已修正
+[2026-11-06 20:06:54] INFO [mirofish.simx] [2/4] 生成事件配置和热点话题...
+[2026-11-06 20:06:54] INFO [mirofish.simx] [3/4] 生成Agent配置 (1-2/2)...
+[2026-11-06 20:06:54] INFO [mirofish.simx] 初始帖子分配: poster_type='person' -> agent_id=0
+[2026-11-06 20:06:54] INFO [mirofish.simx] [4/4] 生成平台配置...
+[2026-11-06 20:06:54] INFO [mirofish.simx] 模拟配置生成完成: 2 个Agent配置
+[2026-11-06 20:06:54] INFO [mirofish.simx] 模拟准备完成: sim_7e86fd2705e2, entities=2, profiles=2
+[2026-11-06 20:25:08] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 20:25:08] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 20:25:08] INFO [mirofish.local_graph] Batch batch_ce: sub-lote 1 listo (2/2 episodios)
+[2026-11-06 20:25:12] INFO [mirofish.simx] 创建模拟: sim_5ecd77bd4441, project=proj_d364578dff16, graph=mirofish_report_test
+[2026-11-06 20:25:12] INFO [mirofish.simx] 创建模拟: sim_d38fb3f11958, project=proj_d364578dff16, graph=mirofish_report_test
+[2026-11-06 20:25:13] INFO [mirofish.simx] 创建模拟: sim_b08e4afb12aa, project=proj_4e7b490c8912, graph=mirofish_report_test
+[2026-11-06 20:25:14] INFO [mirofish.simx] 创建模拟: sim_1b1e45e3a8ab, project=proj_a27005ddf987, graph=mirofish_report_test
+[2026-11-06 20:25:14] INFO [mirofish.simx] 创建模拟: sim_d34f47c9668a, project=proj_4f389e40e883, graph=mirofish_report_test
+[2026-11-06 20:25:15] INFO [mirofish.simx] 创建模拟: sim_7b87a40e24c0, project=proj_26d693822443, graph=mirofish_test_sim
+[2026-11-06 20:25:15] INFO [mirofish.simx] [1/4] 生成时间配置...
+[2026-11-06 20:25:15] WARNING [mirofish.simx] agents_per_hour_max (6) 超过总Agent数 (2)，已修正
+[2026-11-06 20:25:15] INFO [mirofish.simx] [2/4] 生成事件配置和热点话题...
+[2026-11-06 20:25:15] INFO [mirofish.simx] [3/4] 生成Agent配置 (1-2/2)...
+[2026-11-06 20:25:15] INFO [mirofish.simx] 初始帖子分配: poster_type='person' -> agent_id=0
+[2026-11-06 20:25:15] INFO [mirofish.simx] [4/4] 生成平台配置...
+[2026-11-06 20:25:15] INFO [mirofish.simx] 模拟配置生成完成: 2 个Agent配置
+[2026-11-06 20:25:15] INFO [mirofish.simx] 模拟准备完成: sim_7b87a40e24c0, entities=2, profiles=2
+[2026-11-06 20:26:13] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 20:26:13] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 20:26:13] INFO [mirofish.local_graph] Batch batch_d0: sub-lote 1 listo (2/2 episodios)
+[2026-11-06 20:26:18] INFO [mirofish.simx] 创建模拟: sim_2809f8ff0da8, project=proj_39bb2195b63d, graph=mirofish_report_test
+[2026-11-06 20:26:18] INFO [mirofish.simx] 创建模拟: sim_c0d07e0223ba, project=proj_39bb2195b63d, graph=mirofish_report_test
+[2026-11-06 20:26:19] INFO [mirofish.simx] 创建模拟: sim_da7beba32a6b, project=proj_d5a537cca2d2, graph=mirofish_report_test
+[2026-11-06 20:26:21] INFO [mirofish.simx] 创建模拟: sim_b5f214271959, project=proj_2b71ff0e1d68, graph=mirofish_report_test
+[2026-11-06 20:26:21] INFO [mirofish.simx] 创建模拟: sim_cf946baea46e, project=proj_69dcfd795e55, graph=mirofish_report_test
+[2026-11-06 20:26:23] INFO [mirofish.simx] 创建模拟: sim_454c49df3ecf, project=proj_d5e68d048a2f, graph=mirofish_test_sim
+[2026-11-06 20:26:23] INFO [mirofish.simx] [1/4] 生成时间配置...
+[2026-11-06 20:26:23] WARNING [mirofish.simx] agents_per_hour_max (6) 超过总Agent数 (2)，已修正
+[2026-11-06 20:26:23] INFO [mirofish.simx] [2/4] 生成事件配置和热点话题...
+[2026-11-06 20:26:23] INFO [mirofish.simx] [3/4] 生成Agent配置 (1-2/2)...
+[2026-11-06 20:26:23] INFO [mirofish.simx] 初始帖子分配: poster_type='person' -> agent_id=0
+[2026-11-06 20:26:23] INFO [mirofish.simx] [4/4] 生成平台配置...
+[2026-11-06 20:26:23] INFO [mirofish.simx] 模拟配置生成完成: 2 个Agent配置
+[2026-11-06 20:26:23] INFO [mirofish.simx] 模拟准备完成: sim_454c49df3ecf, entities=2, profiles=2
+[2026-11-06 20:26:56] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 20:26:56] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 20:26:56] INFO [mirofish.local_graph] Batch batch_10: sub-lote 1 listo (2/2 episodios)
+[2026-11-06 20:27:02] INFO [mirofish.simx] 创建模拟: sim_5ccb0f8ce631, project=proj_e6f2cd403f56, graph=mirofish_report_test
+[2026-11-06 20:27:02] INFO [mirofish.simx] 创建模拟: sim_b3f6a7a11834, project=proj_e6f2cd403f56, graph=mirofish_report_test
+[2026-11-06 20:27:02] INFO [mirofish.simx] 创建模拟: sim_f5a6923992dc, project=proj_6970a8670cd7, graph=mirofish_report_test
+[2026-11-06 20:27:04] INFO [mirofish.simx] 创建模拟: sim_bb94d9c8e34b, project=proj_e9b6b689c60c, graph=mirofish_report_test
+[2026-11-06 20:27:05] INFO [mirofish.simx] 创建模拟: sim_369ae2632553, project=proj_76896c009f43, graph=mirofish_report_test
+[2026-11-06 20:27:06] INFO [mirofish.simx] 创建模拟: sim_1c21a4004aca, project=proj_f0c93590328b, graph=mirofish_test_sim
+[2026-11-06 20:27:06] INFO [mirofish.simx] [1/4] 生成时间配置...
+[2026-11-06 20:27:06] WARNING [mirofish.simx] agents_per_hour_max (6) 超过总Agent数 (2)，已修正
+[2026-11-06 20:27:06] INFO [mirofish.simx] [2/4] 生成事件配置和热点话题...
+[2026-11-06 20:27:06] INFO [mirofish.simx] [3/4] 生成Agent配置 (1-2/2)...
+[2026-11-06 20:27:06] INFO [mirofish.simx] 初始帖子分配: poster_type='person' -> agent_id=0
+[2026-11-06 20:27:06] INFO [mirofish.simx] [4/4] 生成平台配置...
+[2026-11-06 20:27:06] INFO [mirofish.simx] 模拟配置生成完成: 2 个Agent配置
+[2026-11-06 20:27:06] INFO [mirofish.simx] 模拟准备完成: sim_1c21a4004aca, entities=2, profiles=2
+[2026-11-06 20:27:19] INFO [mirofish.simx] 创建模拟: sim_331f52cb30f5, project=proj_65af086d3a63, graph=mirofish_test_sim
+[2026-11-06 20:27:19] INFO [mirofish.simx] [1/4] 生成时间配置...
+[2026-11-06 20:27:19] WARNING [mirofish.simx] agents_per_hour_max (6) 超过总Agent数 (2)，已修正
+[2026-11-06 20:27:19] INFO [mirofish.simx] [2/4] 生成事件配置和热点话题...
+[2026-11-06 20:27:19] INFO [mirofish.simx] [3/4] 生成Agent配置 (1-2/2)...
+[2026-11-06 20:27:19] INFO [mirofish.simx] 初始帖子分配: poster_type='person' -> agent_id=0
+[2026-11-06 20:27:19] INFO [mirofish.simx] [4/4] 生成平台配置...
+[2026-11-06 20:27:19] INFO [mirofish.simx] 模拟配置生成完成: 2 个Agent配置
+[2026-11-06 20:27:19] INFO [mirofish.simx] 模拟准备完成: sim_331f52cb30f5, entities=2, profiles=2
+[2026-11-06 20:27:32] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 20:27:32] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 20:27:32] INFO [mirofish.local_graph] Batch batch_08: sub-lote 1 listo (2/2 episodios)
+[2026-11-06 20:27:36] INFO [mirofish.simx] 创建模拟: sim_04ec951b7145, project=proj_94e3528ae03b, graph=mirofish_report_test
+[2026-11-06 20:27:36] INFO [mirofish.simx] 创建模拟: sim_b734af78c513, project=proj_94e3528ae03b, graph=mirofish_report_test
+[2026-11-06 20:27:37] INFO [mirofish.simx] 创建模拟: sim_80cc8e87a69c, project=proj_1b104a998987, graph=mirofish_report_test
+[2026-11-06 20:27:38] INFO [mirofish.simx] 创建模拟: sim_856b4d4a35e5, project=proj_9e3cba6647b9, graph=mirofish_report_test
+[2026-11-06 20:27:38] INFO [mirofish.simx] 创建模拟: sim_9e7f5704ba63, project=proj_a38adc328725, graph=mirofish_report_test
+[2026-11-06 20:27:40] INFO [mirofish.simx] 创建模拟: sim_4a1797f8f8a5, project=proj_f3ef64b30131, graph=mirofish_test_sim
+[2026-11-06 20:27:40] INFO [mirofish.simx] [1/4] 生成时间配置...
+[2026-11-06 20:27:40] WARNING [mirofish.simx] agents_per_hour_max (6) 超过总Agent数 (2)，已修正
+[2026-11-06 20:27:40] INFO [mirofish.simx] [2/4] 生成事件配置和热点话题...
+[2026-11-06 20:27:40] INFO [mirofish.simx] [3/4] 生成Agent配置 (1-2/2)...
+[2026-11-06 20:27:40] INFO [mirofish.simx] 初始帖子分配: poster_type='person' -> agent_id=0
+[2026-11-06 20:27:40] INFO [mirofish.simx] [4/4] 生成平台配置...
+[2026-11-06 20:27:40] INFO [mirofish.simx] 模拟配置生成完成: 2 个Agent配置
+[2026-11-06 20:27:40] INFO [mirofish.simx] 模拟准备完成: sim_4a1797f8f8a5, entities=2, profiles=2
+[2026-11-06 20:27:55] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 20:27:55] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 20:27:55] INFO [mirofish.local_graph] Batch batch_e1: sub-lote 1 listo (2/2 episodios)
+[2026-11-06 20:27:59] INFO [mirofish.simx] 创建模拟: sim_9c574810a35a, project=proj_da23ac45d989, graph=mirofish_report_test
+[2026-11-06 20:27:59] INFO [mirofish.simx] 创建模拟: sim_c21258ee4861, project=proj_da23ac45d989, graph=mirofish_report_test
+[2026-11-06 20:28:00] INFO [mirofish.simx] 创建模拟: sim_4a2e324a3ade, project=proj_0609812ae5b0, graph=mirofish_report_test
+[2026-11-06 20:28:01] INFO [mirofish.simx] 创建模拟: sim_f298c5495c09, project=proj_867bd733fbbb, graph=mirofish_report_test
+[2026-11-06 20:28:02] INFO [mirofish.simx] 创建模拟: sim_12eea8b3d7fb, project=proj_c51e26baea3c, graph=mirofish_report_test
+[2026-11-06 20:28:03] INFO [mirofish.simx] 创建模拟: sim_494806321637, project=proj_077a3a46c3f4, graph=mirofish_test_sim
+[2026-11-06 20:28:03] INFO [mirofish.simx] [1/4] 生成时间配置...
+[2026-11-06 20:28:03] WARNING [mirofish.simx] agents_per_hour_max (6) 超过总Agent数 (2)，已修正
+[2026-11-06 20:28:03] INFO [mirofish.simx] [2/4] 生成事件配置和热点话题...
+[2026-11-06 20:28:03] INFO [mirofish.simx] [3/4] 生成Agent配置 (1-2/2)...
+[2026-11-06 20:28:03] INFO [mirofish.simx] 初始帖子分配: poster_type='person' -> agent_id=0
+[2026-11-06 20:28:03] INFO [mirofish.simx] [4/4] 生成平台配置...
+[2026-11-06 20:28:03] INFO [mirofish.simx] 模拟配置生成完成: 2 个Agent配置
+[2026-11-06 20:28:03] INFO [mirofish.simx] 模拟准备完成: sim_494806321637, entities=2, profiles=2
+[2026-11-06 20:28:06] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 20:28:06] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 20:28:06] INFO [mirofish.local_graph] Batch batch_8f: sub-lote 1 listo (2/2 episodios)
+[2026-11-06 20:28:12] INFO [mirofish.simx] 创建模拟: sim_927408934bc0, project=proj_d4d661148817, graph=mirofish_report_test
+[2026-11-06 20:28:12] INFO [mirofish.simx] 创建模拟: sim_5a30eb38f854, project=proj_d4d661148817, graph=mirofish_report_test
+[2026-11-06 20:28:13] INFO [mirofish.simx] 创建模拟: sim_92f119584dce, project=proj_73dcce4419d4, graph=mirofish_report_test
+[2026-11-06 20:28:15] INFO [mirofish.simx] 创建模拟: sim_2ea1c020615e, project=proj_056a630e53ec, graph=mirofish_report_test
+[2026-11-06 20:28:16] INFO [mirofish.simx] 创建模拟: sim_0e8b8a7bccc1, project=proj_cdd73a6269bf, graph=mirofish_report_test
+[2026-11-06 20:28:18] INFO [mirofish.simx] 创建模拟: sim_8ca76ffd2421, project=proj_526fd86df102, graph=mirofish_test_sim
+[2026-11-06 20:28:18] INFO [mirofish.simx] [1/4] 生成时间配置...
+[2026-11-06 20:28:18] WARNING [mirofish.simx] agents_per_hour_max (6) 超过总Agent数 (2)，已修正
+[2026-11-06 20:28:18] INFO [mirofish.simx] [2/4] 生成事件配置和热点话题...
+[2026-11-06 20:28:18] INFO [mirofish.simx] [3/4] 生成Agent配置 (1-2/2)...
+[2026-11-06 20:28:18] INFO [mirofish.simx] 初始帖子分配: poster_type='person' -> agent_id=0
+[2026-11-06 20:28:18] INFO [mirofish.simx] [4/4] 生成平台配置...
+[2026-11-06 20:28:18] INFO [mirofish.simx] 模拟配置生成完成: 2 个Agent配置
+[2026-11-06 20:28:18] INFO [mirofish.simx] 模拟准备完成: sim_8ca76ffd2421, entities=2, profiles=2
+[2026-11-06 20:28:23] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 20:28:23] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 20:28:23] INFO [mirofish.local_graph] Batch batch_d0: sub-lote 1 listo (2/2 episodios)
+[2026-11-06 20:28:29] INFO [mirofish.simx] 创建模拟: sim_eb959c394863, project=proj_a0c69e64bfba, graph=mirofish_report_test
+[2026-11-06 20:28:29] INFO [mirofish.simx] 创建模拟: sim_684837da77f0, project=proj_a0c69e64bfba, graph=mirofish_report_test
+[2026-11-06 20:28:30] INFO [mirofish.simx] 创建模拟: sim_bca9ea71d53c, project=proj_71c6f32e1c94, graph=mirofish_report_test
+[2026-11-06 20:28:32] INFO [mirofish.simx] 创建模拟: sim_ca51c7ff4ac4, project=proj_417009c278e7, graph=mirofish_report_test
+[2026-11-06 20:28:33] INFO [mirofish.simx] 创建模拟: sim_54da39a7914b, project=proj_c729fedd2249, graph=mirofish_report_test
+[2026-11-06 20:28:35] INFO [mirofish.simx] 创建模拟: sim_2cba66783a14, project=proj_e1c90fea38be, graph=mirofish_test_sim
+[2026-11-06 20:28:35] INFO [mirofish.simx] [1/4] 生成时间配置...
+[2026-11-06 20:28:35] WARNING [mirofish.simx] agents_per_hour_max (6) 超过总Agent数 (2)，已修正
+[2026-11-06 20:28:35] INFO [mirofish.simx] [2/4] 生成事件配置和热点话题...
+[2026-11-06 20:28:35] INFO [mirofish.simx] [3/4] 生成Agent配置 (1-2/2)...
+[2026-11-06 20:28:35] INFO [mirofish.simx] 初始帖子分配: poster_type='person' -> agent_id=0
+[2026-11-06 20:28:35] INFO [mirofish.simx] [4/4] 生成平台配置...
+[2026-11-06 20:28:35] INFO [mirofish.simx] 模拟配置生成完成: 2 个Agent配置
+[2026-11-06 20:28:35] INFO [mirofish.simx] 模拟准备完成: sim_2cba66783a14, entities=2, profiles=2
+[2026-11-06 20:28:59] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 20:28:59] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 20:28:59] INFO [mirofish.local_graph] Batch batch_35: sub-lote 1 listo (2/2 episodios)
+[2026-11-06 20:29:04] INFO [mirofish.simx] 创建模拟: sim_87bd0cd5271f, project=proj_5cdef06756b6, graph=mirofish_report_test
+[2026-11-06 20:29:04] INFO [mirofish.simx] 创建模拟: sim_fd381a6c87ba, project=proj_5cdef06756b6, graph=mirofish_report_test
+[2026-11-06 20:29:04] INFO [mirofish.simx] 创建模拟: sim_b56c035c3b45, project=proj_49a148c4d189, graph=mirofish_report_test
+[2026-11-06 20:29:05] INFO [mirofish.simx] 创建模拟: sim_2b66189da9f5, project=proj_a7741e816340, graph=mirofish_report_test
+[2026-11-06 20:29:06] INFO [mirofish.simx] 创建模拟: sim_e2b8c52d0daf, project=proj_29fb925a7d58, graph=mirofish_report_test
+[2026-11-06 20:29:07] INFO [mirofish.simx] 创建模拟: sim_d4b4f1bf9087, project=proj_0d4525462b19, graph=mirofish_test_sim
+[2026-11-06 20:29:07] INFO [mirofish.simx] [1/4] 生成时间配置...
+[2026-11-06 20:29:07] WARNING [mirofish.simx] agents_per_hour_max (6) 超过总Agent数 (2)，已修正
+[2026-11-06 20:29:07] INFO [mirofish.simx] [2/4] 生成事件配置和热点话题...
+[2026-11-06 20:29:07] INFO [mirofish.simx] [3/4] 生成Agent配置 (1-2/2)...
+[2026-11-06 20:29:07] INFO [mirofish.simx] 初始帖子分配: poster_type='person' -> agent_id=0
+[2026-11-06 20:29:07] INFO [mirofish.simx] [4/4] 生成平台配置...
+[2026-11-06 20:29:07] INFO [mirofish.simx] 模拟配置生成完成: 2 个Agent配置
+[2026-11-06 20:29:07] INFO [mirofish.simx] 模拟准备完成: sim_d4b4f1bf9087, entities=2, profiles=2
+[2026-11-06 20:29:10] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 20:29:10] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 20:29:10] INFO [mirofish.local_graph] Batch batch_6d: sub-lote 1 listo (2/2 episodios)
+[2026-11-06 20:29:15] INFO [mirofish.simx] 创建模拟: sim_1a94ed8c1da6, project=proj_dc4443f126ec, graph=mirofish_report_test
+[2026-11-06 20:29:15] INFO [mirofish.simx] 创建模拟: sim_2c25e8a9050f, project=proj_dc4443f126ec, graph=mirofish_report_test
+[2026-11-06 20:29:15] INFO [mirofish.simx] 创建模拟: sim_4da1455159cf, project=proj_fd7bed24d9fb, graph=mirofish_report_test
+[2026-11-06 20:29:17] INFO [mirofish.simx] 创建模拟: sim_b6806bcd0a41, project=proj_b41594b993f1, graph=mirofish_report_test
+[2026-11-06 20:29:17] INFO [mirofish.simx] 创建模拟: sim_863b31814e67, project=proj_8cac24529e1f, graph=mirofish_report_test
+[2026-11-06 20:29:19] INFO [mirofish.simx] 创建模拟: sim_5bb2a9bdf450, project=proj_10a82d8a820b, graph=mirofish_test_sim
+[2026-11-06 20:29:19] INFO [mirofish.simx] [1/4] 生成时间配置...
+[2026-11-06 20:29:19] WARNING [mirofish.simx] agents_per_hour_max (6) 超过总Agent数 (2)，已修正
+[2026-11-06 20:29:19] INFO [mirofish.simx] [2/4] 生成事件配置和热点话题...
+[2026-11-06 20:29:19] INFO [mirofish.simx] [3/4] 生成Agent配置 (1-2/2)...
+[2026-11-06 20:29:19] INFO [mirofish.simx] 初始帖子分配: poster_type='person' -> agent_id=0
+[2026-11-06 20:29:19] INFO [mirofish.simx] [4/4] 生成平台配置...
+[2026-11-06 20:29:19] INFO [mirofish.simx] 模拟配置生成完成: 2 个Agent配置
+[2026-11-06 20:29:19] INFO [mirofish.simx] 模拟准备完成: sim_5bb2a9bdf450, entities=2, profiles=2
+[2026-11-06 20:29:22] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 20:29:22] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 20:29:22] INFO [mirofish.local_graph] Batch batch_20: sub-lote 1 listo (2/2 episodios)
+[2026-11-06 20:29:27] INFO [mirofish.simx] 创建模拟: sim_da6ad561cf2d, project=proj_53f3c235c868, graph=mirofish_report_test
+[2026-11-06 20:29:27] INFO [mirofish.simx] 创建模拟: sim_1eec96d72fdf, project=proj_53f3c235c868, graph=mirofish_report_test
+[2026-11-06 20:29:29] INFO [mirofish.simx] 创建模拟: sim_f8e35565a666, project=proj_2ca4026c2010, graph=mirofish_report_test
+[2026-11-06 20:29:31] INFO [mirofish.simx] 创建模拟: sim_9ebe17956b97, project=proj_64df5516b6b8, graph=mirofish_report_test
+[2026-11-06 20:29:32] INFO [mirofish.simx] 创建模拟: sim_2a84d7987fd2, project=proj_3e9be38d7c3b, graph=mirofish_report_test
+[2026-11-06 20:29:33] INFO [mirofish.simx] 创建模拟: sim_a08d674b3108, project=proj_f6ff48ccafe6, graph=mirofish_test_sim
+[2026-11-06 20:29:33] INFO [mirofish.simx] [1/4] 生成时间配置...
+[2026-11-06 20:29:33] WARNING [mirofish.simx] agents_per_hour_max (6) 超过总Agent数 (2)，已修正
+[2026-11-06 20:29:33] INFO [mirofish.simx] [2/4] 生成事件配置和热点话题...
+[2026-11-06 20:29:33] INFO [mirofish.simx] [3/4] 生成Agent配置 (1-2/2)...
+[2026-11-06 20:29:33] INFO [mirofish.simx] 初始帖子分配: poster_type='person' -> agent_id=0
+[2026-11-06 20:29:33] INFO [mirofish.simx] [4/4] 生成平台配置...
+[2026-11-06 20:29:33] INFO [mirofish.simx] 模拟配置生成完成: 2 个Agent配置
+[2026-11-06 20:29:33] INFO [mirofish.simx] 模拟准备完成: sim_a08d674b3108, entities=2, profiles=2
+[2026-11-06 20:30:12] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 20:30:12] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 20:30:12] INFO [mirofish.local_graph] Batch batch_7a: sub-lote 1 listo (2/2 episodios)
+[2026-11-06 20:30:16] INFO [mirofish.simx] 创建模拟: sim_def9dfe6ffb8, project=proj_6743188245bf, graph=mirofish_report_test
+[2026-11-06 20:30:16] INFO [mirofish.simx] 创建模拟: sim_ae6cf17b3924, project=proj_6743188245bf, graph=mirofish_report_test
+[2026-11-06 20:30:17] INFO [mirofish.simx] 创建模拟: sim_f3d66a5b7f1d, project=proj_df0795413a35, graph=mirofish_report_test
+[2026-11-06 20:30:18] INFO [mirofish.simx] 创建模拟: sim_910e755f4ff9, project=proj_66d9e9d7f85c, graph=mirofish_report_test
+[2026-11-06 20:30:19] INFO [mirofish.simx] 创建模拟: sim_c111a0476718, project=proj_b20824674e6c, graph=mirofish_report_test
+[2026-11-06 20:30:20] INFO [mirofish.simx] 创建模拟: sim_0867f0be37ec, project=proj_f6c5099e7679, graph=mirofish_test_sim
+[2026-11-06 20:30:20] INFO [mirofish.simx] [1/4] 生成时间配置...
+[2026-11-06 20:30:20] WARNING [mirofish.simx] agents_per_hour_max (6) 超过总Agent数 (2)，已修正
+[2026-11-06 20:30:20] INFO [mirofish.simx] [2/4] 生成事件配置和热点话题...
+[2026-11-06 20:30:20] INFO [mirofish.simx] [3/4] 生成Agent配置 (1-2/2)...
+[2026-11-06 20:30:20] INFO [mirofish.simx] 初始帖子分配: poster_type='person' -> agent_id=0
+[2026-11-06 20:30:20] INFO [mirofish.simx] [4/4] 生成平台配置...
+[2026-11-06 20:30:20] INFO [mirofish.simx] 模拟配置生成完成: 2 个Agent配置
+[2026-11-06 20:30:20] INFO [mirofish.simx] 模拟准备完成: sim_0867f0be37ec, entities=2, profiles=2
+[2026-11-06 20:31:51] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 20:31:51] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 20:31:51] INFO [mirofish.local_graph] Batch batch_16: sub-lote 1 listo (2/2 episodios)
+[2026-11-06 20:31:56] INFO [mirofish.simx] 创建模拟: sim_10061a6c203c, project=proj_d4dba48c9f03, graph=mirofish_report_test
+[2026-11-06 20:31:56] INFO [mirofish.simx] 创建模拟: sim_7da0821053be, project=proj_d4dba48c9f03, graph=mirofish_report_test
+[2026-11-06 20:31:57] INFO [mirofish.simx] 创建模拟: sim_9e24ba746aa0, project=proj_db09f53cebb5, graph=mirofish_report_test
+[2026-11-06 20:31:58] INFO [mirofish.simx] 创建模拟: sim_72184c2dd86c, project=proj_941075f2ac2b, graph=mirofish_report_test
+[2026-11-06 20:31:59] INFO [mirofish.simx] 创建模拟: sim_1aae69b046e8, project=proj_e4892b82709e, graph=mirofish_report_test
+[2026-11-06 20:32:01] INFO [mirofish.simx] 创建模拟: sim_01ca2fc67fc1, project=proj_bf7b27521764, graph=mirofish_test_sim
+[2026-11-06 20:32:01] INFO [mirofish.simx] [1/4] 生成时间配置...
+[2026-11-06 20:32:01] WARNING [mirofish.simx] agents_per_hour_max (6) 超过总Agent数 (2)，已修正
+[2026-11-06 20:32:01] INFO [mirofish.simx] [2/4] 生成事件配置和热点话题...
+[2026-11-06 20:32:01] INFO [mirofish.simx] [3/4] 生成Agent配置 (1-2/2)...
+[2026-11-06 20:32:01] INFO [mirofish.simx] 初始帖子分配: poster_type='person' -> agent_id=0
+[2026-11-06 20:32:01] INFO [mirofish.simx] [4/4] 生成平台配置...
+[2026-11-06 20:32:01] INFO [mirofish.simx] 模拟配置生成完成: 2 个Agent配置
+[2026-11-06 20:32:01] INFO [mirofish.simx] 模拟准备完成: sim_01ca2fc67fc1, entities=2, profiles=2
+[2026-11-06 20:32:17] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 20:32:17] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 20:32:17] INFO [mirofish.local_graph] Batch batch_ec: sub-lote 1 listo (2/2 episodios)
+[2026-11-06 20:32:23] INFO [mirofish.simx] 创建模拟: sim_bf417ec8007b, project=proj_ab1c8b404bb8, graph=mirofish_report_test
+[2026-11-06 20:32:23] INFO [mirofish.simx] 创建模拟: sim_c810c1fb4eb6, project=proj_ab1c8b404bb8, graph=mirofish_report_test
+[2026-11-06 20:32:24] INFO [mirofish.simx] 创建模拟: sim_d022257a7a38, project=proj_b05380869fa6, graph=mirofish_report_test
+[2026-11-06 20:32:25] INFO [mirofish.simx] 创建模拟: sim_ae6fab13a4ef, project=proj_f2525397f747, graph=mirofish_report_test
+[2026-11-06 20:32:26] INFO [mirofish.simx] 创建模拟: sim_ec403879fb28, project=proj_bd2fcb051310, graph=mirofish_report_test
+[2026-11-06 20:32:27] INFO [mirofish.simx] 创建模拟: sim_79182f705b19, project=proj_650114938686, graph=mirofish_test_sim
+[2026-11-06 20:32:27] INFO [mirofish.simx] [1/4] 生成时间配置...
+[2026-11-06 20:32:27] WARNING [mirofish.simx] agents_per_hour_max (6) 超过总Agent数 (2)，已修正
+[2026-11-06 20:32:27] INFO [mirofish.simx] [2/4] 生成事件配置和热点话题...
+[2026-11-06 20:32:27] INFO [mirofish.simx] [3/4] 生成Agent配置 (1-2/2)...
+[2026-11-06 20:32:27] INFO [mirofish.simx] 初始帖子分配: poster_type='person' -> agent_id=0
+[2026-11-06 20:32:27] INFO [mirofish.simx] [4/4] 生成平台配置...
+[2026-11-06 20:32:27] INFO [mirofish.simx] 模拟配置生成完成: 2 个Agent配置
+[2026-11-06 20:32:27] INFO [mirofish.simx] 模拟准备完成: sim_79182f705b19, entities=2, profiles=2
+[2026-11-06 20:59:54] INFO [mirofish.simx] 创建模拟: sim_47a758188160, project=proj_44561190f17a, graph=mirofish_test_sim
+[2026-11-06 20:59:54] INFO [mirofish.simx] [1/4] 生成时间配置...
+[2026-11-06 20:59:54] WARNING [mirofish.simx] agents_per_hour_max (6) 超过总Agent数 (2)，已修正
+[2026-11-06 20:59:54] INFO [mirofish.simx] [2/4] 生成事件配置和热点话题...
+[2026-11-06 20:59:54] INFO [mirofish.simx] [3/4] 生成Agent配置 (1-2/2)...
+[2026-11-06 20:59:54] INFO [mirofish.simx] 初始帖子分配: poster_type='person' -> agent_id=0
+[2026-11-06 20:59:54] INFO [mirofish.simx] [4/4] 生成平台配置...
+[2026-11-06 20:59:54] INFO [mirofish.simx] 模拟配置生成完成: 2 个Agent配置
+[2026-11-06 20:59:54] INFO [mirofish.simx] 模拟准备完成: sim_47a758188160, entities=2, profiles=2
+[2026-11-06 21:01:21] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 21:01:21] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 21:01:21] INFO [mirofish.local_graph] Batch batch_f6: sub-lote 1 listo (2/2 episodios)
+[2026-11-06 21:01:26] INFO [mirofish.simx] 创建模拟: sim_21f7dc3f8f6a, project=proj_8b13172660cc, graph=mirofish_report_test
+[2026-11-06 21:01:26] INFO [mirofish.simx] 创建模拟: sim_de6807788556, project=proj_8b13172660cc, graph=mirofish_report_test
+[2026-11-06 21:01:26] INFO [mirofish.simx] 创建模拟: sim_87c841576b9a, project=proj_ee878f8e9f8a, graph=mirofish_report_test
+[2026-11-06 21:01:28] INFO [mirofish.simx] 创建模拟: sim_4bfe7651e42d, project=proj_58ee4020bb57, graph=mirofish_report_test
+[2026-11-06 21:01:28] INFO [mirofish.simx] 创建模拟: sim_ca957231a1ce, project=proj_590b3f3efb1b, graph=mirofish_report_test
+[2026-11-06 21:01:31] INFO [mirofish.simx] 创建模拟: sim_52d37d0c59c4, project=proj_fe804ed2f7f5, graph=mirofish_test_sim
+[2026-11-06 21:01:31] INFO [mirofish.simx] [1/4] 生成时间配置...
+[2026-11-06 21:01:31] WARNING [mirofish.simx] agents_per_hour_max (6) 超过总Agent数 (2)，已修正
+[2026-11-06 21:01:31] INFO [mirofish.simx] [2/4] 生成事件配置和热点话题...
+[2026-11-06 21:01:31] INFO [mirofish.simx] [3/4] 生成Agent配置 (1-2/2)...
+[2026-11-06 21:01:31] INFO [mirofish.simx] 初始帖子分配: poster_type='person' -> agent_id=0
+[2026-11-06 21:01:31] INFO [mirofish.simx] [4/4] 生成平台配置...
+[2026-11-06 21:01:31] INFO [mirofish.simx] 模拟配置生成完成: 2 个Agent配置
+[2026-11-06 21:01:31] INFO [mirofish.simx] 模拟准备完成: sim_52d37d0c59c4, entities=2, profiles=2
+[2026-11-06 21:01:50] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 21:01:50] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 21:01:50] INFO [mirofish.local_graph] Batch batch_2d: sub-lote 1 listo (2/2 episodios)
+[2026-11-06 21:01:55] INFO [mirofish.simx] 创建模拟: sim_0d23b2f9061b, project=proj_31a7f7545e26, graph=mirofish_report_test
+[2026-11-06 21:01:55] INFO [mirofish.simx] 创建模拟: sim_56b73b7c9149, project=proj_31a7f7545e26, graph=mirofish_report_test
+[2026-11-06 21:01:55] INFO [mirofish.simx] 创建模拟: sim_6b621b87c0a4, project=proj_a2291ba47d99, graph=mirofish_report_test
+[2026-11-06 21:01:56] INFO [mirofish.simx] 创建模拟: sim_925729b19c69, project=proj_430f2b9a838e, graph=mirofish_report_test
+[2026-11-06 21:01:57] INFO [mirofish.simx] 创建模拟: sim_5930b26889bf, project=proj_8493e75e361d, graph=mirofish_report_test
+[2026-11-06 21:01:58] INFO [mirofish.simx] 创建模拟: sim_d24e81773577, project=proj_daa55d7fdbc3, graph=mirofish_test_sim
+[2026-11-06 21:01:58] INFO [mirofish.simx] [1/4] 生成时间配置...
+[2026-11-06 21:01:58] WARNING [mirofish.simx] agents_per_hour_max (6) 超过总Agent数 (2)，已修正
+[2026-11-06 21:01:58] INFO [mirofish.simx] [2/4] 生成事件配置和热点话题...
+[2026-11-06 21:01:58] INFO [mirofish.simx] [3/4] 生成Agent配置 (1-2/2)...
+[2026-11-06 21:01:58] INFO [mirofish.simx] 初始帖子分配: poster_type='person' -> agent_id=0
+[2026-11-06 21:01:58] INFO [mirofish.simx] [4/4] 生成平台配置...
+[2026-11-06 21:01:58] INFO [mirofish.simx] 模拟配置生成完成: 2 个Agent配置
+[2026-11-06 21:01:58] INFO [mirofish.simx] 模拟准备完成: sim_d24e81773577, entities=2, profiles=2
+[2026-11-06 21:04:06] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 21:04:06] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 21:04:06] INFO [mirofish.local_graph] Batch batch_f8: sub-lote 1 listo (2/2 episodios)
+[2026-11-06 21:04:12] INFO [mirofish.simx] 创建模拟: sim_aae060f1e98b, project=proj_6ffa68bac06d, graph=mirofish_report_test
+[2026-11-06 21:04:12] INFO [mirofish.simx] 创建模拟: sim_6666b8eeeb1d, project=proj_6ffa68bac06d, graph=mirofish_report_test
+[2026-11-06 21:04:13] INFO [mirofish.simx] 创建模拟: sim_606dbb39222d, project=proj_0fe82c0d1cbc, graph=mirofish_report_test
+[2026-11-06 21:04:14] INFO [mirofish.simx] 创建模拟: sim_2840d08fcd9a, project=proj_04ec2b9af0c6, graph=mirofish_report_test
+[2026-11-06 21:04:14] INFO [mirofish.simx] 创建模拟: sim_8fb681e147c1, project=proj_57bb7e491614, graph=mirofish_report_test
+[2026-11-06 21:04:16] INFO [mirofish.simx] 创建模拟: sim_bbc67e488548, project=proj_12495dd6a0dc, graph=mirofish_test_sim
+[2026-11-06 21:04:16] INFO [mirofish.simx] [1/4] 生成时间配置...
+[2026-11-06 21:04:16] WARNING [mirofish.simx] agents_per_hour_max (6) 超过总Agent数 (2)，已修正
+[2026-11-06 21:04:16] INFO [mirofish.simx] [2/4] 生成事件配置和热点话题...
+[2026-11-06 21:04:16] INFO [mirofish.simx] [3/4] 生成Agent配置 (1-2/2)...
+[2026-11-06 21:04:16] INFO [mirofish.simx] 初始帖子分配: poster_type='person' -> agent_id=0
+[2026-11-06 21:04:16] INFO [mirofish.simx] [4/4] 生成平台配置...
+[2026-11-06 21:04:16] INFO [mirofish.simx] 模拟配置生成完成: 2 个Agent配置
+[2026-11-06 21:04:16] INFO [mirofish.simx] 模拟准备完成: sim_bbc67e488548, entities=2, profiles=2
+[2026-11-06 21:05:29] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 21:05:29] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 21:05:29] INFO [mirofish.local_graph] Batch batch_34: sub-lote 1 listo (2/2 episodios)
+[2026-11-06 21:05:33] INFO [mirofish.simx] 创建模拟: sim_bbf804c19fe7, project=proj_7f018857c22b, graph=mirofish_report_test
+[2026-11-06 21:05:33] INFO [mirofish.simx] 创建模拟: sim_93c71f22f3e3, project=proj_7f018857c22b, graph=mirofish_report_test
+[2026-11-06 21:05:36] INFO [mirofish.simx] 创建模拟: sim_470df0573467, project=proj_4fed3f4693f6, graph=mirofish_report_test
+[2026-11-06 21:05:36] INFO [mirofish.simx] 创建模拟: sim_c85f9ef25e4f, project=proj_d656b2b45e6a, graph=mirofish_report_test
+[2026-11-06 21:05:37] INFO [mirofish.simx] 创建模拟: sim_e5819c264a72, project=proj_282b09b5e76d, graph=mirofish_report_test
+[2026-11-06 21:05:38] INFO [mirofish.simx] 创建模拟: sim_216eb3d45cc0, project=proj_cd69471c668c, graph=mirofish_test_sim
+[2026-11-06 21:05:38] INFO [mirofish.simx] [1/4] 生成时间配置...
+[2026-11-06 21:05:38] WARNING [mirofish.simx] agents_per_hour_max (6) 超过总Agent数 (2)，已修正
+[2026-11-06 21:05:38] INFO [mirofish.simx] [2/4] 生成事件配置和热点话题...
+[2026-11-06 21:05:38] INFO [mirofish.simx] [3/4] 生成Agent配置 (1-2/2)...
+[2026-11-06 21:05:38] INFO [mirofish.simx] 初始帖子分配: poster_type='person' -> agent_id=0
+[2026-11-06 21:05:38] INFO [mirofish.simx] [4/4] 生成平台配置...
+[2026-11-06 21:05:38] INFO [mirofish.simx] 模拟配置生成完成: 2 个Agent配置
+[2026-11-06 21:05:38] INFO [mirofish.simx] 模拟准备完成: sim_216eb3d45cc0, entities=2, profiles=2
+[2026-11-06 21:05:55] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 21:05:55] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 21:05:55] INFO [mirofish.local_graph] Batch batch_07: sub-lote 1 listo (2/2 episodios)
+[2026-11-06 21:05:59] INFO [mirofish.simx] 创建模拟: sim_5563c5d5e285, project=proj_49f253e17f55, graph=mirofish_report_test
+[2026-11-06 21:05:59] INFO [mirofish.simx] 创建模拟: sim_7e6f2245732f, project=proj_49f253e17f55, graph=mirofish_report_test
+[2026-11-06 21:06:00] INFO [mirofish.simx] 创建模拟: sim_1faa412ffcc9, project=proj_0d6f4fbec555, graph=mirofish_report_test
+[2026-11-06 21:06:00] INFO [mirofish.simx] 创建模拟: sim_5e86d3754871, project=proj_6a0d0bf9e491, graph=mirofish_report_test
+[2026-11-06 21:06:01] INFO [mirofish.simx] 创建模拟: sim_534da7b7c12e, project=proj_43f7f8f61084, graph=mirofish_report_test
+[2026-11-06 21:06:02] INFO [mirofish.simx] 创建模拟: sim_5eddac6fc58f, project=proj_bae8c080a346, graph=mirofish_test_sim
+[2026-11-06 21:06:03] INFO [mirofish.simx] [1/4] 生成时间配置...
+[2026-11-06 21:06:03] WARNING [mirofish.simx] agents_per_hour_max (6) 超过总Agent数 (2)，已修正
+[2026-11-06 21:06:03] INFO [mirofish.simx] [2/4] 生成事件配置和热点话题...
+[2026-11-06 21:06:03] INFO [mirofish.simx] [3/4] 生成Agent配置 (1-2/2)...
+[2026-11-06 21:06:03] INFO [mirofish.simx] 初始帖子分配: poster_type='person' -> agent_id=0
+[2026-11-06 21:06:03] INFO [mirofish.simx] [4/4] 生成平台配置...
+[2026-11-06 21:06:03] INFO [mirofish.simx] 模拟配置生成完成: 2 个Agent配置
+[2026-11-06 21:06:03] INFO [mirofish.simx] 模拟准备完成: sim_5eddac6fc58f, entities=2, profiles=2
+[2026-11-06 21:06:17] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 21:06:17] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 21:06:17] INFO [mirofish.local_graph] Batch batch_f4: sub-lote 1 listo (2/2 episodios)
+[2026-11-06 21:06:22] INFO [mirofish.simx] 创建模拟: sim_cec411c03a86, project=proj_039c8ff576f2, graph=mirofish_report_test
+[2026-11-06 21:06:22] INFO [mirofish.simx] 创建模拟: sim_d990f028d5e2, project=proj_039c8ff576f2, graph=mirofish_report_test
+[2026-11-06 21:06:23] INFO [mirofish.simx] 创建模拟: sim_295face56d36, project=proj_5a1b3269c3cc, graph=mirofish_report_test
+[2026-11-06 21:06:24] INFO [mirofish.simx] 创建模拟: sim_2eb01a8c65c4, project=proj_c0e7d479480d, graph=mirofish_report_test
+[2026-11-06 21:06:25] INFO [mirofish.simx] 创建模拟: sim_75c1488438ef, project=proj_c7fa72f2da5d, graph=mirofish_report_test
+[2026-11-06 21:06:27] INFO [mirofish.simx] 创建模拟: sim_2d89169ea985, project=proj_6ef52010f383, graph=mirofish_test_sim
+[2026-11-06 21:06:27] INFO [mirofish.simx] [1/4] 生成时间配置...
+[2026-11-06 21:06:27] WARNING [mirofish.simx] agents_per_hour_max (6) 超过总Agent数 (2)，已修正
+[2026-11-06 21:06:27] INFO [mirofish.simx] [2/4] 生成事件配置和热点话题...
+[2026-11-06 21:06:27] INFO [mirofish.simx] [3/4] 生成Agent配置 (1-2/2)...
+[2026-11-06 21:06:27] INFO [mirofish.simx] 初始帖子分配: poster_type='person' -> agent_id=0
+[2026-11-06 21:06:27] INFO [mirofish.simx] [4/4] 生成平台配置...
+[2026-11-06 21:06:27] INFO [mirofish.simx] 模拟配置生成完成: 2 个Agent配置
+[2026-11-06 21:06:27] INFO [mirofish.simx] 模拟准备完成: sim_2d89169ea985, entities=2, profiles=2
+[2026-11-06 21:06:38] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 21:06:38] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 21:06:38] INFO [mirofish.local_graph] Batch batch_30: sub-lote 1 listo (2/2 episodios)
+[2026-11-06 21:06:43] INFO [mirofish.simx] 创建模拟: sim_70f00a49ef85, project=proj_b4d87cc3dd80, graph=mirofish_report_test
+[2026-11-06 21:06:43] INFO [mirofish.simx] 创建模拟: sim_7089d27bb9d4, project=proj_b4d87cc3dd80, graph=mirofish_report_test
+[2026-11-06 21:06:45] INFO [mirofish.simx] 创建模拟: sim_98c3badd77a3, project=proj_d52ceb8c0681, graph=mirofish_report_test
+[2026-11-06 21:06:46] INFO [mirofish.simx] 创建模拟: sim_9e08ba8f9c5e, project=proj_2697853ad073, graph=mirofish_report_test
+[2026-11-06 21:06:46] INFO [mirofish.simx] 创建模拟: sim_3fd14b48be49, project=proj_65163acb35ec, graph=mirofish_report_test
+[2026-11-06 21:06:48] INFO [mirofish.simx] 创建模拟: sim_11482d56a9c1, project=proj_73a452afc4c8, graph=mirofish_test_sim
+[2026-11-06 21:06:48] INFO [mirofish.simx] [1/4] 生成时间配置...
+[2026-11-06 21:06:48] WARNING [mirofish.simx] agents_per_hour_max (6) 超过总Agent数 (2)，已修正
+[2026-11-06 21:06:48] INFO [mirofish.simx] [2/4] 生成事件配置和热点话题...
+[2026-11-06 21:06:48] INFO [mirofish.simx] [3/4] 生成Agent配置 (1-2/2)...
+[2026-11-06 21:06:48] INFO [mirofish.simx] 初始帖子分配: poster_type='person' -> agent_id=0
+[2026-11-06 21:06:48] INFO [mirofish.simx] [4/4] 生成平台配置...
+[2026-11-06 21:06:48] INFO [mirofish.simx] 模拟配置生成完成: 2 个Agent配置
+[2026-11-06 21:06:48] INFO [mirofish.simx] 模拟准备完成: sim_11482d56a9c1, entities=2, profiles=2
+[2026-11-06 21:07:42] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 21:07:42] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 21:07:42] INFO [mirofish.local_graph] Batch batch_41: sub-lote 1 listo (2/2 episodios)
+[2026-11-06 21:07:46] INFO [mirofish.simx] 创建模拟: sim_b89e9ce7f2b1, project=proj_0d5ca2970e44, graph=mirofish_report_test
+[2026-11-06 21:07:46] INFO [mirofish.simx] 创建模拟: sim_8d6ec6852d1a, project=proj_0d5ca2970e44, graph=mirofish_report_test
+[2026-11-06 21:07:47] INFO [mirofish.simx] 创建模拟: sim_b869daedc8af, project=proj_f00dfb934e29, graph=mirofish_report_test
+[2026-11-06 21:07:47] INFO [mirofish.simx] 创建模拟: sim_ba7881806e4a, project=proj_6ee65f1c8fb1, graph=mirofish_report_test
+[2026-11-06 21:07:48] INFO [mirofish.simx] 创建模拟: sim_c2930f290be5, project=proj_fb2ae9093524, graph=mirofish_report_test
+[2026-11-06 21:07:50] INFO [mirofish.simx] 创建模拟: sim_c1764fd68b39, project=proj_35d93f2f868d, graph=mirofish_test_sim
+[2026-11-06 21:07:50] INFO [mirofish.simx] [1/4] 生成时间配置...
+[2026-11-06 21:07:50] WARNING [mirofish.simx] agents_per_hour_max (6) 超过总Agent数 (2)，已修正
+[2026-11-06 21:07:50] INFO [mirofish.simx] [2/4] 生成事件配置和热点话题...
+[2026-11-06 21:07:50] INFO [mirofish.simx] [3/4] 生成Agent配置 (1-2/2)...
+[2026-11-06 21:07:50] INFO [mirofish.simx] 初始帖子分配: poster_type='person' -> agent_id=0
+[2026-11-06 21:07:50] INFO [mirofish.simx] [4/4] 生成平台配置...
+[2026-11-06 21:07:50] INFO [mirofish.simx] 模拟配置生成完成: 2 个Agent配置
+[2026-11-06 21:07:50] INFO [mirofish.simx] 模拟准备完成: sim_c1764fd68b39, entities=2, profiles=2
+[2026-11-06 21:08:01] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 21:08:01] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 21:08:01] INFO [mirofish.local_graph] Batch batch_e2: sub-lote 1 listo (2/2 episodios)
+[2026-11-06 21:08:06] INFO [mirofish.simx] 创建模拟: sim_8b938623a3ed, project=proj_b6b76daeeecf, graph=mirofish_report_test
+[2026-11-06 21:08:06] INFO [mirofish.simx] 创建模拟: sim_474256a3ff0a, project=proj_b6b76daeeecf, graph=mirofish_report_test
+[2026-11-06 21:08:07] INFO [mirofish.simx] 创建模拟: sim_9a92de8f2a64, project=proj_4b5a4c5bd90c, graph=mirofish_report_test
+[2026-11-06 21:08:09] INFO [mirofish.simx] 创建模拟: sim_250d197d7ebf, project=proj_8c765d905bba, graph=mirofish_report_test
+[2026-11-06 21:08:10] INFO [mirofish.simx] 创建模拟: sim_26d1922f6362, project=proj_64c26dede5ed, graph=mirofish_report_test
+[2026-11-06 21:08:13] INFO [mirofish.simx] 创建模拟: sim_e13064a93169, project=proj_83c31beceb42, graph=mirofish_test_sim
+[2026-11-06 21:08:13] INFO [mirofish.simx] [1/4] 生成时间配置...
+[2026-11-06 21:08:13] WARNING [mirofish.simx] agents_per_hour_max (6) 超过总Agent数 (2)，已修正
+[2026-11-06 21:08:13] INFO [mirofish.simx] [2/4] 生成事件配置和热点话题...
+[2026-11-06 21:08:13] INFO [mirofish.simx] [3/4] 生成Agent配置 (1-2/2)...
+[2026-11-06 21:08:13] INFO [mirofish.simx] 初始帖子分配: poster_type='person' -> agent_id=0
+[2026-11-06 21:08:13] INFO [mirofish.simx] [4/4] 生成平台配置...
+[2026-11-06 21:08:13] INFO [mirofish.simx] 模拟配置生成完成: 2 个Agent配置
+[2026-11-06 21:08:13] INFO [mirofish.simx] 模拟准备完成: sim_e13064a93169, entities=2, profiles=2
+[2026-11-06 21:09:58] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 21:09:58] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 21:09:58] INFO [mirofish.local_graph] Batch batch_86: sub-lote 1 listo (2/2 episodios)
+[2026-11-06 21:10:05] INFO [mirofish.simx] 创建模拟: sim_f5d27532673b, project=proj_b9e942ee2323, graph=mirofish_report_test
+[2026-11-06 21:10:05] INFO [mirofish.simx] 创建模拟: sim_59a558007f31, project=proj_b9e942ee2323, graph=mirofish_report_test
+[2026-11-06 21:10:08] INFO [mirofish.simx] 创建模拟: sim_2300550c2428, project=proj_44a24c08a575, graph=mirofish_report_test
+[2026-11-06 21:10:13] INFO [mirofish.simx] 创建模拟: sim_4cdab87c6552, project=proj_ba088dacb757, graph=mirofish_report_test
+[2026-11-06 21:10:15] INFO [mirofish.simx] 创建模拟: sim_8632804b28a8, project=proj_5eb1d2d9efeb, graph=mirofish_report_test
+[2026-11-06 21:10:22] INFO [mirofish.simx] 创建模拟: sim_f11cdc97f060, project=proj_2ff403e76c36, graph=mirofish_test_sim
+[2026-11-06 21:10:22] INFO [mirofish.simx] [1/4] 生成时间配置...
+[2026-11-06 21:10:22] WARNING [mirofish.simx] agents_per_hour_max (6) 超过总Agent数 (2)，已修正
+[2026-11-06 21:10:22] INFO [mirofish.simx] [2/4] 生成事件配置和热点话题...
+[2026-11-06 21:10:22] INFO [mirofish.simx] [3/4] 生成Agent配置 (1-2/2)...
+[2026-11-06 21:10:22] INFO [mirofish.simx] 初始帖子分配: poster_type='person' -> agent_id=0
+[2026-11-06 21:10:22] INFO [mirofish.simx] [4/4] 生成平台配置...
+[2026-11-06 21:10:22] INFO [mirofish.simx] 模拟配置生成完成: 2 个Agent配置
+[2026-11-06 21:10:22] INFO [mirofish.simx] 模拟准备完成: sim_f11cdc97f060, entities=2, profiles=2
+[2026-11-06 21:28:19] INFO [mirofish.simx] 创建模拟: sim_e18b0f7d88d7, project=proj_0ef5c7abdac3, graph=mirofish_test_sim
+[2026-11-06 21:28:19] INFO [mirofish.simx] [1/4] 生成时间配置...
+[2026-11-06 21:28:19] WARNING [mirofish.simx] agents_per_hour_max (6) 超过总Agent数 (2)，已修正
+[2026-11-06 21:28:19] INFO [mirofish.simx] [2/4] 生成事件配置和热点话题...
+[2026-11-06 21:28:19] INFO [mirofish.simx] [3/4] 生成Agent配置 (1-2/2)...
+[2026-11-06 21:28:19] INFO [mirofish.simx] 初始帖子分配: poster_type='person' -> agent_id=0
+[2026-11-06 21:28:19] INFO [mirofish.simx] [4/4] 生成平台配置...
+[2026-11-06 21:28:19] INFO [mirofish.simx] 模拟配置生成完成: 2 个Agent配置
+[2026-11-06 21:28:19] INFO [mirofish.simx] 模拟准备完成: sim_e18b0f7d88d7, entities=2, profiles=2
+[2026-11-06 21:28:34] INFO [mirofish.simx] 创建模拟: sim_e7740292e5c9, project=proj_dfaae175adc1, graph=mirofish_test_sim
+[2026-11-06 21:28:34] INFO [mirofish.simx] [1/4] 生成时间配置...
+[2026-11-06 21:28:34] WARNING [mirofish.simx] agents_per_hour_max (6) 超过总Agent数 (2)，已修正
+[2026-11-06 21:28:34] INFO [mirofish.simx] [2/4] 生成事件配置和热点话题...
+[2026-11-06 21:28:34] INFO [mirofish.simx] [3/4] 生成Agent配置 (1-2/2)...
+[2026-11-06 21:28:34] INFO [mirofish.simx] 初始帖子分配: poster_type='person' -> agent_id=0
+[2026-11-06 21:28:34] INFO [mirofish.simx] [4/4] 生成平台配置...
+[2026-11-06 21:28:34] INFO [mirofish.simx] 模拟配置生成完成: 2 个Agent配置
+[2026-11-06 21:28:34] INFO [mirofish.simx] 模拟准备完成: sim_e7740292e5c9, entities=2, profiles=2
+[2026-11-06 21:29:10] INFO [mirofish.simx] 创建模拟: sim_f514ea688167, project=proj_817fa0331457, graph=mirofish_test_sim
+[2026-11-06 21:29:10] INFO [mirofish.simx] [1/4] 生成时间配置...
+[2026-11-06 21:29:10] WARNING [mirofish.simx] agents_per_hour_max (6) 超过总Agent数 (2)，已修正
+[2026-11-06 21:29:10] INFO [mirofish.simx] [2/4] 生成事件配置和热点话题...
+[2026-11-06 21:29:10] INFO [mirofish.simx] [3/4] 生成Agent配置 (1-2/2)...
+[2026-11-06 21:29:10] INFO [mirofish.simx] 初始帖子分配: poster_type='person' -> agent_id=0
+[2026-11-06 21:29:10] INFO [mirofish.simx] [4/4] 生成平台配置...
+[2026-11-06 21:29:10] INFO [mirofish.simx] 模拟配置生成完成: 2 个Agent配置
+[2026-11-06 21:29:10] INFO [mirofish.simx] 模拟准备完成: sim_f514ea688167, entities=2, profiles=2
+[2026-11-06 21:29:23] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 21:29:23] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 21:29:23] INFO [mirofish.local_graph] Batch batch_9c: sub-lote 1 listo (2/2 episodios)
+[2026-11-06 21:29:30] INFO [mirofish.simx] 创建模拟: sim_1c69debdd909, project=proj_0bd83a1677af, graph=mirofish_report_test
+[2026-11-06 21:29:30] INFO [mirofish.simx] 创建模拟: sim_ef2f3c5c0042, project=proj_0bd83a1677af, graph=mirofish_report_test
+[2026-11-06 21:29:34] INFO [mirofish.simx] 创建模拟: sim_0bbca65c6f6c, project=proj_a7d771bbbcc3, graph=mirofish_report_test
+[2026-11-06 21:29:36] INFO [mirofish.simx] 创建模拟: sim_eef0aaacc026, project=proj_806dddfeed1a, graph=mirofish_report_test
+[2026-11-06 21:29:37] INFO [mirofish.simx] 创建模拟: sim_df4f4ae65775, project=proj_d905044c7c24, graph=mirofish_report_test
+[2026-11-06 21:29:40] INFO [mirofish.simx] 创建模拟: sim_322622782e2a, project=proj_61b979c47e6e, graph=mirofish_test_sim
+[2026-11-06 21:29:40] INFO [mirofish.simx] [1/4] 生成时间配置...
+[2026-11-06 21:29:40] WARNING [mirofish.simx] agents_per_hour_max (6) 超过总Agent数 (2)，已修正
+[2026-11-06 21:29:40] INFO [mirofish.simx] [2/4] 生成事件配置和热点话题...
+[2026-11-06 21:29:40] INFO [mirofish.simx] [3/4] 生成Agent配置 (1-2/2)...
+[2026-11-06 21:29:40] INFO [mirofish.simx] 初始帖子分配: poster_type='person' -> agent_id=0
+[2026-11-06 21:29:40] INFO [mirofish.simx] [4/4] 生成平台配置...
+[2026-11-06 21:29:40] INFO [mirofish.simx] 模拟配置生成完成: 2 个Agent配置
+[2026-11-06 21:29:40] INFO [mirofish.simx] 模拟准备完成: sim_322622782e2a, entities=2, profiles=2
+[2026-11-06 21:29:59] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 21:29:59] WARNING [mirofish.local_graph] LLM extraction failed: no llm in tests
+[2026-11-06 21:29:59] INFO [mirofish.local_graph] Batch batch_08: sub-lote 1 listo (2/2 episodios)
+[2026-11-06 21:30:05] INFO [mirofish.simx] 创建模拟: sim_44fed73bb1c7, project=proj_c8b6b444143c, graph=mirofish_report_test
+[2026-11-06 21:30:05] INFO [mirofish.simx] 创建模拟: sim_f4692e501334, project=proj_c8b6b444143c, graph=mirofish_report_test
+[2026-11-06 21:30:06] INFO [mirofish.simx] 创建模拟: sim_823a5e702b15, project=proj_c8d45342e1ef, graph=mirofish_report_test
+[2026-11-06 21:30:07] INFO [mirofish.simx] 创建模拟: sim_70afba59d695, project=proj_e046969fb90e, graph=mirofish_report_test
+[2026-11-06 21:30:08] INFO [mirofish.simx] 创建模拟: sim_9703843e2a74, project=proj_b434b0d72c67, graph=mirofish_report_test
+[2026-11-06 21:30:13] INFO [mirofish.simx] 创建模拟: sim_5af291971496, project=proj_feed5e6ef6af, graph=mirofish_test_sim
+[2026-11-06 21:30:13] INFO [mirofish.simx] [1/4] 生成时间配置...
+[2026-11-06 21:30:13] WARNING [mirofish.simx] agents_per_hour_max (6) 超过总Agent数 (2)，已修正
+[2026-11-06 21:30:13] INFO [mirofish.simx] [2/4] 生成事件配置和热点话题...
+[2026-11-06 21:30:13] INFO [mirofish.simx] [3/4] 生成Agent配置 (1-2/2)...
+[2026-11-06 21:30:13] INFO [mirofish.simx] 初始帖子分配: poster_type='person' -> agent_id=0
+[2026-11-06 21:30:13] INFO [mirofish.simx] [4/4] 生成平台配置...
+[2026-11-06 21:30:13] INFO [mirofish.simx] 模拟配置生成完成: 2 个Agent配置
+[2026-11-06 21:30:13] INFO [mirofish.simx] 模拟准备完成: sim_5af291971496, entities=2, profiles=2

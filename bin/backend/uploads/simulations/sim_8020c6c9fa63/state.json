@@ -1,0 +1,33 @@
+{
+  "config_generated": true,
+  "config_reasoning": "时间配置: 目标群体为拉美汽车配件买家（以阿根廷/墨西哥时区UTC-3为参照），包含个体车主、修车技师和小型汽修店。该类人群作息特征：晚间19-22点为高峰（下班后浏览MercadoLibre比价、刷社交媒体、在车主群讨论）；工作时段10-18点中等活跃（技师在工作间隙查看配件价格、回复客户询价）；早晨7-9点渐活跃（通勤时段刷手机看消息）；凌晨0-6点几乎无活动。72小时模拟周期足以覆盖价格调整后MercadoLibre评价、Reddit/论坛讨论、WhatsApp群聊传播及竞争对手反应的完整周期。峰值时段agent上限较高（40+），因价格敏感话题易引发集中讨论；低谷时段保持少量agent（6）以模拟深夜偶发的国际买家或夜班技师活跃。 | 事件配置: La simulación se centra en medir la reacción de la clientela ante una suba del 15% en el catálogo de autopartes. El Post 1 es el anuncio oficial publicado por el dueño del negocio (BusinessOwner), y el Post 2 es el FAQ aclaratorio publicado desde la cuenta del catálogo (Organization). Los topics clave giran en torno al precio, la competencia y las posibles compensaciones. La dirección narrativa anticipa un rechazo inicial con riesgo de migración a competidores, moderado por la respuesta del negocio y la aparición de alternativas como envío gratis. | Agent配置: 成功生成 75 个 | 初始帖子分配: 2 个帖子已分配发布者",
+  "created_at": "2026-11-06T22:30:48.882725",
+  "current_round": 22,
+  "enable_reddit": true,
+  "enable_twitter": true,
+  "entities_count": 75,
+  "entity_types": [
+    "MarketingAgency",
+    "PoliticalCampaign",
+    "Ngo",
+    "Customer",
+    "Organization",
+    "ProductTeam",
+    "MediaOutlet",
+    "Person",
+    "Product",
+    "Competitor",
+    "BusinessOwner"
+  ],
+  "error": null,
+  "graph_id": "mirofish_5cbb55b03eea8f14",
+  "profiles_count": 75,
+  "profiles_generated": true,
+  "project_id": "proj_85f1c1d0cbe3",
+  "reddit_status": "not_started",
+  "simulation_id": "sim_8020c6c9fa63",
+  "status": "running",
+  "twitter_status": "running",
+  "updated_at": "2026-11-06T23:34:31.206354",
+  "user_id": null
+}

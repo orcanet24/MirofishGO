@@ -1,0 +1,608 @@
+{
+  "project_id": "proj_85f1c1d0cbe3",
+  "name": "Unnamed Project",
+  "status": "graph_completed",
+  "created_at": "2026-11-06T22:16:05.754420",
+  "updated_at": "2026-11-06T22:23:12.911604",
+  "files": [
+    {
+      "filename": "01_semilla_de_realidad_PLANTILLA.md",
+      "size": 1192
+    },
+    {
+      "filename": "02_prompt_de_simulacion_PLANTILLA.md",
+      "size": 1278
+    },
+    {
+      "filename": "PROSPECTO_MIRRORFISH_COMO_SERVICIO.md",
+      "size": 11255
+    }
+  ],
+  "total_text_length": 13510,
+  "ontology": {
+    "entity_types": [
+      {
+        "attributes": [
+          {
+            "description": "Name of the business or brand.",
+            "name": "business_name",
+            "type": "text"
+          },
+          {
+            "description": "Industry or sector the business operates in.",
+            "name": "industry_sector",
+            "type": "text"
+          },
+          {
+            "description": "Size of the business (e.g., micro, small, medium, large).",
+            "name": "business_size",
+            "type": "text"
+          }
+        ],
+        "description": "Business owners or merchants (e.g., auto parts sellers, online store owners) who use MiroFish for...",
+        "examples": [
+          "Autopartes del Centro",
+          "TiendaOnline Argentina",
+          "MercadoLibre Seller XYZ"
+        ],
+        "name": "BusinessOwner"
+      },
+      {
+        "attributes": [
+          {
+            "description": "Segment or profile of the customer (e.g., budget-conscious, premium, loyal).",
+            "name": "customer_segment",
+            "type": "text"
+          },
+          {
+            "description": "How often the customer makes purchases.",
+            "name": "purchase_frequency",
+            "type": "text"
+          },
+          {
+            "description": "Level of loyalty to the brand or business.",
+            "name": "loyalty_level",
+            "type": "text"
+          }
+        ],
+        "description": "End consumers or clients whose opinions and behaviors are simulated in the social media world.",
+        "examples": [
+          "Cliente recurrente de autopartes",
+          "Comprador primerizo",
+          "Cliente premium"
+        ],
+        "name": "Customer"
+      },
+      {
+        "attributes": [
+          {
+            "description": "Name of the competing company.",
+            "name": "company_name",
+            "type": "text"
+          },
+          {
+            "description": "Estimated market share of the competitor.",
+            "name": "market_share",
+            "type": "text"
+          },
+          {
+            "description": "Pricing approach used by the competitor.",
+            "name": "pricing_strategy",
+            "type": "text"
+          }
+        ],
+        "description": "Competing businesses or brands in the same market that may react to pricing changes or campaigns.",
+        "examples": [
+          "Autopartes Competidora S.A.",
+          "Tienda Rival Online",
+          "Importador Directo"
+        ],
+        "name": "Competitor"
+      },
+      {
+        "attributes": [
+          {
+            "description": "Name of the marketing agency.",
+            "name": "agency_name",
+            "type": "text"
+          },
+          {
+            "description": "Area of specialization (e.g., digital, social media, brand strategy).",
+            "name": "specialization",
+            "type": "text"
+          },
+          {
+            "description": "Number or scale of clients served.",
+            "name": "client_portfolio_size",
+            "type": "text"
+          }
+        ],
+        "description": "Marketing or advertising agencies that use MiroFish to validate campaigns for their clients.",
+        "examples": [
+          "Agencia Creativa Digital",
+          "Consultora de Marketing PYME",
+          "Studio Publicitario"
+        ],
+        "name": "MarketingAgency"
+      },
+      {
+        "attributes": [
+          {
+            "description": "Name of the NGO or organization.",
+            "name": "org_name",
+            "type": "text"
+          },
+          {
+            "description": "Primary cause or focus area (e.g., environment, human rights).",
+            "name": "cause_focus",
+            "type": "text"
+          },
+          {
+            "description": "Geographic scope of influence.",
+            "name": "geographic_reach",
+            "type": "text"
+          }
+        ],
+        "description": "Non-governmental organizations or advocacy groups that simulate public reactions to awareness cam...",
+        "examples": [
+          "Greenpeace Argentina",
+          "Fundación Ambiente y Desarrollo",
+          "ONG de Derechos Humanos"
+        ],
+        "name": "Ngo"
+      },
+      {
+        "attributes": [
+          {
+            "description": "Name of the political campaign or candidate.",
+            "name": "campaign_name",
+            "type": "text"
+          },
+          {
+            "description": "Full name of the candidate or main figure.",
+            "name": "candidate_full_name",
+            "type": "text"
+          },
+          {
+            "description": "Political party or movement affiliation.",
+            "name": "party_affiliation",
+            "type": "text"
+          }
+        ],
+        "description": "Political campaigns or teams that simulate public reception of messages, speeches, or fundraising...",
+        "examples": [
+          "Campaña Presidencial 2026",
+          "Movimiento Cívico Local",
+          "Candidatura a Alcaldía"
+        ],
+        "name": "PoliticalCampaign"
+      },
+      {
+        "attributes": [
+          {
+            "description": "Name of the product team or startup.",
+            "name": "team_name",
+            "type": "text"
+          },
+          {
+            "description": "Current stage of the product (e.g., MVP, growth, maturity).",
+            "name": "product_stage",
+            "type": "text"
+          },
+          {
+            "description": "Parent company or startup name.",
+            "name": "company_name",
+            "type": "text"
+          }
+        ],
+        "description": "Startup or corporate product teams that validate pivots, launches, or feature changes before mark...",
+        "examples": [
+          "Equipo Producto TechStartup",
+          "Innovación Corp S.A.",
+          "Lab de Nuevos Productos"
+        ],
+        "name": "ProductTeam"
+      },
+      {
+        "attributes": [
+          {
+            "description": "Name of the media outlet or channel.",
+            "name": "outlet_name",
+            "type": "text"
+          },
+          {
+            "description": "Type of media (e.g., newspaper, TV, blog, podcast).",
+            "name": "media_type",
+            "type": "text"
+          },
+          {
+            "description": "Estimated size of the audience or readership.",
+            "name": "audience_size",
+            "type": "text"
+          }
+        ],
+        "description": "Media outlets, journalists, or influencers who report on or comment on business decisions and pub...",
+        "examples": [
+          "Diario Económico",
+          "Blog de Autopartes",
+          "Influencer de Tecnología"
+        ],
+        "name": "MediaOutlet"
+      },
+      {
+        "attributes": [
+          {
+            "description": "Full name of the person.",
+            "name": "full_name",
+            "type": "text"
+          },
+          {
+            "description": "Professional role or title.",
+            "name": "role_title",
+            "type": "text"
+          },
+          {
+            "description": "Geographic location or region.",
+            "name": "location",
+            "type": "text"
+          }
+        ],
+        "description": "Fallback type for any natural person not fitting the more specific person-related categories.",
+        "examples": [
+          "Juan Pérez (experto en logística)",
+          "María González (influencer)",
+          "Carlos Rodríguez (analista)"
+        ],
+        "name": "Person"
+      },
+      {
+        "attributes": [
+          {
+            "description": "Name of the organization.",
+            "name": "org_name",
+            "type": "text"
+          },
+          {
+            "description": "Type of organization (e.g., association, foundation, cooperative).",
+            "name": "org_type",
+            "type": "text"
+          },
+          {
+            "description": "Sector or industry the organization belongs to.",
+            "name": "sector",
+            "type": "text"
+          }
+        ],
+        "description": "Fallback type for any organization not fitting the more specific organizational categories.",
+        "examples": [
+          "Cámara de Comercio Local",
+          "Asociación de Consumidores",
+          "Cooperativa de Transporte"
+        ],
+        "name": "Organization"
+      }
+    ],
+    "edge_types": [
+      {
+        "attributes": [
+          {
+            "description": "Additional details about this ontology type.",
+            "name": "details",
+            "type": "text"
+          }
+        ],
+        "description": "A person or entity is employed by or works for another entity.",
+        "name": "WORKS_FOR",
+        "source_targets": [
+          {
+            "source": "Person",
+            "target": "BusinessOwner"
+          },
+          {
+            "source": "Person",
+            "target": "MarketingAgency"
+          },
+          {
+            "source": "Person",
+            "target": "Ngo"
+          },
+          {
+            "source": "Person",
+            "target": "PoliticalCampaign"
+          },
+          {
+            "source": "Person",
+            "target": "ProductTeam"
+          },
+          {
+            "source": "Person",
+            "target": "Organization"
+          },
+          {
+            "source": "Person",
+            "target": "MediaOutlet"
+          }
+        ]
+      },
+      {
+        "attributes": [
+          {
+            "description": "Additional details about this ontology type.",
+            "name": "details",
+            "type": "text"
+          }
+        ],
+        "description": "A customer buys products or services from a business.",
+        "name": "PURCHASES_FROM",
+        "source_targets": [
+          {
+            "source": "Customer",
+            "target": "BusinessOwner"
+          },
+          {
+            "source": "Customer",
+            "target": "Competitor"
+          }
+        ]
+      },
+      {
+        "attributes": [
+          {
+            "description": "Additional details about this ontology type.",
+            "name": "details",
+            "type": "text"
+          }
+        ],
+        "description": "Two businesses or entities compete in the same market.",
+        "name": "COMPETES_WITH",
+        "source_targets": [
+          {
+            "source": "BusinessOwner",
+            "target": "Competitor"
+          },
+          {
+            "source": "Competitor",
+            "target": "BusinessOwner"
+          },
+          {
+            "source": "BusinessOwner",
+            "target": "BusinessOwner"
+          }
+        ]
+      },
+      {
+        "attributes": [
+          {
+            "description": "Additional details about this ontology type.",
+            "name": "details",
+            "type": "text"
+          }
+        ],
+        "description": "An entity or person acts as a representative or spokesperson for another entity.",
+        "name": "REPRESENTS",
+        "source_targets": [
+          {
+            "source": "Person",
+            "target": "BusinessOwner"
+          },
+          {
+            "source": "Person",
+            "target": "PoliticalCampaign"
+          },
+          {
+            "source": "Person",
+            "target": "Ngo"
+          },
+          {
+            "source": "MarketingAgency",
+            "target": "BusinessOwner"
+          }
+        ]
+      },
+      {
+        "attributes": [
+          {
+            "description": "Additional details about this ontology type.",
+            "name": "details",
+            "type": "text"
+          }
+        ],
+        "description": "A media outlet or journalist reports on or covers another entity or event.",
+        "name": "REPORTS_ON",
+        "source_targets": [
+          {
+            "source": "MediaOutlet",
+            "target": "BusinessOwner"
+          },
+          {
+            "source": "MediaOutlet",
+            "target": "Competitor"
+          },
+          {
+            "source": "MediaOutlet",
+            "target": "PoliticalCampaign"
+          },
+          {
+            "source": "MediaOutlet",
+            "target": "Ngo"
+          },
+          {
+            "source": "MediaOutlet",
+            "target": "ProductTeam"
+          },
+          {
+            "source": "MediaOutlet",
+            "target": "Organization"
+          }
+        ]
+      },
+      {
+        "attributes": [
+          {
+            "description": "Additional details about this ontology type.",
+            "name": "details",
+            "type": "text"
+          }
+        ],
+        "description": "A business or campaign targets a specific customer segment or audience.",
+        "name": "TARGETS",
+        "source_targets": [
+          {
+            "source": "BusinessOwner",
+            "target": "Customer"
+          },
+          {
+            "source": "MarketingAgency",
+            "target": "Customer"
+          },
+          {
+            "source": "PoliticalCampaign",
+            "target": "Customer"
+          },
+          {
+            "source": "ProductTeam",
+            "target": "Customer"
+          }
+        ]
+      },
+      {
+        "attributes": [
+          {
+            "description": "Additional details about this ontology type.",
+            "name": "details",
+            "type": "text"
+          }
+        ],
+        "description": "Entities interact on social media through likes, shares, comments, or mentions.",
+        "name": "ENGAGES_WITH",
+        "source_targets": [
+          {
+            "source": "Customer",
+            "target": "BusinessOwner"
+          },
+          {
+            "source": "Customer",
+            "target": "Competitor"
+          },
+          {
+            "source": "MediaOutlet",
+            "target": "Customer"
+          },
+          {
+            "source": "BusinessOwner",
+            "target": "Customer"
+          },
+          {
+            "source": "Person",
+            "target": "Person"
+          }
+        ]
+      },
+      {
+        "attributes": [
+          {
+            "description": "Additional details about this ontology type.",
+            "name": "details",
+            "type": "text"
+          }
+        ],
+        "description": "An entity or person publicly opposes or criticizes another entity or decision.",
+        "name": "OPPOSES",
+        "source_targets": [
+          {
+            "source": "Customer",
+            "target": "BusinessOwner"
+          },
+          {
+            "source": "Competitor",
+            "target": "BusinessOwner"
+          },
+          {
+            "source": "Ngo",
+            "target": "BusinessOwner"
+          },
+          {
+            "source": "Person",
+            "target": "BusinessOwner"
+          },
+          {
+            "source": "Person",
+            "target": "Organization"
+          }
+        ]
+      },
+      {
+        "attributes": [
+          {
+            "description": "Additional details about this ontology type.",
+            "name": "details",
+            "type": "text"
+          }
+        ],
+        "description": "An entity or person publicly supports or endorses another entity or decision.",
+        "name": "SUPPORTS",
+        "source_targets": [
+          {
+            "source": "Customer",
+            "target": "BusinessOwner"
+          },
+          {
+            "source": "MediaOutlet",
+            "target": "BusinessOwner"
+          },
+          {
+            "source": "Person",
+            "target": "PoliticalCampaign"
+          },
+          {
+            "source": "Ngo",
+            "target": "PoliticalCampaign"
+          },
+          {
+            "source": "Person",
+            "target": "Organization"
+          }
+        ]
+      },
+      {
+        "attributes": [
+          {
+            "description": "Additional details about this ontology type.",
+            "name": "details",
+            "type": "text"
+          }
+        ],
+        "description": "MiroFish or a product team runs a simulation scenario involving a specific entity or decision.",
+        "name": "SIMULATES",
+        "source_targets": [
+          {
+            "source": "ProductTeam",
+            "target": "BusinessOwner"
+          },
+          {
+            "source": "ProductTeam",
+            "target": "Customer"
+          },
+          {
+            "source": "ProductTeam",
+            "target": "Competitor"
+          },
+          {
+            "source": "ProductTeam",
+            "target": "MarketingAgency"
+          }
+        ]
+      }
+    ]
+  },
+  "analysis_summary": "该文档是一个混合内容，包含两个主要部分：1) 一个关于汽车零部件涨价15%的社交媒体舆论模拟需求模板；2) 一份关于MiroFish产品作为第三方服务的定价策略分析。文档中涉及的主要实体包括：使用MiroFish服务的企业主（BusinessOwner）、被模拟的消费者（Customer）、竞争对手（Competitor）、营销机构（MarketingAgency）、非政府组织（NGO）、政治竞选团队（PoliticalCampaign）、产品团队（ProductTeam）以及媒体机构（MediaOutlet）。关系类型涵盖了社媒互动（ENGAGES_WITH）、商业竞争（COMPETES_WITH）、媒体报道（REPORTS_ON）、目标定位（TARGETS）、支持/反对（SUPPORTS/OPPOSES）等典型舆论传播路径。兜底类型Person和Organization用于处理不属于上述具体分类的个体或组织。",
+  "graph_id": "mirofish_5cbb55b03eea8f14",
+  "graph_build_task_id": "d1d14a32-4c0f-4353-9d42-633366988f3b",
+  "zep_batch_id": "batch_59fe50671d5c2800",
+  "zep_batch_operation_id": "212a3ed7873558388d559f26114cad9cea5083a65035b3bdeed891f47be57e6c",
+  "simulation_requirement": "## A) Pregunta central (1 sola frase)\r\nEjemplo: \"¿Cómo recibirá la clientela una suba del 15% en todas las autopartes del catálogo?\"\r\n\r\n(La tuya:) ________________________________________________\r\n\r\n## B) La decisión que vas a tomar con este resultado\r\nEjemplo: \"Subo el 15% directo, o subo gradual y compenso con envío gratis.\"\r\n\r\n(La tuya:) ________________________________________________\r\n\r\n## C) Configuración del mundo\r\n- Duración simulada: 24h / 48h / 72h\r\n- Plataformas: Twitter + Reddit (predeterminado)\r\n\r\n## D) Posts iniciales (evento disparador)\r\nPost 1 — el anuncio, tal cual lo publicarías:\r\n\u003e ________________________________________________\r\n\r\nPost 2 — FAQ / aclaración (opcional pero recomendado):\r\n\u003e ________________________________________________\r\n\r\n## E) (Opcional) Preguntas para interviews post-simulación\r\n- ¿Comprarías igual si...?\r\n- ¿Qué tendría que ofrecer para tolerar/aceptar este cambio?\r\n- ¿Qué harías si la competencia hace X?\r\n",
+  "chunk_size": 500,
+  "chunk_overlap": 50,
+  "user_id": null,
+  "error": null
+}
