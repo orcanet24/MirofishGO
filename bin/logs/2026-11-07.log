@@ -1225,3 +1225,107 @@
 [2026-11-07 13:41:26] INFO [mirofish] petición method=GET path=/api/simulation/sim_8020c6c9fa63/run-status/detail status=200 dur=33ms
 [2026-11-07 13:41:28] INFO [mirofish] señal de cierre recibida; apagando con gracia
 [2026-11-07 13:41:28] INFO [mirofish] servidor detenido
+[2026-11-07 13:46:39] INFO [mirofish] ====================================================
+[2026-11-07 13:46:39] INFO [mirofish] MiroFish Personal (binario Go) arrancando...
+[2026-11-07 13:46:39] INFO [mirofish] modo personal: acceso por ACCESS_KEY, sin cuentas de usuario
+[2026-11-07 13:46:39] INFO [mirofish] ====================================================
+[2026-11-07 13:46:39] INFO [mirofish] clave de acceso: activa (ACCESS_KEY configurada)
+[2026-11-07 13:46:39] INFO [mirofish] escuchando en http://0.0.0.0:5001 (health: /health, readiness: /ready)
+[2026-11-07 13:46:51] INFO [mirofish] petición method=GET path=/ status=200 dur=1ms
+[2026-11-07 13:46:51] INFO [mirofish] petición method=GET path=/assets/index-Ci_0Uf-F.css status=200 dur=2ms
+[2026-11-07 13:46:51] INFO [mirofish] petición method=GET path=/assets/index-hVv400Dy.js status=200 dur=23ms
+[2026-11-07 13:46:51] INFO [mirofish] petición method=GET path=/api/auth/me status=200 dur=0s
+[2026-11-07 13:46:51] INFO [mirofish] petición method=GET path=/api/auth/me status=200 dur=0s
+[2026-11-07 13:46:51] INFO [mirofish] petición method=GET path=/app status=200 dur=0s
+[2026-11-07 13:46:51] INFO [mirofish] petición method=GET path=/api/auth/me status=200 dur=0s
+[2026-11-07 13:46:51] INFO [mirofish] petición method=GET path=/api/auth/me status=200 dur=0s
+[2026-11-07 13:46:51] INFO [mirofish] petición method=GET path=/api/simulation/history status=200 dur=7ms
+[2026-11-07 13:48:30] INFO [mirofish] ====================================================
+[2026-11-07 13:48:30] INFO [mirofish] MiroFish Personal (binario Go) arrancando...
+[2026-11-07 13:48:30] INFO [mirofish] modo personal: acceso por ACCESS_KEY, sin cuentas de usuario
+[2026-11-07 13:48:30] INFO [mirofish] ====================================================
+[2026-11-07 13:48:30] INFO [mirofish] clave de acceso: activa (ACCESS_KEY configurada)
+[2026-11-07 13:48:31] INFO [mirofish] escuchando en http://0.0.0.0:5001 (health: /health, readiness: /ready)
+[2026-11-07 13:48:43] INFO [mirofish] petición method=GET path=/ status=200 dur=1ms
+[2026-11-07 13:48:43] INFO [mirofish] petición method=GET path=/assets/index-DlF-oCGi.js status=200 dur=8ms
+[2026-11-07 13:48:43] INFO [mirofish] petición method=GET path=/api/auth/me status=200 dur=1ms
+[2026-11-07 13:48:44] INFO [mirofish] petición method=GET path=/api/auth/me status=200 dur=0s
+[2026-11-07 13:48:44] INFO [mirofish] petición method=GET path=/app status=200 dur=8ms
+[2026-11-07 13:48:44] INFO [mirofish] petición method=GET path=/api/auth/me status=200 dur=0s
+[2026-11-07 13:48:44] INFO [mirofish] petición method=GET path=/api/auth/me status=200 dur=0s
+[2026-11-07 13:48:44] INFO [mirofish] petición method=GET path=/api/simulation/history status=200 dur=14ms
+[2026-11-07 13:48:53] INFO [mirofish] petición method=GET path=/ status=200 dur=0s
+[2026-11-07 13:48:53] INFO [mirofish] petición method=GET path=/assets/index-Ci_0Uf-F.css status=200 dur=1ms
+[2026-11-07 13:48:53] INFO [mirofish] petición method=GET path=/assets/index-DlF-oCGi.js status=200 dur=2ms
+[2026-11-07 13:48:53] INFO [mirofish] petición method=GET path=/api/auth/me status=200 dur=0s
+[2026-11-07 13:48:56] INFO [mirofish] petición method=GET path=/app status=200 dur=0s
+[2026-11-07 13:48:56] INFO [mirofish] petición method=GET path=/api/auth/me status=200 dur=0s
+[2026-11-07 13:49:10] INFO [mirofish] petición method=GET path=/api/auth/me status=200 dur=0s
+[2026-11-07 13:49:10] INFO [mirofish] petición method=GET path=/api/auth/me status=200 dur=0s
+[2026-11-07 13:49:10] INFO [mirofish] petición method=GET path=/api/auth/me status=200 dur=0s
+[2026-11-07 13:50:19] INFO [mirofish] ====================================================
+[2026-11-07 13:50:19] INFO [mirofish] MiroFish Personal (binario Go) arrancando...
+[2026-11-07 13:50:19] INFO [mirofish] modo personal: acceso por ACCESS_KEY, sin cuentas de usuario
+[2026-11-07 13:50:19] INFO [mirofish] ====================================================
+[2026-11-07 13:50:19] INFO [mirofish] clave de acceso: activa (ACCESS_KEY configurada)
+[2026-11-07 13:50:20] INFO [mirofish] escuchando en http://0.0.0.0:5001 (health: /health, readiness: /ready)
+[2026-11-07 13:50:22] INFO [mirofish] petición method=GET path=/api/auth/validate status=200 dur=0s
+[2026-11-07 13:50:33] INFO [mirofish] petición method=GET path=/login status=200 dur=2ms
+[2026-11-07 13:50:33] INFO [mirofish] petición method=GET path=/assets/index-CE2Pn3-M.js status=200 dur=11ms
+[2026-11-07 13:50:34] INFO [mirofish] petición method=GET path=/api/auth/me status=200 dur=0s
+[2026-11-07 13:50:55] INFO [mirofish] petición method=GET path=/api/auth/me status=200 dur=0s
+[2026-11-07 13:52:39] INFO [mirofish] ====================================================
+[2026-11-07 13:52:39] INFO [mirofish] MiroFish Personal (binario Go) arrancando...
+[2026-11-07 13:52:39] INFO [mirofish] modo personal: acceso por ACCESS_KEY, sin cuentas de usuario
+[2026-11-07 13:52:39] INFO [mirofish] ====================================================
+[2026-11-07 13:52:39] INFO [mirofish] clave de acceso: activa (ACCESS_KEY configurada)
+[2026-11-07 13:52:39] INFO [mirofish] escuchando en http://0.0.0.0:5001 (health: /health, readiness: /ready)
+[2026-11-07 13:52:55] INFO [mirofish] petición method=GET path=/login status=200 dur=0s
+[2026-11-07 13:52:55] INFO [mirofish] petición method=GET path=/assets/index-PS3DJDpP.css status=200 dur=2ms
+[2026-11-07 13:52:55] INFO [mirofish] petición method=GET path=/assets/index-DT39uSTo.js status=200 dur=6ms
+[2026-11-07 13:52:55] INFO [mirofish] petición method=GET path=/api/auth/me status=200 dur=0s
+[2026-11-07 13:52:58] INFO [mirofish] petición method=GET path=/api/auth/validate status=200 dur=0s
+[2026-11-07 13:52:58] INFO [mirofish] petición method=GET path=/api/simulation/history status=200 dur=13ms
+[2026-11-07 13:53:10] INFO [mirofish] petición method=GET path=/app status=200 dur=0s
+[2026-11-07 13:53:10] INFO [mirofish] petición method=GET path=/api/auth/me status=200 dur=0s
+[2026-11-07 13:53:10] INFO [mirofish] petición method=GET path=/api/auth/validate status=200 dur=0s
+[2026-11-07 13:53:10] INFO [mirofish] petición method=GET path=/api/simulation/history status=200 dur=7ms
+[2026-11-07 13:53:22] INFO [mirofish] ====================================================
+[2026-11-07 13:53:22] INFO [mirofish] Mirofish Backend (binario Go) arrancando...
+[2026-11-07 13:53:22] INFO [mirofish] ====================================================
+[2026-11-07 13:53:22] INFO [mirofish] clave de acceso: desactivada (ACCESS_KEY vacía) — solo desarrollo
+[2026-11-07 13:53:22] INFO [mirofish] escuchando en http://0.0.0.0:5001 (health: /health, readiness: /ready)
+[2026-11-07 13:53:24] INFO [mirofish] petición method=GET path=/health status=200 dur=1ms
+[2026-11-07 14:21:57] INFO [mirofish] petición method=GET path=/login status=200 dur=1ms
+[2026-11-07 14:21:57] INFO [mirofish] petición method=GET path=/assets/index-PS3DJDpP.css status=200 dur=2ms
+[2026-11-07 14:21:57] INFO [mirofish] petición method=GET path=/assets/index-DT39uSTo.js status=200 dur=4ms
+[2026-11-07 14:21:57] INFO [mirofish] petición method=GET path=/api/auth/me status=200 dur=0s
+[2026-11-07 14:22:56] INFO [mirofish] señal de cierre recibida; apagando con gracia
+[2026-11-07 14:22:56] INFO [mirofish] servidor detenido
+[2026-11-07 14:23:00] INFO [mirofish] ====================================================
+[2026-11-07 14:23:00] INFO [mirofish] MiroFish Personal (binario Go) arrancando...
+[2026-11-07 14:23:00] INFO [mirofish] modo personal: acceso por ACCESS_KEY, sin cuentas de usuario
+[2026-11-07 14:23:00] INFO [mirofish] ====================================================
+[2026-11-07 14:23:00] INFO [mirofish] clave de acceso: desactivada (ACCESS_KEY vacía) — solo desarrollo
+[2026-11-07 14:23:00] INFO [mirofish] escuchando en http://0.0.0.0:5001 (health: /health, readiness: /ready)
+[2026-11-07 14:23:44] INFO [mirofish] señal de cierre recibida; apagando con gracia
+[2026-11-07 14:23:44] INFO [mirofish] servidor detenido
+[2026-11-07 14:23:47] INFO [mirofish] ====================================================
+[2026-11-07 14:23:47] INFO [mirofish] MiroFish Personal (binario Go) arrancando...
+[2026-11-07 14:23:47] INFO [mirofish] modo personal: acceso por ACCESS_KEY, sin cuentas de usuario
+[2026-11-07 14:23:47] INFO [mirofish] ====================================================
+[2026-11-07 14:23:47] INFO [mirofish] clave de acceso: activa (ACCESS_KEY configurada)
+[2026-11-07 14:23:47] INFO [mirofish] escuchando en http://0.0.0.0:5001 (health: /health, readiness: /ready)
+[2026-11-07 14:23:57] INFO [mirofish] petición method=GET path=/ status=200 dur=1ms
+[2026-11-07 14:23:57] INFO [mirofish] petición method=GET path=/api/auth/me status=200 dur=0s
+[2026-11-07 14:24:02] INFO [mirofish] petición method=GET path=/api/auth/validate status=200 dur=0s
+[2026-11-07 14:24:02] INFO [mirofish] petición method=GET path=/api/simulation/history status=200 dur=10ms
+[2026-11-07 14:24:11] INFO [mirofish] petición method=POST path=/api/simulation/env-status status=200 dur=0s
+[2026-11-07 14:24:11] INFO [mirofish] petición method=POST path=/api/simulation/prepare status=200 dur=44ms
+[2026-11-07 14:24:11] INFO [mirofish] petición method=GET path=/api/simulation/sim_8020c6c9fa63 status=200 dur=1ms
+[2026-11-07 14:24:11] INFO [mirofish] petición method=POST path=/api/simulation/stop status=400 dur=0s
+[2026-11-07 14:24:11] INFO [mirofish] petición method=GET path=/api/simulation/sim_8020c6c9fa63/profiles/realtime status=200 dur=43ms
+[2026-11-07 14:24:11] INFO [mirofish] petición method=GET path=/api/simulation/sim_8020c6c9fa63 status=200 dur=1ms
+[2026-11-07 14:24:12] INFO [mirofish] petición method=GET path=/api/simulation/sim_8020c6c9fa63/config/realtime status=200 dur=4ms
+[2026-11-07 14:24:12] INFO [mirofish] petición method=GET path=/api/graph/project/proj_85f1c1d0cbe3 status=200 dur=9ms
+[2026-11-07 14:24:13] INFO [mirofish] petición method=GET path=/api/graph/data/mirofish_5cbb55b03eea8f14 status=200 dur=8ms

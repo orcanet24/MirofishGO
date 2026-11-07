@@ -1,1 +1,5 @@
 *.rar
+*.exe
+*.log
+/bin
+bin/.env

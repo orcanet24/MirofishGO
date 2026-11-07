@@ -45,6 +45,12 @@ func PersonalRouter(c *config.Config, logger *slog.Logger) http.Handler {
 		})
 	})
 
+	// Validación real de la ACCESS_KEY: queda bajo /api/*, así que el
+	// middleware la exige. 200 = clave válida; 401 = inválida.
+	mux.HandleFunc("GET /api/auth/validate", func(w http.ResponseWriter, _ *http.Request) {
+		JSON(w, http.StatusOK, map[string]any{"status": "success", "data": map[string]any{"valid": true}})
+	})
+
 	mux.Handle("/", webui.Handler())
 
 	var root http.Handler = mux
