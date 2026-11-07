@@ -97,6 +97,28 @@ if not exist "bin\mirofish.exe" (
     exit /b 1
 )
 
+echo [3b/5] Compilando binario para Linux (amd64)...
+pushd "%ROOT%"
+set "CGO_ENABLED=0"
+set "GOOS=linux"
+set "GOARCH=amd64"
+go build -trimpath -ldflags "-s -w" -o "bin\mirofish-linux" .\cmd\mirofish
+set "BUILD_LIN=%ERRORLEVEL%"
+set "GOOS="
+set "GOARCH="
+popd
+if not "%BUILD_LIN%"=="0" (
+    echo.
+    echo [ERROR] go build ^(Linux^) fallo. Revisa los mensajes anteriores.
+    pause
+    exit /b 1
+)
+if not exist "bin\mirofish-linux" (
+    echo [ERROR] go build no produjo bin\mirofish-linux
+    pause
+    exit /b 1
+)
+
 echo [4/5] Copiando .env y scripts...
 copy /Y "%ROOT%\.env" "bin\.env" >nul
 if errorlevel 1 (
@@ -132,13 +154,16 @@ echo.
 echo ============================================
 echo   Listo. Contenido en bin\
 echo ============================================
-echo   bin\mirofish.exe   binario con frontend embebido
+echo   bin\mirofish.exe   binario con frontend embebido (Windows)
+echo   bin\mirofish-linux binario con frontend embebido (Linux amd64)
+echo   .\.env             para Linux, copia tambien .env y carpetas de datos
 echo   bin\.env           configuracion (MySQL, LLM, ACCESS_KEY)
 echo   bin\start.bat      arranca el binario desde bin\
 echo   bin\backend\...    scripts y datos (uploads)
 echo   bin\logs\          logs del servidor
 echo.
-echo Arranca con: "%CD%\start.bat"
+echo Arranca con: "%CD%\start.bat"  (Windows)  o  bin/mirofish-linux  (Linux)
+echo   En Linux, primero: chmod +x bin/mirofish-linux
 echo UI y API en el mismo puerto (por defecto http://localhost:5001).
 echo Requiere MySQL 8/MariaDB accesible con lo configurado en .env.
 echo.
