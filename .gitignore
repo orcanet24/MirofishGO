@@ -3,3 +3,5 @@
 *.log
 /bin
 bin/.env
+*.log
+bin/logs/2026-11-07.log
