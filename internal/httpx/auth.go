@@ -92,6 +92,15 @@ func (h *AuthHandler) respond(w http.ResponseWriter, err error, u *users.User) {
 // preguntar "quién soy" sin token. Con dev:true, el backend está en modo
 // desarrollo (ACCESS_KEY vacía) y la API no exige sesión.
 func (h *AuthHandler) me(w http.ResponseWriter, r *http.Request) {
+	// Clave maestra (ACCESS_KEY) en el binario multi-usuario: acceso completo
+	// de admin sin cuenta. El frontend lo trata como sesión completa.
+	if p := principal(r); p != nil && p.Master {
+		JSON(w, http.StatusOK, map[string]any{
+			"status": "success",
+			"data":   map[string]any{"authenticated": true, "master": true},
+		})
+		return
+	}
 	u := currentUser(r)
 	if u == nil {
 		data := map[string]any{"authenticated": false}

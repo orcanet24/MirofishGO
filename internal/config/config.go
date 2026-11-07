@@ -67,6 +67,11 @@ type Config struct {
 	// queda desactivada (solo desarrollo). Es la única condición de acceso
 	// del binario: toda /api/* la exige, y también /health si no es pública.
 	AccessKey string
+
+	// PersonalMode: binario personal (cmd/mirofish-personal). Acceso por
+	// ACCESS_KEY únicamente (como el binario original), sin cuentas de
+	// usuario, sin panel admin y con las credenciales LLM globales del .env.
+	PersonalMode bool
 }
 
 // findProjectRoot walks up from "start" looking for a .env file,
@@ -183,6 +188,7 @@ func Load() *Config {
 			return getint("FLASK_PORT", 5001)
 		}(),
 		AccessKey: getenv("ACCESS_KEY", ""),
+		PersonalMode: getbool("PERSONAL_MODE"),
 	}
 
 	// GRAPH_BACKEND: el binario Go solo implementa el backend local

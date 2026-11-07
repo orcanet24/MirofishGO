@@ -119,6 +119,31 @@ if not exist "bin\mirofish-linux" (
     exit /b 1
 )
 
+echo [3c/5] Compilando binario personal (Windows + Linux)...
+pushd "%ROOT%"
+set "CGO_ENABLED=0"
+go build -trimpath -ldflags "-s -w" -o "bin\mirofish-personal.exe" .\cmd\mirofish-personal
+set "BUILD_PERS=%ERRORLEVEL%"
+set "GOOS=linux"
+set "GOARCH=amd64"
+go build -trimpath -ldflags "-s -w" -o "bin\mirofish-personal-linux" .\cmd\mirofish-personal
+set "BUILD_PERS_LIN=%ERRORLEVEL%"
+set "GOOS="
+set "GOARCH="
+popd
+if not "%BUILD_PERS%"=="0" (
+    echo.
+    echo [ERROR] go build ^(personal Windows^) fallo.
+    pause
+    exit /b 1
+)
+if not "%BUILD_PERS_LIN%"=="0" (
+    echo.
+    echo [ERROR] go build ^(personal Linux^) fallo.
+    pause
+    exit /b 1
+)
+
 echo [4/5] Copiando .env y scripts...
 copy /Y "%ROOT%\.env" "bin\.env" >nul
 if errorlevel 1 (
@@ -149,6 +174,15 @@ echo [5/5] Creando lanzador...
     echo mirofish.exe
     echo if errorlevel 1 pause
 )
+>(bin\start-personal.bat) (
+    echo @echo off
+    echo title MiroFish Personal
+    echo cd /d "%%~dp0"
+    echo rem Mata cualquier instancia anterior del binario personal (^)
+    echo taskkill /F /IM mirofish-personal.exe ^>nul 2^>^&1
+    echo mirofish-personal.exe
+    echo if errorlevel 1 pause
+)
 
 echo.
 echo ============================================
@@ -156,6 +190,8 @@ echo   Listo. Contenido en bin\
 echo ============================================
 echo   bin\mirofish.exe   binario con frontend embebido (Windows)
 echo   bin\mirofish-linux binario con frontend embebido (Linux amd64)
+echo   bin\mirofish-personal.exe   personal: acceso por ACCESS_KEY (Windows)
+echo   bin\mirofish-personal-linux personal: acceso por ACCESS_KEY (Linux amd64)
 echo   .\.env             para Linux, copia tambien .env y carpetas de datos
 echo   bin\.env           configuracion (MySQL, LLM, ACCESS_KEY)
 echo   bin\start.bat      arranca el binario desde bin\
@@ -163,6 +199,7 @@ echo   bin\backend\...    scripts y datos (uploads)
 echo   bin\logs\          logs del servidor
 echo.
 echo Arranca con: "%CD%\start.bat"  (Windows)  o  bin/mirofish-linux  (Linux)
+echo   Personal: "%CD%\start-personal.bat"  o  bin/mirofish-personal.exe
 echo   En Linux, primero: chmod +x bin/mirofish-linux
 echo UI y API en el mismo puerto (por defecto http://localhost:5001).
 echo Requiere MySQL 8/MariaDB accesible con lo configurado en .env.
