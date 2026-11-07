@@ -17,7 +17,14 @@ var LLMFactory = func() (*llm.Client, error) { return llm.NewDefaultClient() }
 // ExtractEntitiesFromText replica extract_entities_from_text: prompt y
 // parámetros idénticos (temperature 0.2, max_attempts 2, texto truncado a
 // 8000 chars). Devuelve {"entities": [...], "edges": [...]}.
+// El factory global (LLMFactory) aplica cuando factory == nil.
 func (d *Database) ExtractEntitiesFromText(text string, ontology map[string]any) map[string]any {
+	return d.ExtractEntitiesFromTextFactory(text, ontology, nil)
+}
+
+// ExtractEntitiesFromTextFactory — variante con factory inyectada (config LLM
+// por usuario; nil = factory global).
+func (d *Database) ExtractEntitiesFromTextFactory(text string, ontology map[string]any, factory func() (*llm.Client, error)) map[string]any {
 	entityTypes := []string{}
 	if list, ok := ontology["entity_types"].([]any); ok {
 		for _, raw := range list {
@@ -67,7 +74,13 @@ Devuelve exclusivamente el JSON.`,
 
 	userPrompt := "Extrae entidades y relaciones del siguiente texto:\n\n" + truncRunes(text, 8000)
 
-	client, err := LLMFactory()
+	var client *llm.Client
+	var err error
+	if factory != nil {
+		client, err = factory()
+	} else {
+		client, err = LLMFactory()
+	}
 	if err != nil {
 		logger.Warn(fmt.Sprintf("LLM extraction failed: %v", err))
 		return map[string]any{"entities": []any{}, "edges": []any{}}
@@ -142,7 +155,12 @@ func (d *Database) PersistExtraction(graphID string, result map[string]any) erro
 // ExtractFromEpisodeBatch replica extract_from_episode_batch: los textos se
 // extraen en paralelo (ThreadPool de 6 en Python → goroutines acotadas aquí),
 // se fusionan con dedup por nombre y se persisten de una vez.
-func (d *Database) ExtractFromEpisodeBatch(graphID string, texts []string, ontology map[string]any, maxWorkers int) (int, int, error) {
+// factory opcional: nil = LLMFactory global.
+func (d *Database) ExtractFromEpisodeBatch(graphID string, texts []string, ontology map[string]any, maxWorkers int, factory ...func() (*llm.Client, error)) (int, int, error) {
+	var factoryFn func() (*llm.Client, error)
+	if len(factory) > 0 {
+		factoryFn = factory[0]
+	}
 	type extraction struct {
 		entities []any
 		edges    []any
@@ -155,7 +173,7 @@ func (d *Database) ExtractFromEpisodeBatch(graphID string, texts []string, ontol
 		go func(idx int, text string) {
 			sem <- struct{}{}
 			defer func() { <-sem; done <- idx }()
-			r := d.ExtractEntitiesFromText(text, ontology)
+			r := d.ExtractEntitiesFromTextFactory(text, ontology, factoryFn)
 			e := extraction{}
 			if list, ok := orList(r["entities"]); ok {
 				e.entities = list

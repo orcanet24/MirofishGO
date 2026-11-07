@@ -15,6 +15,8 @@ import (
 	"mirofish/internal/authx"
 	"mirofish/internal/config"
 	"mirofish/internal/graph"
+	"mirofish/internal/models"
+	"mirofish/internal/users"
 	"mirofish/internal/webui"
 )
 
@@ -112,6 +114,17 @@ func Router(c *config.Config, logger *slog.Logger) http.Handler {
 		logger.Error("no se pudo conectar a MySQL; los blueprints responderán 500", "error", dbErr)
 	}
 
+	// Store de usuarios (misma BD). Con BD caída, el modo con ACCESS_KEY
+	// fallará cerrado en el middleware; el registro/login avisarán 500.
+	var store *users.Store
+	if client != nil {
+		if s, err := users.NewStore(client.DB.SQL()); err != nil {
+			logger.Error("no se pudo iniciar el esquema de usuarios", "error", err)
+		} else {
+			store = s
+		}
+	}
+
 	// Readiness público: proceso vivo + MySQL + esquema completo.
 	mux.HandleFunc("GET /ready", newReadinessHandler(client, dbErr, logger))
 
@@ -119,6 +132,10 @@ func Router(c *config.Config, logger *slog.Logger) http.Handler {
 	registerGraphRoutes(mux, c, logger, client, dbErr)
 	registerSimulationRoutes(mux, c, logger, client, dbErr)
 	registerReportRoutes(mux, c, logger, client, dbErr)
+	if store != nil {
+		(&AuthHandler{Store: store, Secret: c.SecretKey, Logger: logger}).Register(mux)
+		(&AdminHandler{Store: store, PM: models.NewProjectManager(c.UploadDir), Logger: logger}).Register(mux)
+	}
 
 	// La SPA embebida es el fallback: las rutas /api/* más específicas siguen
 	// ganando y un /api/* desconocido devuelve 404 JSON, no HTML.
@@ -127,17 +144,19 @@ func Router(c *config.Config, logger *slog.Logger) http.Handler {
 	var root http.Handler = mux
 	root = reqLogger(logger, root)
 	root = cors(root)
-	// Última capa: la clave única de acceso sobre todo lo protegido. La UI y
-	// sus assets son públicos; la clave solo se exige a /api/*.
-	root = authx.Middleware(c.AccessKey, func(r *http.Request) bool {
+	// Sesión multi-usuario: ACCESS_KEY sigue siendo la clave maestra (admin),
+	// los usuarios van con JWT de /api/auth/* y cada uno ve solo lo suyo.
+	root = authx.SessionMiddleware(store, c.SecretKey, c.AccessKey, func(r *http.Request) bool {
 		return publicPath(r.URL.Path)
 	})(root)
 	return root
 }
 
-// publicPath exime healthchecks y la SPA; todo /api/* sigue protegido.
+// publicPath — rutas sin sesión: healthchecks y login/registro (si no, nadie
+// podría autenticarse). Todo resto de /api/* queda protegido; la SPA es pública.
 func publicPath(p string) bool {
-	if p == "/health" || p == "/ready" {
+	switch p {
+	case "/health", "/ready", "/api/auth/register", "/api/auth/login":
 		return true
 	}
 	return p != "/api" && !strings.HasPrefix(p, "/api/")

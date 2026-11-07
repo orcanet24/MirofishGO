@@ -17,6 +17,7 @@ import (
 	"mirofish/internal/config"
 	"mirofish/internal/fsx"
 	"mirofish/internal/graph"
+	"mirofish/internal/llm"
 	"mirofish/internal/locale"
 	"mirofish/internal/timex"
 )
@@ -145,18 +146,31 @@ func NewManager(dataDir string) *Manager {
 	return &Manager{DataDir: dataDir, simulations: map[string]*SimulationState{}}
 }
 
-func (m *Manager) newProfileGenerator(client *graph.Client, graphID string) *ProfileGenerator {
+// newProfileGenerator — con factory LLM opcional: config delegada del usuario.
+func (m *Manager) newProfileGenerator(client *graph.Client, graphID string, llmF ...func() (*llm.Client, error)) *ProfileGenerator {
+	var g *ProfileGenerator
 	if m.ProfileGeneratorFactory != nil {
-		return m.ProfileGeneratorFactory(client, graphID)
+		g = m.ProfileGeneratorFactory(client, graphID)
+	} else {
+		g = NewProfileGenerator(client, graphID)
 	}
-	return NewProfileGenerator(client, graphID)
+	if len(llmF) > 0 && llmF[0] != nil {
+		g.LLMFactory = llmF[0]
+	}
+	return g
 }
 
-func (m *Manager) newConfigGenerator() *ConfigGenerator {
+func (m *Manager) newConfigGenerator(llmF ...func() (*llm.Client, error)) *ConfigGenerator {
+	var g *ConfigGenerator
 	if m.ConfigGeneratorFactory != nil {
-		return m.ConfigGeneratorFactory()
+		g = m.ConfigGeneratorFactory()
+	} else {
+		g = NewConfigGenerator()
 	}
-	return NewConfigGenerator()
+	if len(llmF) > 0 && llmF[0] != nil {
+		g.LLMFactory = llmF[0]
+	}
+	return g
 }
 
 // SimulationDir devuelve la ruta del directorio de una simulación SIN crearlo.
@@ -294,6 +308,7 @@ func (m *Manager) PrepareSimulation(
 	progressCallback func(stage string, progress int, message string, extra map[string]any),
 	parallelProfileCount int,
 	localeCode string,
+	llmF ...func() (*llm.Client, error),
 ) (*SimulationState, error) {
 	// El locale de la petición se pasa explícitamente: el manager es un
 	// singleton compartido y no puede guardarlo en un campo sin carreras
@@ -363,7 +378,7 @@ func (m *Manager) PrepareSimulation(
 			map[string]any{"current": 0, "total": totalEntities})
 	}
 
-	generator := m.newProfileGenerator(client, state.GraphID)
+	generator := m.newProfileGenerator(client, state.GraphID, llmF...)
 	realtimeOutputPath := ""
 	realtimePlatform := "reddit"
 	if state.EnableReddit {
@@ -418,7 +433,7 @@ func (m *Manager) PrepareSimulation(
 		progressCallback("generating_config", 30, locale.T(loc, "progress.callingLLMConfig", nil), map[string]any{"current": 1, "total": 3})
 	}
 
-	configGenerator := m.newConfigGenerator()
+	configGenerator := m.newConfigGenerator(llmF...)
 	simParams, err := configGenerator.GenerateConfig(
 		simulationID, state.ProjectID, state.GraphID,
 		simulationRequirement, documentText, filtered.Entities,

@@ -141,6 +141,77 @@ func (h *SimulationHandler) localeOf(r *http.Request) string {
 	return locale.Normalize(r.Header.Get("Accept-Language"))
 }
 
+// ===== aislamiento por usuario =====
+
+// ownsProject — admin/master/anónimo ve todo; RoleUser solo lo suyo.
+func (h *SimulationHandler) ownsProject(r *http.Request, project *models.Project) bool {
+	uid := scopeID(r)
+	if uid == "" {
+		return true
+	}
+	return project.UserID != nil && *project.UserID == uid
+}
+
+func (h *SimulationHandler) denyUnlessOwnerProject(r *http.Request, w http.ResponseWriter, project *models.Project) bool {
+	if h.ownsProject(r, project) {
+		return true
+	}
+	JSON(w, http.StatusNotFound, map[string]any{"success": false, "error": "not found"})
+	return false
+}
+
+func (h *SimulationHandler) ownerOfGraphID(r *http.Request, graphID string) bool {
+	uid := scopeID(r)
+	if uid == "" {
+		return true
+	}
+	for _, p := range h.PM.FindProjectsByGraphId(graphID) {
+		if p.UserID != nil && *p.UserID == uid {
+			return true
+		}
+	}
+	return false
+}
+
+func (h *SimulationHandler) denyUnlessGraphIDOwner(r *http.Request, w http.ResponseWriter, graphID string) bool {
+	if h.ownerOfGraphID(r, graphID) {
+		return true
+	}
+	JSON(w, http.StatusNotFound, map[string]any{"success": false, "error": "not found"})
+	return false
+}
+
+// simulationOwned — simulación propia del RoleUser (campo user_id del state).
+// Las legacy sin user_id solo las ve admin/master/anónimo.
+func (h *SimulationHandler) simulationOwned(r *http.Request, simulationID string) bool {
+	uid := scopeID(r)
+	if uid == "" {
+		return true
+	}
+	state := h.Manager.GetSimulation(simulationID)
+	return state != nil && state.UserID != nil && *state.UserID == uid
+}
+
+func (h *SimulationHandler) denyUnlessSimulationOwner(r *http.Request, w http.ResponseWriter, simulationID string) bool {
+	if h.simulationOwned(r, simulationID) {
+		return true
+	}
+	JSON(w, http.StatusNotFound, map[string]any{"success": false, "error": "not found"})
+	return false
+}
+
+// simIDFromSegs — primer segmento es el sim_id salvo en rutas por nombre.
+func simIDFromSegs(segs []string) string {
+	if len(segs) == 0 {
+		return ""
+	}
+	switch segs[0] {
+	case "list", "history", "entities", "script":
+		return ""
+	}
+	return segs[0]
+}
+
 // decodeBody replica `request.get_json() or {}`: cuerpo vacío es un objeto
 // vacío, cuerpo malformado es 400 (no un 500 genérico).
 func decodeBody(r *http.Request) (map[string]any, error) {
@@ -211,6 +282,18 @@ func (h *SimulationHandler) handleGET(w http.ResponseWriter, r *http.Request) {
 	if len(segs) == 0 {
 		HTTPError(w, http.StatusNotFound, "not found")
 		return
+	}
+
+	// Guard central: sims propias del RoleUser; grafos por proyecto propio.
+	if simID := simIDFromSegs(segs); simID != "" {
+		if !h.denyUnlessSimulationOwner(r, w, simID) {
+			return
+		}
+	}
+	if len(segs) >= 2 && segs[0] == "entities" {
+		if !h.denyUnlessGraphIDOwner(r, w, segs[1]) {
+			return
+		}
 	}
 
 	switch {
@@ -403,6 +486,9 @@ func (h *SimulationHandler) createSimulation(w http.ResponseWriter, r *http.Requ
 		})
 		return
 	}
+	if !h.denyUnlessOwnerProject(r, w, project) {
+		return
+	}
 	graphID := strings.TrimSpace(stringField(body, "graph_id"))
 	if graphID == "" && project.GraphID != nil {
 		graphID = *project.GraphID
@@ -414,10 +500,14 @@ func (h *SimulationHandler) createSimulation(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
+	var userID *string
+	if uid := scopeID(r); uid != "" {
+		userID = &uid
+	}
 	state := h.Manager.CreateSimulation(projectID, graphID,
 		boolField(body, "enable_twitter", true),
 		boolField(body, "enable_reddit", true),
-		nil,
+		userID,
 	)
 	JSON(w, http.StatusOK, map[string]any{"success": true, "data": state.ToDict()})
 }
@@ -449,8 +539,23 @@ func (h *SimulationHandler) getSimulation(w http.ResponseWriter, r *http.Request
 
 func (h *SimulationHandler) listSimulations(w http.ResponseWriter, r *http.Request) {
 	projectID := r.URL.Query().Get("project_id")
+	if projectID != "" {
+		if p := h.PM.GetProject(projectID); p != nil && !h.denyUnlessOwnerProject(r, w, p) {
+			return
+		}
+	}
 	states := h.Manager.ListSimulations(projectID)
 	sortSimulations(states)
+	// Aislamiento: solo simulaciones del usuario (legacy sin dueño = admin).
+	if uid := scopeID(r); uid != "" {
+		owned := []*simx.SimulationState{}
+		for _, s := range states {
+			if s.UserID != nil && *s.UserID == uid {
+				owned = append(owned, s)
+			}
+		}
+		states = owned
+	}
 	data := make([]map[string]any, 0, len(states))
 	for _, s := range states {
 		if run, err := h.Oasis.State(s.SimulationID); err == nil && run != nil {
@@ -481,6 +586,16 @@ func (h *SimulationHandler) history(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	states := h.Manager.ListSimulations("")
+	// Aislamiento: historial solo con las simulaciones propias.
+	if uid := scopeID(r); uid != "" {
+		owned := []*simx.SimulationState{}
+		for _, s := range states {
+			if s.UserID != nil && *s.UserID == uid {
+				owned = append(owned, s)
+			}
+		}
+		states = owned
+	}
 	sortSimulations(states)
 	if len(states) > limit {
 		states = states[:limit]
@@ -668,6 +783,9 @@ func (h *SimulationHandler) prepareSimulation(w http.ResponseWriter, r *http.Req
 		})
 		return
 	}
+	if !h.denyUnlessSimulationOwner(r, w, simulationID) {
+		return
+	}
 
 	forceRegenerate := boolField(body, "force_regenerate", false)
 	if !forceRegenerate {
@@ -755,7 +873,7 @@ func (h *SimulationHandler) prepareSimulation(w http.ResponseWriter, r *http.Req
 	h.Manager.SaveSimulationState(state)
 
 	go h.runPrepare(taskID, simulationID, loc, requirement, documentText,
-		entityTypes, useLLMForProfiles, parallelProfileCount)
+		entityTypes, useLLMForProfiles, parallelProfileCount, llmFactory(r))
 
 	JSON(w, http.StatusOK, map[string]any{
 		"success": true,
@@ -788,7 +906,7 @@ func activePrepareTask(simulationID string) *models.TaskDict {
 // runPrepare replica run_prepare del Python: ejecuta la preparación con
 // callback de progreso ponderado por etapas y publica el resultado en la tarea.
 func (h *SimulationHandler) runPrepare(taskID, simulationID, loc, requirement, documentText string,
-	entityTypes []string, useLLM bool, parallelProfileCount int) {
+	entityTypes []string, useLLM bool, parallelProfileCount int, llmF func() (*llm.Client, error)) {
 
 	taskManager := models.GetTaskManager()
 	logger := h.Logger.With("task_id", taskID, "simulation_id", simulationID)
@@ -870,7 +988,7 @@ func (h *SimulationHandler) runPrepare(taskID, simulationID, loc, requirement, d
 
 	prepared, err := h.Manager.PrepareSimulation(
 		h.Client, simulationID, requirement, documentText,
-		entityTypes, useLLM, progressCallback, parallelProfileCount, loc,
+		entityTypes, useLLM, progressCallback, parallelProfileCount, loc, llmF,
 	)
 	if err != nil {
 		logger.Error("准备模拟失败", "error", err)
@@ -909,6 +1027,9 @@ func (h *SimulationHandler) prepareStatus(w http.ResponseWriter, r *http.Request
 	}
 	taskID := strings.TrimSpace(stringField(body, "task_id"))
 	simulationID := strings.TrimSpace(stringField(body, "simulation_id"))
+	if simulationID != "" && !h.denyUnlessSimulationOwner(r, w, simulationID) {
+		return
+	}
 
 	if simulationID != "" {
 		if prepared, info := h.Manager.CheckPrepared(simulationID); prepared {
@@ -1158,6 +1279,9 @@ func (h *SimulationHandler) startSimulation(w http.ResponseWriter, r *http.Reque
 		})
 		return
 	}
+	if !h.denyUnlessSimulationOwner(r, w, simulationID) {
+		return
+	}
 
 	platform := strings.TrimSpace(stringField(body, "platform"))
 	if platform == "" {
@@ -1222,7 +1346,7 @@ func (h *SimulationHandler) startSimulation(w http.ResponseWriter, r *http.Reque
 	}
 
 	force := boolField(body, "force", false)
-	run, err := h.Oasis.Start(cfg, profiles, maxRounds, force)
+	run, err := h.Oasis.Start(cfg, profiles, maxRounds, force, llmFactory(r))
 	if err != nil {
 		code := http.StatusInternalServerError
 		msg := err.Error()
@@ -1278,6 +1402,9 @@ func (h *SimulationHandler) stopSimulation(w http.ResponseWriter, r *http.Reques
 		JSON(w, http.StatusBadRequest, map[string]any{
 			"success": false, "error": "simulation_id es requerido",
 		})
+		return
+	}
+	if !h.denyUnlessSimulationOwner(r, w, simulationID) {
 		return
 	}
 
@@ -1578,6 +1705,9 @@ func (h *SimulationHandler) generateProfiles(w http.ResponseWriter, r *http.Requ
 	generator := simx.NewProfileGenerator(h.Client, graphID)
 	if h.ProfileFactory != nil {
 		generator = h.ProfileFactory(h.Client, graphID)
+	}
+	if llmF := llmFactory(r); llmF != nil {
+		generator.LLMFactory = llmF
 	}
 	profiles := generator.GenerateProfilesFromEntities(filtered.Entities, useLLM, nil, graphID, 5, "", "")
 

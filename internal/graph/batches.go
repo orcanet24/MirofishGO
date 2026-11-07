@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"mirofish/internal/llm"
 	"mirofish/internal/timex"
 )
 
@@ -91,7 +92,9 @@ func (d *Database) AddBatchItems(batchID string, items []BatchItemInput) ([]stri
 }
 
 // ProcessBatch marca 'processing' y dispara el finalizador en background.
-func (d *Database) ProcessBatch(batchID string) error {
+// ProcessBatch replica batch.process: sube el estado a processing y lanza la
+// extracción en background. factory opcional: nil = LLMFactory global.
+func (d *Database) ProcessBatch(batchID string, factory ...func() (*llm.Client, error)) error {
 	d.writeMu.Lock()
 	_, err := d.db.Exec("UPDATE batches SET status = 'processing' WHERE batch_id = ?", batchID)
 	d.writeMu.Unlock()
@@ -104,15 +107,15 @@ func (d *Database) ProcessBatch(batchID string) error {
 				logger.Warn(fmt.Sprintf("Finalización de batch %s pánico: %v", batchID[:8], r))
 			}
 		}()
-		d.FinalizeBatch(batchID)
+		d.FinalizeBatch(batchID, factory...)
 	}()
 	return nil
 }
 
 // FinalizeBatch replica _finalize_batch: extrae, fija status y libera barrera.
-func (d *Database) FinalizeBatch(batchID string) {
+func (d *Database) FinalizeBatch(batchID string, factory ...func() (*llm.Client, error)) {
 	status := "succeeded"
-	if err := d.ExtractFromBatch(batchID); err != nil {
+	if err := d.ExtractFromBatch(batchID, factory...); err != nil {
 		logger.Warn(fmt.Sprintf("Extracción de batch %s falló: %v", batchID[:8], err))
 		status = "partial"
 	}
@@ -132,7 +135,8 @@ func (d *Database) FinalizeBatch(batchID string) {
 
 // ExtractFromBatch replica _extract_from_batch: sub-lotes de CHUNK_SIZE textos
 // por llamada; cada sub-lote libera sus episodios al terminar.
-func (d *Database) ExtractFromBatch(batchID string) error {
+// factory opcional: nil = LLMFactory global (config del usuario en httpx).
+func (d *Database) ExtractFromBatch(batchID string, factory ...func() (*llm.Client, error)) error {
 	batch, err := d.getBatchRow(batchID)
 	if err != nil {
 		return err
@@ -195,7 +199,7 @@ func (d *Database) ExtractFromBatch(batchID string) error {
 		for i, it := range chunk {
 			texts[i] = it.data
 		}
-		nodes, edges, extrErr := d.ExtractFromEpisodeBatch(graphID, texts, ontology, 6)
+		nodes, edges, extrErr := d.ExtractFromEpisodeBatch(graphID, texts, ontology, 6, factory...)
 		if extrErr != nil {
 			logger.Warn(fmt.Sprintf(
 				"Chunk %d del batch %s falló (sus episodios se liberan sin extracción): %v",

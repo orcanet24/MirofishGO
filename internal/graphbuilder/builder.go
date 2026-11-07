@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"mirofish/internal/graph"
+	"mirofish/internal/llm"
 	"mirofish/internal/locale"
 	"mirofish/internal/ontology"
 )
@@ -31,6 +32,10 @@ type BatchSubmission struct {
 type Builder struct {
 	Client *graph.Client
 	Locale string // locale capturado antes de lanzar la goroutine de build
+
+	// LLMFactory opcional: config LLM delegada del usuario que ejecuta el
+	// build; nil = global del .env (comportamiento histórico).
+	LLMFactory func() (*llm.Client, error)
 }
 
 // New crea el servicio sobre un cliente de grafo local.
@@ -236,7 +241,7 @@ func (b *Builder) AddTextBatches(
 		}
 	}
 
-	if err := b.Client.BatchProcess(batchID); err != nil {
+	if err := b.Client.BatchProcess(batchID, b.LLMFactory); err != nil {
 		summary, getErr := b.Client.BatchGet(batchID)
 		if getErr != nil || summary == nil || summary.Status == "" || summary.Status == "draft" {
 			return BatchSubmission{}, fmt.Errorf("Zep batch %s processing is unconfirmed", batchID)

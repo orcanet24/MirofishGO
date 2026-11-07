@@ -2,6 +2,8 @@
 // sobre MySQL local (graph/node/edge/episode/batch APIs del Python).
 package graph
 
+import "mirofish/internal/llm"
+
 // Client replica LocalGraphClient.
 type Client struct {
 	DB *Database
@@ -281,8 +283,8 @@ func (c *Client) BatchAdd(batchID string, items []BatchItemInput) ([]BatchAdded,
 }
 
 // BatchProcess replica batch.process.
-func (c *Client) BatchProcess(batchID string) error {
-	return c.DB.ProcessBatch(batchID)
+func (c *Client) BatchProcess(batchID string, factory ...func() (*llm.Client, error)) error {
+	return c.DB.ProcessBatch(batchID, factory...)
 }
 
 // BatchGet replica _MockBatch.get — NotFoundError si no existe.

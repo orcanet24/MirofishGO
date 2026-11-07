@@ -23,6 +23,7 @@ import (
 	"mirofish/internal/models"
 	"mirofish/internal/ontology"
 	tex "mirofish/internal/text"
+	"mirofish/internal/users"
 )
 
 // GraphHandler concentra el estado del blueprint de grafo.
@@ -32,8 +33,106 @@ type GraphHandler struct {
 	Client *graph.Client
 	Logger *slog.Logger
 
+	// UsersStore — créditos/"estudios" por usuario (nil en tests o sin BD).
+	UsersStore *users.Store
+
 	// GeneratorFactory crea el generador de ontología; inyectable en tests.
 	GeneratorFactory func() *ontology.Generator
+}
+
+// ===== aislamiento por usuario =====
+
+// ownsProject — admin/master/anónimo ve todo; un RoleUser solo lo suyo.
+// Proyectos legacy sin user_id son solo de administradores.
+func (h *GraphHandler) ownsProject(r *http.Request, project *models.Project) bool {
+	uid := scopeID(r)
+	if uid == "" {
+		return true
+	}
+	return project.UserID != nil && *project.UserID == uid
+}
+
+// denyUnlessOwner responde 404 (como si no existiera: no filtra IDs) y
+// devuelve false si al principal no le toca el proyecto.
+func (h *GraphHandler) denyUnlessOwner(r *http.Request, w http.ResponseWriter, project *models.Project) bool {
+	if h.ownsProject(r, project) {
+		return true
+	}
+	JSON(w, http.StatusNotFound, map[string]any{
+		"success": false,
+		"error":   "not found",
+	})
+	return false
+}
+
+// ownerOfGraph — el grafo es visible si algún proyecto del principal lo usa.
+func (h *GraphHandler) ownerOfGraph(r *http.Request, graphID string) bool {
+	uid := scopeID(r)
+	if uid == "" {
+		return true
+	}
+	for _, p := range h.PM.FindProjectsByGraphId(graphID) {
+		if p.UserID != nil && *p.UserID == uid {
+			return true
+		}
+	}
+	return false
+}
+
+// denyUnlessGraphOwner — 404 si el grafo no es del principal.
+func (h *GraphHandler) denyUnlessGraphOwner(r *http.Request, w http.ResponseWriter, graphID string) bool {
+	if h.ownerOfGraph(r, graphID) {
+		return true
+	}
+	JSON(w, http.StatusNotFound, map[string]any{"success": false, "error": "not found"})
+	return false
+}
+
+// ownsTask — una tarea del TaskManager es del usuario si su project_id
+// (o la simulación que referencia) le pertenece.
+func (h *GraphHandler) ownsTask(r *http.Request, t *models.TaskDict) bool {
+	uid := scopeID(r)
+	if uid == "" || t == nil {
+		return uid == ""
+	}
+	if projectID, ok := t.Metadata["project_id"].(string); ok && projectID != "" {
+		p := h.PM.GetProject(projectID)
+		return p != nil && p.UserID != nil && *p.UserID == uid
+	}
+	return false
+}
+
+// consumeEstudio — descuenta 1 crédito del RoleUser tras un estudio exitoso.
+// Silencioso para admin/master/anónimo.
+func (h *GraphHandler) consumeEstudio(r *http.Request, projectID string) {
+	uid := scopeID(r)
+	if uid == "" || h.UsersStore == nil {
+		return
+	}
+	if err := h.UsersStore.ConsumeCredit(uid); err != nil {
+		h.Logger.Error("crédito no consumido", "user", uid, "project", projectID, "error", err)
+	}
+}
+
+// prechargeGuard — rechaza 402 antes del trabajo pesado si RoleUser no tiene
+// créditos. Admin/master/anónimo siempre pasa.
+func (h *GraphHandler) prechargeGuard(r *http.Request, w http.ResponseWriter, loc string) bool {
+	uid := scopeID(r)
+	if uid == "" || h.UsersStore == nil {
+		return true
+	}
+	u, err := h.UsersStore.Get(uid)
+	if err != nil {
+		return true // el middleware ya validó identidad; BD inestable no bloquea
+	}
+	if u.Credits <= 0 {
+		JSON(w, http.StatusPaymentRequired, map[string]any{
+			"success": false,
+			"error":   locale.T(loc, "api.noCredits", nil),
+		})
+		return false
+	}
+	return true
 }
 
 // GraphHandlerOption configura el handler (tests).
@@ -64,12 +163,19 @@ func NewGraphHandler(cfg *config.Config, logger *slog.Logger, opts ...GraphHandl
 	return h, nil
 }
 
-// generator resuelve el generador de ontología por petición.
-func (h *GraphHandler) generator() *ontology.Generator {
+// generator resuelve el generador de ontología por petición. Si el usuario
+// trae config LLM delegada, el generador la usa; si no, la global.
+func (h *GraphHandler) generator(r *http.Request) *ontology.Generator {
+	var g *ontology.Generator
 	if h.GeneratorFactory != nil {
-		return h.GeneratorFactory()
+		g = h.GeneratorFactory()
+	} else {
+		g = ontology.NewGenerator()
 	}
-	return ontology.NewGenerator()
+	if f := llmFactory(r); f != nil {
+		g.LLM = f
+	}
+	return g
 }
 
 // Register monta las 10 rutas del blueprint en el mux.
@@ -202,6 +308,9 @@ func (h *GraphHandler) getProject(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
+	if !h.denyUnlessOwner(r, w, project) {
+		return
+	}
 
 	JSON(w, http.StatusOK, map[string]any{
 		"success": true,
@@ -217,7 +326,7 @@ func (h *GraphHandler) listProjects(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	projects := h.PM.ListProjects(limit, "")
+	projects := h.PM.ListProjects(limit, scopeID(r))
 	data := []map[string]any{}
 	for _, p := range projects {
 		data = append(data, p.ToDict())
@@ -243,6 +352,9 @@ func (h *GraphHandler) deleteProject(w http.ResponseWriter, r *http.Request) {
 			"success": false,
 			"error":   locale.T(loc, "api.projectNotFound", map[string]string{"id": projectID}),
 		})
+		return
+	}
+	if !h.denyUnlessOwner(r, w, project) {
 		return
 	}
 	if h.projectHasActiveBuild(project) {
@@ -297,6 +409,9 @@ func (h *GraphHandler) resetProject(w http.ResponseWriter, r *http.Request) {
 			"success": false,
 			"error":   locale.T(loc, "api.projectNotFound", map[string]string{"id": projectID}),
 		})
+		return
+	}
+	if !h.denyUnlessOwner(r, w, project) {
 		return
 	}
 	if h.projectHasActiveBuild(project) {
@@ -362,6 +477,12 @@ func (h *GraphHandler) generateOntology(w http.ResponseWriter, r *http.Request) 
 	loc := locale.Normalize(r.Header.Get("Accept-Language"))
 	t := func(key string, args map[string]string) string { return locale.T(loc, key, args) }
 
+	// Un "estudio" arranca aquí (subida + LLM). Sin créditos → 402 antes de
+	// gastar tokens del proveedor LLM.
+	if !h.prechargeGuard(r, w, loc) {
+		return
+	}
+
 	var project *models.Project
 	maxSize := h.Cfg.MaxContentLength
 	if maxSize <= 0 {
@@ -415,7 +536,7 @@ func (h *GraphHandler) generateOntology(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	project, err := h.PM.CreateProject(projectName, "")
+	project, err := h.PM.CreateProject(projectName, scopeID(r))
 	if err != nil {
 		JSON(w, http.StatusInternalServerError, map[string]any{"success": false, "error": err.Error()})
 		return
@@ -468,7 +589,7 @@ func (h *GraphHandler) generateOntology(w http.ResponseWriter, r *http.Request) 
 	h.PM.SaveExtractedText(project.ProjectID, allText)
 	h.Logger.Info(fmt.Sprintf("文本提取完成，共 %d 字符", len([]rune(allText))))
 
-	generator := h.generator()
+	generator := h.generator(r)
 	result, err := generator.Generate(documentTexts, simulationRequirement, additionalContext)
 	if err != nil {
 		h.failOntologyProject(project, w, err, loc)
@@ -489,6 +610,11 @@ func (h *GraphHandler) generateOntology(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	h.Logger.Info("=== 本体生成完成 === 项目ID: " + project.ProjectID)
+
+	// El estudio terminó: consume el crédito del usuario (RoleUser). Si no
+	// tiene, ConsumeCredit falla pero el estudio YA está hecho: se registra
+	// y el admin bloquea cuentas vencidas vía is_active/ads creditos.
+	h.consumeEstudio(r, project.ProjectID)
 
 	JSON(w, http.StatusOK, map[string]any{
 		"success": true,
@@ -637,16 +763,16 @@ func (h *GraphHandler) buildGraph(w http.ResponseWriter, r *http.Request) {
 	parsed := parseBuildBody(body)
 
 	if parsed.ProjectID == "" {
-		h.buildGraphImpl(w, loc, body, parsed, "")
+		h.buildGraphImpl(w, r, loc, body, parsed, "")
 		return
 	}
 	lock := buildLock(parsed.ProjectID)
 	lock.Lock()
 	defer lock.Unlock()
-	h.buildGraphImpl(w, loc, body, parsed, parsed.ProjectID)
+	h.buildGraphImpl(w, r, loc, body, parsed, parsed.ProjectID)
 }
 
-func (h *GraphHandler) buildGraphImpl(w http.ResponseWriter, loc string, _ map[string]any, parsed buildRequestBody, projectID string) {
+func (h *GraphHandler) buildGraphImpl(w http.ResponseWriter, r *http.Request, loc string, _ map[string]any, parsed buildRequestBody, projectID string) {
 	t := func(key string, args map[string]string) string { return locale.T(loc, key, args) }
 
 	// 检查配置（local: MySQL no requiere ZEP_API_KEY; zep: sí）
@@ -672,6 +798,10 @@ func (h *GraphHandler) buildGraphImpl(w http.ResponseWriter, loc string, _ map[s
 			"success": false,
 			"error":   t("api.projectNotFound", map[string]string{"id": projectID}),
 		})
+		return
+	}
+
+	if !h.denyUnlessOwner(r, w, project) {
 		return
 	}
 
@@ -844,7 +974,9 @@ func (h *GraphHandler) buildGraphImpl(w http.ResponseWriter, loc string, _ map[s
 	}
 
 	taskManager := models.GetTaskManager()
-	taskID := taskManager.CreateTask(fmt.Sprintf("构建图谱: %s", graphName), nil)
+	taskID := taskManager.CreateTask(fmt.Sprintf("构建图谱: %s", graphName), map[string]any{
+		"project_id": projectID,
+	})
 	h.Logger.Info(fmt.Sprintf("创建图谱构建任务: task_id=%s, project_id=%s", taskID, projectID))
 
 	project.Status = models.ProjectGraphBuilding
@@ -854,7 +986,7 @@ func (h *GraphHandler) buildGraphImpl(w http.ResponseWriter, loc string, _ map[s
 		return
 	}
 
-	go h.buildTask(taskID, projectID, loc, graphName, chunkSize, chunkOverlap, resumeExistingBatch)
+	go h.buildTask(taskID, projectID, loc, graphName, chunkSize, chunkOverlap, resumeExistingBatch, llmFactory(r))
 
 	JSON(w, http.StatusOK, map[string]any{
 		"success": true,
@@ -868,9 +1000,12 @@ func (h *GraphHandler) buildGraphImpl(w http.ResponseWriter, loc string, _ map[s
 }
 
 // buildTask replica el hilo build_task del blueprint /build.
-func (h *GraphHandler) buildTask(taskID, projectID, loc, graphName string, chunkSize, chunkOverlap int, resumeExistingBatch bool) {
+func (h *GraphHandler) buildTask(taskID, projectID, loc, graphName string, chunkSize, chunkOverlap int, resumeExistingBatch bool, llmF func() (*llm.Client, error)) {
 	builder := graphbuilder.New(h.Client)
 	builder.Locale = loc
+	if llmF != nil {
+		builder.LLMFactory = llmF
+	}
 	taskManager := models.GetTaskManager()
 	logger := h.Logger.With("task_id", taskID)
 
@@ -1076,15 +1211,33 @@ func (h *GraphHandler) getTask(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
+	dict := task.ToDict()
+	if !h.ownsTask(r, &dict) {
+		JSON(w, http.StatusNotFound, map[string]any{
+			"success": false,
+			"error":   locale.T(loc, "api.taskNotFound", map[string]string{"id": taskID}),
+		})
+		return
+	}
 
 	JSON(w, http.StatusOK, map[string]any{
 		"success": true,
-		"data":    task.ToDict(),
+		"data":    dict,
 	})
 }
 
-func (h *GraphHandler) listTasks(w http.ResponseWriter, _ *http.Request) {
+func (h *GraphHandler) listTasks(w http.ResponseWriter, r *http.Request) {
 	tasks := models.GetTaskManager().ListTasks("")
+	uid := scopeID(r)
+	if uid != "" {
+		filtered := []models.TaskDict{}
+		for i := range tasks {
+			if h.ownsTask(r, &tasks[i]) {
+				filtered = append(filtered, tasks[i])
+			}
+		}
+		tasks = filtered
+	}
 	JSON(w, http.StatusOK, map[string]any{
 		"success": true,
 		"data":    tasks,
@@ -1107,6 +1260,9 @@ func (h *GraphHandler) getGraphData(w http.ResponseWriter, r *http.Request) {
 	}
 
 	builder := graphbuilder.New(h.Client)
+	if !h.denyUnlessGraphOwner(r, w, graphID) {
+		return
+	}
 	data, err := builder.GetGraphData(graphID)
 	if err != nil {
 		h.Logger.Error("no se pudieron leer los datos del grafo", "graph_id", graphID, "error", err)
@@ -1135,7 +1291,7 @@ func (h *GraphHandler) deleteGraph(w http.ResponseWriter, r *http.Request) {
 	}
 
 	projects := h.PM.FindProjectsByGraphId(graphID)
-	if len(projects) == 0 {
+	if len(projects) == 0 || !h.denyUnlessGraphOwner(r, w, graphID) {
 		JSON(w, http.StatusNotFound, map[string]any{
 			"success": false, "error": "No local project references this graph",
 		})

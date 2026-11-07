@@ -49,7 +49,9 @@ func NewEngine(store *Store, opts ...EngineOption) *Engine {
 
 // Start lanza una simulación. force detiene una corrida previa (activa o
 // terminada) antes de empezar de cero.
-func (e *Engine) Start(cfg *SimulationConfig, profiles []Profile, maxRounds int, force bool) (*RunState, error) {
+// factory opcional: LLM de esta corrida (config delegada por usuario); nil
+// usa la factory del motor (global o inyectada en tests).
+func (e *Engine) Start(cfg *SimulationConfig, profiles []Profile, maxRounds int, force bool, factory ...func() (*llm.Client, error)) (*RunState, error) {
 	if cfg == nil {
 		return nil, fmt.Errorf("configuración de simulación vacía")
 	}
@@ -101,7 +103,11 @@ func (e *Engine) Start(cfg *SimulationConfig, profiles []Profile, maxRounds int,
 		}
 	}
 
-	client, err := e.llmFactory()
+	factoryFn := e.llmFactory
+	if len(factory) > 0 && factory[0] != nil {
+		factoryFn = factory[0]
+	}
+	client, err := factoryFn()
 	if err != nil {
 		e.mu.Unlock()
 		return nil, err

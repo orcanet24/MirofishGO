@@ -19,6 +19,7 @@ import (
 
 	"mirofish/internal/config"
 	"mirofish/internal/graph"
+	"mirofish/internal/llm"
 	"mirofish/internal/locale"
 	"mirofish/internal/models"
 	"mirofish/internal/report"
@@ -106,6 +107,63 @@ func (h *ReportHandler) t(r *http.Request, key string, args map[string]string) s
 	return locale.T(locale.Normalize(r.Header.Get("Accept-Language")), key, args)
 }
 
+// ===== aislamiento por usuario =====
+
+func (h *ReportHandler) simulationOwned(r *http.Request, simulationID string) bool {
+	uid := scopeID(r)
+	if uid == "" {
+		return true
+	}
+	if h.Sim == nil {
+		return false
+	}
+	state := h.Sim.GetSimulation(simulationID)
+	return state != nil && state.UserID != nil && *state.UserID == uid
+}
+
+func (h *ReportHandler) denyUnlessSimulationOwner(r *http.Request, w http.ResponseWriter, simulationID string) bool {
+	if h.simulationOwned(r, simulationID) {
+		return true
+	}
+	JSON(w, http.StatusNotFound, map[string]any{"success": false, "error": "not found"})
+	return false
+}
+
+// reportOwned — el informe se posee vía su simulación.
+func (h *ReportHandler) reportOwned(r *http.Request, reportID string) bool {
+	rep := h.Reports.GetReport(reportID)
+	return rep != nil && h.simulationOwned(r, rep.SimulationID)
+}
+
+func (h *ReportHandler) denyUnlessReportOwner(r *http.Request, w http.ResponseWriter, reportID string) bool {
+	if h.reportOwned(r, reportID) {
+		return true
+	}
+	JSON(w, http.StatusNotFound, map[string]any{"success": false, "error": "not found"})
+	return false
+}
+
+func (h *ReportHandler) ownerOfGraph(r *http.Request, graphID string) bool {
+	uid := scopeID(r)
+	if uid == "" {
+		return true
+	}
+	for _, p := range h.PM.FindProjectsByGraphId(graphID) {
+		if p.UserID != nil && *p.UserID == uid {
+			return true
+		}
+	}
+	return false
+}
+
+func (h *ReportHandler) denyUnlessGraphOwner(r *http.Request, w http.ResponseWriter, graphID string) bool {
+	if h.ownerOfGraph(r, graphID) {
+		return true
+	}
+	JSON(w, http.StatusNotFound, map[string]any{"success": false, "error": "not found"})
+	return false
+}
+
 // ===== despacho =====
 
 func (h *ReportHandler) handleGET(w http.ResponseWriter, r *http.Request) {
@@ -113,6 +171,19 @@ func (h *ReportHandler) handleGET(w http.ResponseWriter, r *http.Request) {
 	if len(segs) == 0 {
 		HTTPError(w, http.StatusNotFound, "not found")
 		return
+	}
+
+	// Guard central de aislamiento.
+	switch {
+	case segs[0] == "list":
+	case segs[0] == "by-simulation" || segs[0] == "check":
+		if len(segs) >= 2 && !h.denyUnlessSimulationOwner(r, w, segs[1]) {
+			return
+		}
+	default:
+		if len(segs) >= 1 && !h.denyUnlessReportOwner(r, w, segs[0]) {
+			return
+		}
 	}
 
 	switch {
@@ -178,6 +249,9 @@ func (h *ReportHandler) handleDELETE(w http.ResponseWriter, r *http.Request) {
 		HTTPError(w, http.StatusNotFound, "not found")
 		return
 	}
+	if !h.denyUnlessReportOwner(r, w, segs[0]) {
+		return
+	}
 	if !h.Reports.DeleteReport(segs[0]) {
 		JSON(w, http.StatusNotFound, map[string]any{
 			"success": false,
@@ -207,6 +281,9 @@ func (h *ReportHandler) generateReport(w http.ResponseWriter, r *http.Request) {
 		JSON(w, http.StatusBadRequest, map[string]any{
 			"success": false, "error": t("api.requireSimulationId", nil),
 		})
+		return
+	}
+	if !h.denyUnlessSimulationOwner(r, w, simulationID) {
 		return
 	}
 	if raw, exists := body["force_regenerate"]; exists {
@@ -317,7 +394,7 @@ func (h *ReportHandler) generateReport(w http.ResponseWriter, r *http.Request) {
 		"report_id":     reportID,
 	})
 
-	go h.runGenerate(taskID, reportID, simulationID, graphID, requirement, loc)
+	go h.runGenerate(taskID, reportID, simulationID, graphID, requirement, loc, llmFactory(r))
 
 	JSON(w, http.StatusOK, map[string]any{
 		"success": true,
@@ -332,7 +409,7 @@ func (h *ReportHandler) generateReport(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (h *ReportHandler) runGenerate(taskID, reportID, simulationID, graphID, requirement, loc string) {
+func (h *ReportHandler) runGenerate(taskID, reportID, simulationID, graphID, requirement, loc string, llmF func() (*llm.Client, error)) {
 	taskManager := models.GetTaskManager()
 	logger := h.Logger.With("task_id", taskID, "report_id", reportID)
 
@@ -346,6 +423,12 @@ func (h *ReportHandler) runGenerate(taskID, reportID, simulationID, graphID, req
 	}
 	if agent.Tools == nil {
 		agent.Tools = h.Tools
+	}
+	if llmF != nil {
+		agent.LLMFactory = llmF
+		if agent.Tools != nil {
+			agent.Tools.LLMFactory = llmF
+		}
 	}
 
 	reportResult := agent.GenerateReport(func(stage string, progress int, message string) {
@@ -384,6 +467,9 @@ func (h *ReportHandler) generateStatus(w http.ResponseWriter, r *http.Request) {
 	}
 	taskID := strings.TrimSpace(stringField(body, "task_id"))
 	simulationID := strings.TrimSpace(stringField(body, "simulation_id"))
+	if simulationID != "" && !h.denyUnlessSimulationOwner(r, w, simulationID) {
+		return
+	}
 
 	if simulationID != "" {
 		if existing := h.Reports.GetReportBySimulation(simulationID); existing != nil && existing.Status == report.StatusCompleted {
@@ -414,7 +500,32 @@ func (h *ReportHandler) generateStatus(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
+	if !h.ownsReportTask(r, taskID) {
+		JSON(w, http.StatusNotFound, map[string]any{
+			"success": false, "error": t("api.taskNotFound", map[string]string{"id": taskID}),
+		})
+		return
+	}
 	JSON(w, http.StatusOK, map[string]any{"success": true, "data": task.ToDict()})
+}
+
+// ownsReportTask — tarea de reporte propia del usuario (por sim o grafo).
+func (h *ReportHandler) ownsReportTask(r *http.Request, taskID string) bool {
+	uid := scopeID(r)
+	if uid == "" {
+		return true
+	}
+	t, ok := models.GetTaskManager().GetTask(taskID)
+	if !ok {
+		return false
+	}
+	if simID, _ := t.Metadata["simulation_id"].(string); simID != "" {
+		return h.simulationOwned(r, simID)
+	}
+	if graphID, _ := t.Metadata["graph_id"].(string); graphID != "" {
+		return h.ownerOfGraph(r, graphID)
+	}
+	return false
 }
 
 // ===== consulta =====
@@ -612,6 +723,9 @@ func (h *ReportHandler) chat(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
+	if !h.denyUnlessSimulationOwner(r, w, simulationID) {
+		return
+	}
 	if message == "" {
 		JSON(w, http.StatusBadRequest, map[string]any{
 			"success": false, "error": t("api.requireMessage", nil),
@@ -664,6 +778,12 @@ func (h *ReportHandler) chat(w http.ResponseWriter, r *http.Request) {
 	if agent.Tools == nil {
 		agent.Tools = h.Tools
 	}
+	if llmF := llmFactory(r); llmF != nil {
+		agent.LLMFactory = llmF
+		if agent.Tools != nil {
+			agent.Tools.LLMFactory = llmF
+		}
+	}
 	result := agent.Chat(message, history)
 	JSON(w, http.StatusOK, map[string]any{"success": true, "data": result})
 }
@@ -683,6 +803,9 @@ func (h *ReportHandler) toolsSearch(w http.ResponseWriter, r *http.Request) {
 		JSON(w, http.StatusBadRequest, map[string]any{
 			"success": false, "error": locale.T(loc, "api.requireGraphIdAndQuery", nil),
 		})
+		return
+	}
+	if !h.denyUnlessGraphOwner(r, w, graphID) {
 		return
 	}
 	limit := 10
@@ -705,6 +828,9 @@ func (h *ReportHandler) toolsStatistics(w http.ResponseWriter, r *http.Request) 
 		JSON(w, http.StatusBadRequest, map[string]any{
 			"success": false, "error": locale.T(loc, "api.requireGraphId", nil),
 		})
+		return
+	}
+	if !h.denyUnlessGraphOwner(r, w, graphID) {
 		return
 	}
 	JSON(w, http.StatusOK, map[string]any{"success": true, "data": h.Tools.GraphStatistics(graphID)})
