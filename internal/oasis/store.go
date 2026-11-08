@@ -783,6 +783,24 @@ func (s *Store) AppendAction(simulationID string, record ActionRecord) error {
 	return err
 }
 
+// PurgeSimulation borra TODOS los datos sociales de la simulación de la BD
+// (posts, comentarios, likes, follows, traces, recs, acciones, runs, users).
+// Se usa en el borrado total ("derecho al olvido").
+func (s *Store) PurgeSimulation(simulationID string) error {
+	if simulationID == "" || strings.ContainsAny(simulationID, `/\`) {
+		return fmt.Errorf("id inválido")
+	}
+	for _, table := range []string{
+		"oasis_posts", "oasis_comments", "oasis_likes", "oasis_follows",
+		"oasis_traces", "oasis_rec", "oasis_actions", "oasis_runs", "oasis_users",
+	} {
+		if _, err := s.db.Exec("DELETE FROM "+table+" WHERE simulation_id = ?", simulationID); err != nil {
+			return fmt.Errorf("purge %s: %w", table, err)
+		}
+	}
+	return nil
+}
+
 // ListActions devuelve acciones filtradas, de la más antigua a la más nueva.
 func (s *Store) ListActions(simulationID string, limit, offset int, platform string, agentID *int, roundNum *int) ([]ActionRecord, error) {
 	// Esta rebanada solo escribe acciones de Twitter; platform=reddit no
