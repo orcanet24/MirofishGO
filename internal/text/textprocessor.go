@@ -9,12 +9,12 @@ import (
 // PreprocessText replica TextProcessor.preprocess_text: CRLF→LF, máx 2 saltos
 // seguidos, trim de líneas y del conjunto.
 func PreprocessText(text string) string {
-	// 标准化换行
+	// normalizar saltos de línea
 	text = strings.ReplaceAll(text, "\r\n", "\n")
 	text = strings.ReplaceAll(text, "\r", "\n")
-	// 移除连续空行（保留最多两个换行）
+	// eliminar líneas vacías consecutivas (máximo dos saltos)
 	text = reBlank.ReplaceAllString(text, "\n\n")
-	// 移除行首行尾空白
+	// eliminar espacios al inicio y final de cada línea
 	lines := strings.Split(text, "\n")
 	for i, line := range lines {
 		lines[i] = strings.TrimSpace(line)

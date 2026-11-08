@@ -366,10 +366,15 @@ func (h *SimulationHandler) handlePOST(w http.ResponseWriter, r *http.Request) {
 		h.stopSimulation(w, r)
 	case len(segs) == 1 && segs[0] == "env-status":
 		h.envStatus(w, r)
-	case len(segs) == 1 && (segs[0] == "interview" || segs[0] == "close-env"):
-		h.notPorted(w, "POST /api/simulation/"+segs[0])
-	case len(segs) == 2 && segs[0] == "interview":
-		h.notPorted(w, "POST /api/simulation/interview/"+segs[1])
+	case len(segs) == 1 && segs[0] == "interview":
+		h.interview(w, r)
+	case len(segs) == 2 && segs[0] == "interview" && segs[1] == "batch":
+		h.interviewBatch(w, r)
+	case len(segs) == 2 && segs[0] == "interview" && segs[1] == "all":
+		h.interviewAll(w, r)
+	case len(segs) == 1 && segs[0] == "close-env":
+		// Cierre elegante = detener la simulación (el motor vive en proceso).
+		h.stopSimulation(w, r)
 	default:
 		HTTPError(w, http.StatusNotFound, "not found")
 	}
@@ -397,7 +402,7 @@ func (h *SimulationHandler) graphEntities(w http.ResponseWriter, r *http.Request
 	reader := simx.NewEntityReader(h.Client)
 	filtered, err := reader.FilterDefinedEntities(graphID, entityTypes, enrich)
 	if err != nil {
-		h.Logger.Error("获取图谱实体失败", "graph_id", graphID, "error", err)
+		h.Logger.Error("No se pudieron obtener las entidades del grafo", "graph_id", graphID, "error", err)
 		JSON(w, http.StatusInternalServerError, map[string]any{
 			"success": false, "error": err.Error(),
 		})
@@ -423,7 +428,7 @@ func (h *SimulationHandler) entityDetail(w http.ResponseWriter, r *http.Request,
 	reader := simx.NewEntityReader(h.Client)
 	entity, err := reader.GetEntityWithContext(graphID, entityUUID)
 	if err != nil {
-		h.Logger.Error("获取实体详情失败", "entity_uuid", entityUUID, "error", err)
+		h.Logger.Error("No se pudieron obtener los detalles de la entidad", "entity_uuid", entityUUID, "error", err)
 		JSON(w, http.StatusInternalServerError, map[string]any{
 			"success": false, "error": err.Error(),
 		})
@@ -444,7 +449,7 @@ func (h *SimulationHandler) graphEntitiesByType(w http.ResponseWriter, r *http.R
 	reader := simx.NewEntityReader(h.Client)
 	entities, err := reader.GetEntitiesByType(graphID, entityType, enrich)
 	if err != nil {
-		h.Logger.Error("获取实体失败", "graph_id", graphID, "type", entityType, "error", err)
+		h.Logger.Error("No se pudieron obtener las entidades", "graph_id", graphID, "type", entityType, "error", err)
 		JSON(w, http.StatusInternalServerError, map[string]any{
 			"success": false, "error": err.Error(),
 		})
@@ -647,7 +652,7 @@ func (h *SimulationHandler) history(w http.ResponseWriter, r *http.Request) {
 				}
 				name := f.Filename
 				if name == "" {
-					name = "未知文件"
+					name = "archivo desconocido"
 				}
 				files = append(files, map[string]any{"filename": name})
 			}
@@ -991,7 +996,7 @@ func (h *SimulationHandler) runPrepare(taskID, simulationID, loc, requirement, d
 		entityTypes, useLLM, progressCallback, parallelProfileCount, loc, llmF,
 	)
 	if err != nil {
-		logger.Error("准备模拟失败", "error", err)
+		logger.Error("Fallo al preparar la simulación", "error", err)
 		// PrepareSimulation ya deja el estado FAILED en sus rutas de error;
 		// se re-guarda para cubrir errores externos al manager.
 		if state := h.Manager.GetSimulation(simulationID); state != nil && state.Status != simx.SimFailed {
@@ -1011,7 +1016,7 @@ func (h *SimulationHandler) runPrepare(taskID, simulationID, loc, requirement, d
 	}
 
 	taskManager.CompleteTask(taskID, prepared.ToSimpleDict())
-	logger.Info("准备模拟完成", "profiles", prepared.ProfilesCount)
+	logger.Info("Preparación de la simulación completada", "profiles", prepared.ProfilesCount)
 }
 
 func statusPtr(s models.TaskStatus) *models.TaskStatus { return &s }
@@ -1130,13 +1135,13 @@ func (h *SimulationHandler) simulationProfiles(w http.ResponseWriter, r *http.Re
 	}
 	if platform != "twitter" && platform != "reddit" {
 		JSON(w, http.StatusNotFound, map[string]any{
-			"success": false, "error": "不支持的平台: " + platform,
+			"success": false, "error": "Plataforma no soportada: " + platform,
 		})
 		return
 	}
 	profiles, err := h.Manager.GetProfiles(simulationID, platform)
 	if err != nil {
-		h.Logger.Error("获取Profile失败", "simulation_id", simulationID, "error", err)
+		h.Logger.Error("No se pudieron obtener los perfiles", "simulation_id", simulationID, "error", err)
 		JSON(w, http.StatusInternalServerError, map[string]any{
 			"success": false, "error": err.Error(),
 		})
@@ -1299,7 +1304,7 @@ func (h *SimulationHandler) startSimulation(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	maxRounds := 0
+	maxRounds := h.Cfg.OASISDefaultMaxRounds
 	if raw, ok := body["max_rounds"]; ok && raw != nil {
 		n := intFromAny(raw)
 		if n <= 0 {
@@ -1427,6 +1432,24 @@ func (h *SimulationHandler) stopSimulation(w http.ResponseWriter, r *http.Reques
 				"data": map[string]any{
 					"simulation_id": simulationID,
 					"runner_status": "stopping",
+				},
+			})
+			return
+		}
+		// Sin runner activo: stop idempotente. Si el estado quedé en "running"
+		// (legado o proceso caído), se corrige a "stopped" en vez de dar 400.
+		if strings.Contains(err.Error(), "no hay una ejecución activa") &&
+			(state.Status == simx.SimRunning || state.Status == simx.SimStopping || state.Status == simx.SimPaused) {
+			state.Status = simx.SimStopped
+			state.TwitterStatus = "stopped"
+			state.RedditStatus = "stopped"
+			h.Manager.SaveSimulationState(state)
+			JSON(w, http.StatusOK, map[string]any{
+				"success": true,
+				"data": map[string]any{
+					"simulation_id": simulationID,
+					"runner_status": "stopped",
+					"recovered":     true,
 				},
 			})
 			return
@@ -1689,7 +1712,7 @@ func (h *SimulationHandler) generateProfiles(w http.ResponseWriter, r *http.Requ
 	reader := simx.NewEntityReader(h.Client)
 	filtered, err := reader.FilterDefinedEntities(graphID, entityTypes, true)
 	if err != nil {
-		h.Logger.Error("生成Profile失败", "graph_id", graphID, "error", err)
+		h.Logger.Error("No se pudieron generar los perfiles", "graph_id", graphID, "error", err)
 		JSON(w, http.StatusInternalServerError, map[string]any{
 			"success": false, "error": err.Error(),
 		})

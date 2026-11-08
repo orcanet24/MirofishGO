@@ -33,8 +33,8 @@ func TestShortOntologyContextKeepsOriginalText(t *testing.T) {
 	if context != "short document body" {
 		t.Errorf("context = %q", context)
 	}
-	if strings.Contains(context, "长文本自动分块摘要") {
-		t.Error("contexto corto no debe tener cabecera de分块")
+	if strings.Contains(context, "Resumen automático de fragmentación") {
+		t.Error("contexto corto no debe tener cabecera de bloque")
 	}
 }
 
@@ -47,10 +47,10 @@ func TestLongOntologyContextSamplesAcrossDocument(t *testing.T) {
 	if runes := len([]rune(context)); runes > g.MaxTextLengthForLLM {
 		t.Fatalf("len(context) = %d > %d", runes, g.MaxTextLengthForLLM)
 	}
-	if !strings.Contains(context, "长文本自动分块摘要") {
-		t.Error("falta cabecera de摘要")
+	if !strings.Contains(context, "Resumen automático de fragmentación") {
+		t.Error("falta cabecera de resumen")
 	}
-	for _, need := range []string{"BEGIN", "MIDDLE", "END", "分块 1/", "分块 3/", "分块 5/"} {
+	for _, need := range []string{"BEGIN", "MIDDLE", "END", "Bloque 1/", "Bloque 3/", "Bloque 5/"} {
 		if !strings.Contains(context, need) {
 			t.Errorf("contexto sin %q", need)
 		}
@@ -74,7 +74,7 @@ func TestVeryLongOntologyContextSelectsRepresentativeChunks(t *testing.T) {
 	if !strings.Contains(context, "BEGIN") || !strings.Contains(context, "FINALEND") {
 		t.Error("deben conservarse inicio y fin")
 	}
-	if got := strings.Count(context, "--- 文档 1 / 分块"); got != g.MaxLongTextChunks {
+	if got := strings.Count(context, "--- Documento 1 / Bloque"); got != g.MaxLongTextChunks {
 		t.Errorf("headers = %d, want %d", got, g.MaxLongTextChunks)
 	}
 }

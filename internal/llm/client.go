@@ -52,7 +52,7 @@ func NewClient(apiKey, baseURL, model string) (*Client, error) {
 		apiKey = c.LLMAPIKey
 	}
 	if apiKey == "" {
-		return nil, fmt.Errorf("LLM_API_KEY 未配置")
+		return nil, fmt.Errorf("LLM_API_KEY no configurada")
 	}
 	if baseURL == "" {
 		baseURL = c.LLMBaseURL

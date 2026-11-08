@@ -17,11 +17,12 @@ import (
 	"mirofish/internal/graph"
 )
 
-// requiredTables son las tablas que crean el grafo y OASIS al arrancar.
+// requiredTables son las tablas que crean el grafo, OASIS y usuarios al arrancar.
 var requiredTables = []string{
 	"graphs", "nodes", "edges", "episodes", "batches", "batch_items",
 	"oasis_users", "oasis_posts", "oasis_comments", "oasis_follows", "oasis_likes",
 	"oasis_traces", "oasis_rec", "oasis_actions", "oasis_runs",
+	"users",
 }
 
 // newReadinessHandler devuelve el handler de /ready. dbErr es el fallo de

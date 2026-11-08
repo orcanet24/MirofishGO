@@ -18,6 +18,10 @@ import (
 type Tools struct {
 	Client     *graph.Client
 	LLMFactory func() (*llm.Client, error)
+
+	// Interview genera entrevistas reales a agentes simulados (lo inyecta
+	// httpx, que conoce el gestor de simulaciones y el LLM del usuario).
+	Interview func(simulationID, topic string, maxAgents int) string
 }
 
 // NewTools crea el servicio de herramientas.
@@ -52,16 +56,29 @@ func (r *SearchResult) ToDict() map[string]any {
 	}
 }
 
-// ToText replica SearchResult.to_text.
+// ToText replica SearchResult.to_text, con las secciones de aristas y nodos
+// que el frontend parsea (mismos marcadores que el Python: español).
 func (r *SearchResult) ToText() string {
 	parts := []string{
-		"搜索查询: " + r.Query,
-		fmt.Sprintf("找到 %d 条相关信息", r.TotalCount),
+		"Consulta de búsqueda: " + r.Query,
+		fmt.Sprintf("Se encontraron %d resultados relevantes", r.TotalCount),
 	}
 	if len(r.Facts) > 0 {
-		parts = append(parts, "\n### 相关事实:")
+		parts = append(parts, "\n### Hechos relevantes:")
 		for i, fact := range r.Facts {
 			parts = append(parts, fmt.Sprintf("%d. %s", i+1, fact))
+		}
+	}
+	if len(r.Edges) > 0 {
+		parts = append(parts, "\n### Aristas relevantes:")
+		for i, e := range r.Edges {
+			parts = append(parts, fmt.Sprintf("%d. %v", i+1, e))
+		}
+	}
+	if len(r.Nodes) > 0 {
+		parts = append(parts, "\n### Nodos relevantes:")
+		for i, n := range r.Nodes {
+			parts = append(parts, fmt.Sprintf("%d. %v", i+1, n))
 		}
 	}
 	return strings.Join(parts, "\n")
@@ -194,28 +211,28 @@ func (p *PanoramaResult) ToDict() map[string]any {
 // ToText replica PanoramaResult.to_text.
 func (p *PanoramaResult) ToText() string {
 	parts := []string{
-		"## 广度搜索结果（未来全景视图）",
-		"查询: " + p.Query,
-		"\n### 统计信息",
-		fmt.Sprintf("- 总节点数: %d", p.TotalNodes),
-		fmt.Sprintf("- 总边数: %d", p.TotalEdges),
-		fmt.Sprintf("- 当前有效事实: %d条", p.ActiveCount),
-		fmt.Sprintf("- 历史/过期事实: %d条", p.HistoricalCount),
+		"## Resultados de búsqueda panorámica (vista de futuro completa)",
+		"Consulta: " + p.Query,
+		"\n### Estadísticas",
+		fmt.Sprintf("- Nodos totales: %d", p.TotalNodes),
+		fmt.Sprintf("- Aristas totales: %d", p.TotalEdges),
+		fmt.Sprintf("- Hechos vigentes: %d", p.ActiveCount),
+		fmt.Sprintf("- Hechos históricos/expirados: %d", p.HistoricalCount),
 	}
 	if len(p.ActiveFacts) > 0 {
-		parts = append(parts, "\n### 【当前有效事实】(模拟结果原文)")
+		parts = append(parts, "\n### 【Hechos vigentes】(texto original de la simulación)")
 		for i, fact := range p.ActiveFacts {
 			parts = append(parts, fmt.Sprintf("%d. \"%s\"", i+1, fact))
 		}
 	}
 	if len(p.HistoricalFacts) > 0 {
-		parts = append(parts, "\n### 【历史/过期事实】(演变过程记录)")
+		parts = append(parts, "\n### 【Hechos históricos/expirados】(registro de la evolución)")
 		for i, fact := range p.HistoricalFacts {
 			parts = append(parts, fmt.Sprintf("%d. \"%s\"", i+1, fact))
 		}
 	}
 	if len(p.AllNodes) > 0 {
-		parts = append(parts, "\n### 【涉及实体】")
+		parts = append(parts, "\n### 【Entidades implicadas】")
 		for _, node := range p.AllNodes {
 			parts = append(parts, fmt.Sprintf("- **%s** (%s)", str(node["name"]), entityTypeOf(node)))
 		}
@@ -238,7 +255,7 @@ func entityTypeOf(node map[string]any) string {
 			}
 		}
 	}
-	return "实体"
+	return "Entidad"
 }
 
 // PanoramaSearch replica panorama_search.
@@ -275,11 +292,11 @@ func (t *Tools) PanoramaSearch(graphID, query string, includeExpired bool, limit
 			continue
 		}
 		if e.ExpiredAt != nil || e.InvalidAt != nil {
-			validAt := "未知"
+			validAt := "desconocido"
 			if e.ValidAt != nil {
 				validAt = *e.ValidAt
 			}
-			invalidAt := "未知"
+			invalidAt := "desconocido"
 			if e.InvalidAt != nil {
 				invalidAt = *e.InvalidAt
 			} else if e.ExpiredAt != nil {
@@ -368,40 +385,40 @@ func (r *InsightResult) ToDict() map[string]any {
 // ToText replica InsightForgeResult.to_text.
 func (r *InsightResult) ToText() string {
 	parts := []string{
-		"## 未来预测深度分析",
-		"分析问题: " + r.Query,
-		"预测场景: " + r.SimulationRequirement,
-		"\n### 预测数据统计",
-		fmt.Sprintf("- 相关预测事实: %d条", r.TotalFacts),
-		fmt.Sprintf("- 涉及实体: %d个", r.TotalEntities),
-		fmt.Sprintf("- 关系链: %d条", r.TotalRelationships),
+		"## Análisis profundo de predicción de futuro",
+		"Pregunta analizada: " + r.Query,
+		"Escenario de predicción: " + r.SimulationRequirement,
+		"\n### Estadísticas de predicción",
+		fmt.Sprintf("- Hechos predictivos relevantes: %d", r.TotalFacts),
+		fmt.Sprintf("- Entidades implicadas: %d", r.TotalEntities),
+		fmt.Sprintf("- Cadenas de relación: %d", r.TotalRelationships),
 	}
 	if len(r.SubQueries) > 0 {
-		parts = append(parts, "\n### 分析的子问题")
+		parts = append(parts, "\n### Subpreguntas analizadas")
 		for i, sq := range r.SubQueries {
 			parts = append(parts, fmt.Sprintf("%d. %s", i+1, sq))
 		}
 	}
 	if len(r.SemanticFacts) > 0 {
-		parts = append(parts, "\n### 【关键事实】(请在报告中引用这些原文)")
+		parts = append(parts, "\n### 【Hechos clave】(cita estos textos originales en el informe)")
 		for i, fact := range r.SemanticFacts {
 			parts = append(parts, fmt.Sprintf("%d. \"%s\"", i+1, fact))
 		}
 	}
 	if len(r.EntityInsights) > 0 {
-		parts = append(parts, "\n### 【核心实体】")
+		parts = append(parts, "\n### 【Entidades principales】")
 		for _, entity := range r.EntityInsights {
 			parts = append(parts, fmt.Sprintf("- **%s** (%s)", str(entity["name"]), str(entity["type"])))
 			if summary := str(entity["summary"]); summary != "" {
-				parts = append(parts, "  摘要: \""+summary+"\"")
+				parts = append(parts, "  Resumen: \""+summary+"\"")
 			}
 			if facts, ok := entity["related_facts"].([]string); ok && len(facts) > 0 {
-				parts = append(parts, fmt.Sprintf("  相关事实: %d条", len(facts)))
+				parts = append(parts, fmt.Sprintf("  Hechos relacionados: %d", len(facts)))
 			}
 		}
 	}
 	if len(r.RelationshipChains) > 0 {
-		parts = append(parts, "\n### 【关系链】")
+		parts = append(parts, "\n### 【Cadenas de relación】")
 		for _, chain := range r.RelationshipChains {
 			parts = append(parts, "- "+chain)
 		}
@@ -493,9 +510,9 @@ func (t *Tools) InsightForge(graphID, query, simulationRequirement, reportContex
 
 // generateSubQueries replica _generate_sub_queries con fallback local.
 func (t *Tools) generateSubQueries(query, simulationRequirement, reportContext string, maxQueries int) []string {
-	systemPrompt := "你是一个专业的问题分析专家。你的任务是将一个复杂问题分解为多个可以在模拟世界中独立观察的子问题。\n\n" +
-		"要求：\n1. 每个子问题应该足够具体，可以在模拟世界中找到相关的Agent行为或事件\n" +
-		"2. 子问题应该覆盖原问题的不同维度\n3. 返回JSON格式：{\"sub_queries\": [\"子问题1\", ...]}"
+	systemPrompt := "Eres un experto en análisis de problemas. Tu tarea es descomponer un problema complejo en varios subproblemas que puedan observarse de forma independiente en el mundo simulado.\n\n" +
+		"Requisitos:\n1. Cada subproblema debe ser lo bastante concreto para encontrar comportamientos o eventos de Agentes relevantes en el mundo simulado\n" +
+		"2. Los subproblemas deben cubrir distintas dimensiones del problema original\n3. Devuelve un JSON con este formato: {\"sub_queries\": [\"subproblema1\", ...]}"
 
 	contextLine := ""
 	if reportContext != "" {
@@ -503,9 +520,9 @@ func (t *Tools) generateSubQueries(query, simulationRequirement, reportContext s
 		if len(runes) > 500 {
 			reportContext = string(runes[:500])
 		}
-		contextLine = "报告上下文：" + reportContext + "\n\n"
+		contextLine = "Contexto del informe: " + reportContext + "\n\n"
 	}
-	userPrompt := fmt.Sprintf("模拟需求背景：\n%s\n\n%s请将以下问题分解为%d个子问题：\n%s\n\n返回JSON格式的子问题列表。",
+	userPrompt := fmt.Sprintf("Contexto de la necesidad de simulación:\n%s\n\n%sDescompón la siguiente pregunta en %d subproblemas:\n%s\n\nDevuelve la lista de subproblemas en formato JSON.",
 		simulationRequirement, contextLine, maxQueries, query)
 
 	if client, err := t.llmClient(); err == nil {
@@ -532,9 +549,9 @@ func (t *Tools) generateSubQueries(query, simulationRequirement, reportContext s
 
 	fallback := []string{
 		query,
-		query + " 的主要参与者",
-		query + " 的原因和影响",
-		query + " 的发展过程",
+		query + ": principales participantes",
+		query + ": causas y efectos",
+		query + ": proceso de desarrollo",
 	}
 	if len(fallback) > maxQueries {
 		fallback = fallback[:maxQueries]
@@ -642,11 +659,12 @@ func (t *Tools) EntitySummary(graphID, entityName string) map[string]any {
 	return nil
 }
 
-// InterviewAgents: el motor OASIS/runner no está portado, así que devuelve un
-// mensaje explícito en lugar de una entrevista inventada. El agente puede
-// continuar el informe con las otras tres herramientas.
+// InterviewAgents usa el motor de entrevistas en proceso (oasis.InterviewAgents)
+// cuando httpx inyecta la función; si no, informa de que no está disponible.
 func (t *Tools) InterviewAgents(simulationID, interviewRequirement string, maxAgents int) string {
-	return "工具执行失败: interview_agents 需要 el runner y el motor OASIS en ejecución, " +
-		"que todavía no están portados al binario Go. Usa insight_forge, panorama_search o " +
-		"quick_search para basar el informe en el grafo de conocimiento."
+	if t.Interview != nil {
+		return t.Interview(simulationID, interviewRequirement, maxAgents)
+	}
+	return "Error al ejecutar la herramienta: interview_agents no está disponible en este contexto. " +
+		"Usa insight_forge, panorama_search o quick_search para basar el informe en el grafo de conocimiento."
 }

@@ -116,7 +116,7 @@ type ConfigGenerator struct {
 }
 
 // NewConfigGenerator crea el generador.
-func NewConfigGenerator() *ConfigGenerator { return &ConfigGenerator{Locale: "zh"} }
+func NewConfigGenerator() *ConfigGenerator { return &ConfigGenerator{Locale: "es"} }
 
 const (
 	maxContextLength        = 50000
@@ -234,15 +234,15 @@ func (g *ConfigGenerator) GenerateConfig(
 		GeneratedAt:           time.Now().Format("2006-01-02T15:04:05.999999"),
 		GenerationReasoning:   strings.Join(reasoningParts, " | "),
 	}
-	logger.Info(fmt.Sprintf("模拟配置生成完成: %d 个Agent配置", len(params.AgentConfigs)))
+	logger.Info(fmt.Sprintf("Generación de configuración de simulación completada: %d configuraciones de Agent", len(params.AgentConfigs)))
 	return params, nil
 }
 
 func (g *ConfigGenerator) buildContext(simulationRequirement, documentText string, entities []EntityNode) string {
 	entitySummary := g.summarizeEntities(entities)
 	parts := []string{
-		fmt.Sprintf("## 模拟需求\n%s", simulationRequirement),
-		fmt.Sprintf("\n## 实体信息 (%d个)\n%s", len(entities), entitySummary),
+		fmt.Sprintf(g.t("prompt.simx.simulationRequirementHeader", nil), simulationRequirement),
+		fmt.Sprintf(g.t("prompt.simx.entityInfoHeader", nil), len(entities), entitySummary),
 	}
 	currentLength := 0
 	for _, p := range parts {
@@ -252,9 +252,9 @@ func (g *ConfigGenerator) buildContext(simulationRequirement, documentText strin
 	if remainingLength > 0 && documentText != "" {
 		docText := documentText
 		if len([]rune(docText)) > remainingLength {
-			docText = string([]rune(docText)[:remainingLength]) + "\n...(文档已截断)"
+			docText = string([]rune(docText)[:remainingLength]) + g.t("prompt.simx.documentTruncated", nil)
 		}
-		parts = append(parts, fmt.Sprintf("\n## 原始文档内容\n%s", docText))
+		parts = append(parts, fmt.Sprintf(g.t("prompt.simx.originalDocumentHeader", nil), docText))
 	}
 	return strings.Join(parts, "\n")
 }
@@ -275,7 +275,7 @@ func (g *ConfigGenerator) summarizeEntities(entities []EntityNode) string {
 	lines := []string{}
 	for _, entityType := range order {
 		typeEntities := byType[entityType]
-		lines = append(lines, fmt.Sprintf("\n### %s (%d个)", entityType, len(typeEntities)))
+		lines = append(lines, fmt.Sprintf(g.t("prompt.simx.entityTypeHeader", nil), entityType, len(typeEntities)))
 		displayCount := entitiesPerTypeDisplay
 		for i, e := range typeEntities {
 			if i >= displayCount {
@@ -288,7 +288,7 @@ func (g *ConfigGenerator) summarizeEntities(entities []EntityNode) string {
 			lines = append(lines, fmt.Sprintf("- %s: %s", e.Name, summaryPreview))
 		}
 		if len(typeEntities) > displayCount {
-			lines = append(lines, fmt.Sprintf("  ... 还有 %d 个", len(typeEntities)-displayCount))
+			lines = append(lines, fmt.Sprintf(g.t("prompt.simx.moreEntities", nil), len(typeEntities)-displayCount))
 		}
 	}
 	return strings.Join(lines, "\n")
@@ -317,14 +317,14 @@ func (g *ConfigGenerator) callLLMWithRetry(prompt, systemPrompt string) (map[str
 		}
 		content := llm.ExtractChatCompletionText(resp)
 		if len(resp.Choices) > 0 && resp.Choices[0].FinishReason == "length" {
-			logger.Warn(fmt.Sprintf("LLM输出被截断 (attempt %d)", attempt+1))
+			logger.Warn(fmt.Sprintf("Salida del LLM truncada (intento %d)", attempt+1))
 			content = fixTruncatedJSON(content)
 		}
 		var result map[string]any
 		if err := json.Unmarshal([]byte(content), &result); err == nil {
 			return result, nil
 		} else {
-			logger.Warn(fmt.Sprintf("JSON解析失败 (attempt %d): %v", attempt+1, truncateErr(err)))
+			logger.Warn(fmt.Sprintf("Error al analizar JSON (intento %d): %v", attempt+1, truncateErr(err)))
 			if fixed := g.tryFixConfigJSON(content); fixed != nil {
 				return fixed, nil
 			}
@@ -332,7 +332,7 @@ func (g *ConfigGenerator) callLLMWithRetry(prompt, systemPrompt string) (map[str
 		}
 	}
 	if lastError == nil {
-		lastError = fmt.Errorf("LLM调用失败")
+		lastError = fmt.Errorf("Error en la llamada al LLM")
 	}
 	return nil, lastError
 }
@@ -376,57 +376,14 @@ func (g *ConfigGenerator) generateTimeConfig(context string, numEntities int) ma
 	contextTruncated := truncateRunes(context, timeConfigContextLength)
 	maxAgentsAllowed := maxInt(1, int(float64(numEntities)*0.9))
 
-	prompt := fmt.Sprintf(`基于以下模拟需求，生成时间模拟配置。
+	prompt := fmt.Sprintf(g.t("prompt.simx.timeUser", nil), contextTruncated, maxAgentsAllowed, maxAgentsAllowed)
 
-%s
-
-## 任务
-请生成时间配置JSON。
-
-### 基本原则（仅供参考，需根据具体事件和参与群体灵活调整）：
-- 请根据模拟场景推断目标用户群体所在时区和作息习惯，以下为东八区(UTC+8)的参考示例
-- 凌晨0-5点几乎无人活动（活跃度系数0.05）
-- 早上6-8点逐渐活跃（活跃度系数0.4）
-- 工作时间9-18点中等活跃（活跃度系数0.7）
-- 晚间19-22点是高峰期（活跃度系数1.5）
-- 23点后活跃度下降（活跃度系数0.5）
-- 一般规律：凌晨低活跃、早间渐增、工作时段中等、晚间高峰
-- **重要**：以下示例值仅供参考，你需要根据事件性质、参与群体特点来调整具体时段
-  - 例如：学生群体高峰可能是21-23点；媒体全天活跃；官方机构只在工作时间
-  - 例如：突发热点可能导致深夜也有讨论，off_peak_hours 可适当缩短
-
-### 返回JSON格式（不要markdown）
-
-示例：
-{
-    "total_simulation_hours": 72,
-    "minutes_per_round": 60,
-    "agents_per_hour_min": 5,
-    "agents_per_hour_max": 50,
-    "peak_hours": [19, 20, 21, 22],
-    "off_peak_hours": [0, 1, 2, 3, 4, 5],
-    "morning_hours": [6, 7, 8],
-    "work_hours": [9, 10, 11, 12, 13, 14, 15, 16, 17, 18],
-    "reasoning": "针对该事件的时间配置说明"
-}
-
-字段说明：
-- total_simulation_hours (int): 模拟总时长，24-168小时，突发事件短、持续话题长
-- minutes_per_round (int): 每轮时长，30-120分钟，建议60分钟
-- agents_per_hour_min (int): 每小时最少激活Agent数（取值范围: 1-%d）
-- agents_per_hour_max (int): 每小时最多激活Agent数（取值范围: 1-%d）
-- peak_hours (int数组): 高峰时段，根据事件参与群体调整
-- off_peak_hours (int数组): 低谷时段，通常深夜凌晨
-- morning_hours (int数组): 早间时段
-- work_hours (int数组): 工作时段
-- reasoning (string): 简要说明为什么这样配置`, contextTruncated, maxAgentsAllowed, maxAgentsAllowed)
-
-	systemPrompt := "你是社交媒体模拟专家。返回纯JSON格式，时间配置需符合模拟场景中目标用户群体的作息习惯。"
+	systemPrompt := g.t("prompt.simx.timeSystem", nil)
 	systemPrompt = systemPrompt + "\n\n" + g.langInstruction()
 
 	result, err := g.callLLMWithRetry(prompt, systemPrompt)
 	if err != nil {
-		logger.Warn(fmt.Sprintf("时间配置LLM生成失败: %v, 使用默认配置", err))
+		logger.Warn(fmt.Sprintf("Error al generar la configuración de tiempo con el LLM: %v; se usa la configuración por defecto", err))
 		return g.defaultTimeConfig(numEntities)
 	}
 	return result
@@ -442,7 +399,7 @@ func (g *ConfigGenerator) defaultTimeConfig(numEntities int) map[string]any {
 		"off_peak_hours":         []int{0, 1, 2, 3, 4, 5},
 		"morning_hours":          []int{6, 7, 8},
 		"work_hours":             intRange(9, 19),
-		"reasoning":              "使用默认中国人作息配置（每轮1小时）",
+		"reasoning":              g.t("prompt.simx.defaultTimeReasoning", nil),
 	}
 }
 
@@ -451,16 +408,16 @@ func (g *ConfigGenerator) parseTimeConfig(result map[string]any, numEntities int
 	agentsPerHourMax := intFromAny(result["agents_per_hour_max"], maxInt(5, numEntities/5))
 
 	if agentsPerHourMin > numEntities {
-		logger.Warn(fmt.Sprintf("agents_per_hour_min (%d) 超过总Agent数 (%d)，已修正", agentsPerHourMin, numEntities))
+		logger.Warn(fmt.Sprintf("agents_per_hour_min (%d) supera el total de Agentes (%d); corregido", agentsPerHourMin, numEntities))
 		agentsPerHourMin = maxInt(1, numEntities/10)
 	}
 	if agentsPerHourMax > numEntities {
-		logger.Warn(fmt.Sprintf("agents_per_hour_max (%d) 超过总Agent数 (%d)，已修正", agentsPerHourMax, numEntities))
+		logger.Warn(fmt.Sprintf("agents_per_hour_max (%d) supera el total de Agentes (%d); corregido", agentsPerHourMax, numEntities))
 		agentsPerHourMax = maxInt(agentsPerHourMin+1, numEntities/2)
 	}
 	if agentsPerHourMin >= agentsPerHourMax {
 		agentsPerHourMin = maxInt(1, agentsPerHourMax/2)
-		logger.Warn(fmt.Sprintf("agents_per_hour_min >= max，已修正为 %d", agentsPerHourMin))
+		logger.Warn(fmt.Sprintf("agents_per_hour_min >= max; corregido a %d", agentsPerHourMin))
 	}
 
 	return TimeSimulationConfig{
@@ -503,46 +460,19 @@ func (g *ConfigGenerator) generateEventConfig(context, simulationRequirement str
 	typeInfo := strings.Join(lines, "\n")
 	contextTruncated := truncateRunes(context, eventConfigContextLength)
 
-	prompt := fmt.Sprintf(`基于以下模拟需求，生成事件配置。
+	prompt := fmt.Sprintf(g.t("prompt.simx.eventUser", nil), simulationRequirement, contextTruncated, typeInfo)
 
-模拟需求: %s
-
-%s
-
-## 可用实体类型及示例
-%s
-
-## 任务
-请生成事件配置JSON：
-- 提取热点话题关键词
-- 描述舆论发展方向
-- 设计初始帖子内容，**每个帖子必须指定 poster_type（发布者类型）**
-
-**重要**: poster_type 必须从上面的"可用实体类型"中选择，这样初始帖子才能分配给合适的 Agent 发布。
-例如：官方声明应由 Official/University 类型发布，新闻由 MediaOutlet 发布，学生观点由 Student 发布。
-
-返回JSON格式（不要markdown）：
-{
-    "hot_topics": ["关键词1", "关键词2", ...],
-    "narrative_direction": "<舆论发展方向描述>",
-    "initial_posts": [
-        {"content": "帖子内容", "poster_type": "实体类型（必须从可用类型中选择）"},
-        ...
-    ],
-    "reasoning": "<简要说明>"
-}`, simulationRequirement, contextTruncated, typeInfo)
-
-	systemPrompt := "你是舆论分析专家。返回纯JSON格式。注意 poster_type 必须精确匹配可用实体类型。"
+	systemPrompt := g.t("prompt.simx.eventSystem", nil)
 	systemPrompt = systemPrompt + "\n\n" + g.langInstruction() + "\nIMPORTANT: The 'poster_type' field value MUST be in English PascalCase exactly matching the available entity types. Only 'content', 'narrative_direction', 'hot_topics' and 'reasoning' fields should use the specified language."
 
 	result, err := g.callLLMWithRetry(prompt, systemPrompt)
 	if err != nil {
-		logger.Warn(fmt.Sprintf("事件配置LLM生成失败: %v, 使用默认配置", err))
+		logger.Warn(fmt.Sprintf("Error al generar la configuración de eventos con el LLM: %v; se usa la configuración por defecto", err))
 		return map[string]any{
 			"hot_topics":          []string{},
 			"narrative_direction": "",
 			"initial_posts":       []map[string]any{},
-			"reasoning":           "使用默认配置",
+			"reasoning":           g.t("prompt.simx.defaultConfigReasoning", nil),
 		}
 	}
 	return result
@@ -613,7 +543,7 @@ func (g *ConfigGenerator) assignInitialPostAgents(eventConfig EventConfig, agent
 		}
 
 		if !found {
-			logger.Warn(fmt.Sprintf("未找到类型 '%s' 的匹配 Agent，使用影响力最高的 Agent", posterType))
+			logger.Warn(fmt.Sprintf("No se encontró un Agent del tipo '%s'; se usa el Agent con mayor influencia", posterType))
 			if len(agentConfigs) > 0 {
 				sorted := make([]AgentActivityConfig, len(agentConfigs))
 				copy(sorted, agentConfigs)
@@ -629,7 +559,7 @@ func (g *ConfigGenerator) assignInitialPostAgents(eventConfig EventConfig, agent
 			"poster_type":    strOr(post["poster_type"]),
 			"poster_agent_id": matchedAgentID,
 		})
-		logger.Info(fmt.Sprintf("初始帖子分配: poster_type='%s' -> agent_id=%d", posterType, matchedAgentID))
+		logger.Info(fmt.Sprintf("Asignación de publicación inicial: poster_type='%s' -> agent_id=%d", posterType, matchedAgentID))
 	}
 	eventConfig.InitialPosts = updatedPosts
 	return eventConfig
@@ -655,48 +585,14 @@ func (g *ConfigGenerator) generateAgentConfigsBatch(context string, entities []E
 	}
 	entityJSON, _ := json.MarshalIndent(entityList, "", "  ")
 
-	prompt := fmt.Sprintf(`基于以下信息，为每个实体生成社交媒体活动配置。
+	prompt := fmt.Sprintf(g.t("prompt.simx.agentUser", nil), simulationRequirement, string(entityJSON))
 
-模拟需求: %s
-
-## 实体列表
-`+"```json"+`
-%s
-`+"```"+`
-
-## 任务
-为每个实体生成活动配置，注意：
-- **时间符合目标用户群体作息**：以下为参考（东八区），请根据模拟场景调整
-- **官方机构**（University/GovernmentAgency）：活跃度低(0.1-0.3)，工作时间(9-17)活动，响应慢(60-240分钟)，影响力高(2.5-3.0)
-- **媒体**（MediaOutlet）：活跃度中(0.4-0.6)，全天活动(8-23)，响应快(5-30分钟)，影响力高(2.0-2.5)
-- **个人**（Student/Person/Alumni）：活跃度高(0.6-0.9)，主要晚间活动(18-23)，响应快(1-15分钟)，影响力低(0.8-1.2)
-- **公众人物/专家**：活跃度中(0.4-0.6)，影响力中高(1.5-2.0)
-
-返回JSON格式（不要markdown）：
-{
-    "agent_configs": [
-        {
-            "agent_id": <必须与输入一致>,
-            "activity_level": <0.0-1.0>,
-            "posts_per_hour": <发帖频率>,
-            "comments_per_hour": <评论频率>,
-            "active_hours": [<活跃小时列表，考虑中国人作息>],
-            "response_delay_min": <最小响应延迟分钟>,
-            "response_delay_max": <最大响应延迟分钟>,
-            "sentiment_bias": <-1.0到1.0>,
-            "stance": "<supportive/opposing/neutral/observer>",
-            "influence_weight": <影响力权重>
-        },
-        ...
-    ]
-}`, simulationRequirement, string(entityJSON))
-
-	systemPrompt := "你是社交媒体行为分析专家。返回纯JSON，配置需符合模拟场景中目标用户群体的作息习惯。"
+	systemPrompt := g.t("prompt.simx.agentSystem", nil)
 	systemPrompt = systemPrompt + "\n\n" + g.langInstruction() + "\nIMPORTANT: The 'stance' field value MUST be one of the English strings: 'supportive', 'opposing', 'neutral', 'observer'. All JSON field names and numeric values must remain unchanged. Only natural language text fields should use the specified language."
 
 	llmConfigs := map[int]map[string]any{}
 	if result, err := g.callLLMWithRetry(prompt, systemPrompt); err != nil {
-		logger.Warn(fmt.Sprintf("Agent配置批次LLM生成失败: %v, 使用规则生成", err))
+		logger.Warn(fmt.Sprintf("Error al generar el lote de configuración de Agent con el LLM: %v; se usa la generación por reglas", err))
 	} else if list, ok := result["agent_configs"].([]any); ok {
 		for _, raw := range list {
 			cfg, ok := raw.(map[string]any)

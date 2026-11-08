@@ -34,7 +34,7 @@ func (h *SimulationHandler) simulationTimeline(w http.ResponseWriter, r *http.Re
 
 	actions, err := h.Oasis.Actions(simulationID, timelineActionLimit, 0, "", nil, nil)
 	if err != nil {
-		h.Logger.Error("获取时间线失败", "simulation_id", simulationID, "error", err)
+		h.Logger.Error("No se pudo obtener la línea de tiempo", "simulation_id", simulationID, "error", err)
 		JSON(w, http.StatusInternalServerError, map[string]any{"success": false, "error": err.Error()})
 		return
 	}
@@ -119,7 +119,7 @@ func (h *SimulationHandler) simulationTimeline(w http.ResponseWriter, r *http.Re
 func (h *SimulationHandler) simulationAgentStats(w http.ResponseWriter, r *http.Request, simulationID string) {
 	actions, err := h.Oasis.Actions(simulationID, timelineActionLimit, 0, "", nil, nil)
 	if err != nil {
-		h.Logger.Error("获取Agent统计失败", "simulation_id", simulationID, "error", err)
+		h.Logger.Error("No se pudieron obtener las estadísticas de agentes", "simulation_id", simulationID, "error", err)
 		JSON(w, http.StatusInternalServerError, map[string]any{"success": false, "error": err.Error()})
 		return
 	}
@@ -241,13 +241,13 @@ func (h *SimulationHandler) simulationPosts(w http.ResponseWriter, r *http.Reque
 
 	posts, err := h.Oasis.Posts(simulationID, limit, offset)
 	if err != nil {
-		h.Logger.Error("获取帖子失败", "simulation_id", simulationID, "error", err)
+		h.Logger.Error("No se pudieron obtener las publicaciones", "simulation_id", simulationID, "error", err)
 		JSON(w, http.StatusInternalServerError, map[string]any{"success": false, "error": err.Error()})
 		return
 	}
 	total, err := h.Oasis.CountPosts(simulationID)
 	if err != nil {
-		h.Logger.Error("获取帖子失败", "simulation_id", simulationID, "error", err)
+		h.Logger.Error("No se pudieron obtener las publicaciones", "simulation_id", simulationID, "error", err)
 		JSON(w, http.StatusInternalServerError, map[string]any{"success": false, "error": err.Error()})
 		return
 	}
@@ -302,7 +302,7 @@ func (h *SimulationHandler) simulationComments(w http.ResponseWriter, r *http.Re
 
 	comments, err := h.Oasis.Comments(simulationID, postID, limit, offset)
 	if err != nil {
-		h.Logger.Error("获取评论失败", "simulation_id", simulationID, "error", err)
+		h.Logger.Error("No se pudieron obtener los comentarios", "simulation_id", simulationID, "error", err)
 		JSON(w, http.StatusInternalServerError, map[string]any{"success": false, "error": err.Error()})
 		return
 	}

@@ -54,6 +54,9 @@ func Run(personal bool) {
 	}
 	logger.Info("=" + line50 + "=")
 	logger.Info("clave de acceso: " + accessState(cfg))
+	if cfg.SecretKey == "" || cfg.SecretKey == "mirofish-secret-key" {
+		logger.Warn("SECRET_KEY vacía o por defecto: los tokens JWT se firman con una clave pública conocida; define SECRET_KEY en el .env")
+	}
 
 	var handler http.Handler
 	if cfg.PersonalMode {

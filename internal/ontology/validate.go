@@ -98,7 +98,7 @@ func ValidateAndProcess(result map[string]any) (map[string]any, error) {
 	}
 	result["entity_types"] = entitiesToAny(processedEntities)
 
-	// ===== 兜底类型 =====
+	// ===== Tipos de respaldo =====
 	personFallback := map[string]any{
 		"name":        "Person",
 		"description": "Any individual person not fitting other specific person types.",
@@ -151,7 +151,7 @@ func ValidateAndProcess(result map[string]any) (map[string]any, error) {
 			processedEntities = append(processedEntities, fb)
 		}
 	}
-	// 最终确保不超过限制（防御性编程）
+	// Asegurar finalmente que no se supere el límite (programación defensiva)
 	if len(processedEntities) > MaxTypes {
 		processedEntities = processedEntities[:MaxTypes]
 	}
@@ -265,15 +265,15 @@ edgeLoop:
 func (g *Generator) GeneratePythonCode(ontology map[string]any) string {
 	codeLines := []string{
 		`"""`,
-		`自定义实体类型定义`,
-		`由MiroFish自动生成，用于社会舆论模拟`,
+		`Definición de tipos de entidad personalizados`,
+		`Generado automáticamente por MiroFish para simulación de opinión pública en redes sociales`,
 		`"""`,
 		``,
 		`from pydantic import Field`,
 		`from zep_cloud.external_clients.ontology import EntityModel, EntityText, EdgeModel`,
 		``,
 		``,
-		`# ============== 实体类型定义 ==============`,
+		`# ============== Definición de tipos de entidad ==============`,
 		``,
 	}
 
@@ -315,7 +315,7 @@ func (g *Generator) GeneratePythonCode(ontology map[string]any) string {
 		codeLines = append(codeLines, "", "")
 	}
 
-	codeLines = append(codeLines, "# ============== 关系类型定义 ==============")
+	codeLines = append(codeLines, "# ============== Definición de tipos de relación ==============")
 	codeLines = append(codeLines, "")
 
 	for _, rawEdge := range anyList(ontology["edge_types"]) {
@@ -357,8 +357,8 @@ func (g *Generator) GeneratePythonCode(ontology map[string]any) string {
 		codeLines = append(codeLines, "", "")
 	}
 
-	// 生成类型字典
-	codeLines = append(codeLines, "# ============== 类型配置 ==============")
+	// Generar diccionario de tipos
+	codeLines = append(codeLines, "# ============== Configuración de tipos ==============")
 	codeLines = append(codeLines, "")
 	codeLines = append(codeLines, "ENTITY_TYPES = {")
 	for _, rawEntity := range anyList(ontology["entity_types"]) {
@@ -383,7 +383,7 @@ func (g *Generator) GeneratePythonCode(ontology map[string]any) string {
 	codeLines = append(codeLines, "}")
 	codeLines = append(codeLines, "")
 
-	// source_targets映射
+	// Mapeo de source_targets
 	codeLines = append(codeLines, "EDGE_SOURCE_TARGETS = {")
 	for _, rawEdge := range anyList(ontology["edge_types"]) {
 		edge, ok := rawEdge.(map[string]any)

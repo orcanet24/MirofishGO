@@ -10,19 +10,24 @@
 package httpx
 
 import (
+	"bytes"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	"mirofish/internal/config"
 	"mirofish/internal/graph"
 	"mirofish/internal/llm"
 	"mirofish/internal/locale"
 	"mirofish/internal/models"
+	"mirofish/internal/oasis"
 	"mirofish/internal/report"
+	"mirofish/internal/reportpdf"
 	"mirofish/internal/simx"
 )
 
@@ -37,6 +42,7 @@ type ReportHandler struct {
 	Client   *graph.Client
 	Reports  *report.Manager
 	Tools    *report.Tools
+	Store    *oasis.Store // datos sociales (posts/comentarios/acciones) para el PDF
 	Logger   *slog.Logger
 	NewAgent ReportAgentFactory
 }
@@ -75,6 +81,8 @@ func NewReportHandler(cfg *config.Config, logger *slog.Logger, opts ...ReportHan
 		Reports: report.NewManager(cfg.UploadDir),
 		Logger:  logger,
 	}
+	// Defaults del agente desde el .env (REPORT_AGENT_*).
+	report.SetAgentDefaults(cfg.ReportAgentMaxToolCalls, cfg.ReportAgentMaxReflectionRnds, cfg.ReportAgentTemperature)
 	for _, opt := range opts {
 		opt(h)
 	}
@@ -84,6 +92,13 @@ func NewReportHandler(cfg *config.Config, logger *slog.Logger, opts ...ReportHan
 			return nil, err
 		}
 		h.Client = client
+	}
+	if h.Store == nil && h.Client != nil {
+		store, err := oasis.NewStore(h.Client.DB.SQL())
+		if err != nil {
+			return nil, err
+		}
+		h.Store = store
 	}
 	if h.Tools == nil {
 		h.Tools = report.NewTools(h.Client)
@@ -198,6 +213,8 @@ func (h *ReportHandler) handleGET(w http.ResponseWriter, r *http.Request) {
 
 	case len(segs) == 2 && segs[1] == "download":
 		h.downloadReport(w, r, segs[0])
+	case len(segs) == 2 && segs[1] == "pdf":
+		h.downloadReportPDF(w, r, segs[0])
 	case len(segs) == 2 && segs[1] == "progress":
 		h.reportProgress(w, r, segs[0])
 	case len(segs) == 2 && segs[1] == "sections":
@@ -313,6 +330,13 @@ func (h *ReportHandler) generateReport(w http.ResponseWriter, r *http.Request) {
 	}
 	switch runnerStatus {
 	case "starting", "running", "paused", "stopping":
+		// ¿Estado obsoleto? El proceso que escribió run_state ya no existe
+		// (p.ej. backend Python detenido a la fuerza). Si no se actualiza en
+		// 15 minutos, se trata como terminado para poder informar.
+		if forceRegenerate || staleRunState(runState) {
+			runnerStatus = "stopped"
+			break
+		}
 		JSON(w, http.StatusConflict, map[string]any{
 			"success": false,
 			"error": "Simulation or Zep graph ingestion is still active; " +
@@ -421,15 +445,10 @@ func (h *ReportHandler) runGenerate(taskID, reportID, simulationID, graphID, req
 	if agent.Manager == nil {
 		agent.Manager = h.Reports
 	}
-	if agent.Tools == nil {
-		agent.Tools = h.Tools
-	}
-	if llmF != nil {
-		agent.LLMFactory = llmF
-		if agent.Tools != nil {
-			agent.Tools.LLMFactory = llmF
-		}
-	}
+	// Tools por petición: nunca mutar h.Tools compartido (carrera + fuga de
+	// API keys entre usuarios con distinta config LLM delegada).
+	tools := h.toolsForRequest(llmF, loc)
+	agent.Tools = tools
 
 	reportResult := agent.GenerateReport(func(stage string, progress int, message string) {
 		msg := "[" + stage + "] " + message
@@ -775,20 +794,79 @@ func (h *ReportHandler) chat(w http.ResponseWriter, r *http.Request) {
 	if agent.Manager == nil {
 		agent.Manager = h.Reports
 	}
-	if agent.Tools == nil {
-		agent.Tools = h.Tools
-	}
-	if llmF := llmFactory(r); llmF != nil {
-		agent.LLMFactory = llmF
-		if agent.Tools != nil {
-			agent.Tools.LLMFactory = llmF
-		}
-	}
+	agent.Tools = h.toolsForRequest(llmFactory(r), loc)
 	result := agent.Chat(message, history)
 	JSON(w, http.StatusOK, map[string]any{"success": true, "data": result})
 }
 
 // ===== herramientas de depuración =====
+
+// staleRunState informa si un run_state "activo" tiene más de 15 minutos sin
+// actualizarse (proceso muerto). Acepta los formatos ISO de Python y RFC3339.
+func staleRunState(runState map[string]any) bool {
+	if runState == nil {
+		return false
+	}
+	raw := strings.TrimSpace(stringField(runState, "updated_at"))
+	if raw == "" {
+		return false
+	}
+	for _, layout := range []string{time.RFC3339, "2006-01-02T15:04:05.999999", "2006-01-02T15:04:05"} {
+		if ts, err := time.Parse(layout, raw); err == nil {
+			return time.Since(ts) > 15*time.Minute
+		}
+	}
+	return false
+}
+
+// downloadReportPDF — genera el informe final en PDF con gráficos y lo sirve
+// como descarga. Contrato: GET /api/report/{id}/pdf (autenticado, propietario).
+func (h *ReportHandler) downloadReportPDF(w http.ResponseWriter, r *http.Request, reportID string) {
+	loc := locale.Normalize(r.Header.Get("Accept-Language"))
+	if !h.denyUnlessReportOwner(r, w, reportID) {
+		return
+	}
+	rep := h.Reports.GetReport(reportID)
+	if rep == nil {
+		JSON(w, http.StatusNotFound, map[string]any{"success": false, "error": h.t(r, "api.reportNotFound", map[string]string{"id": reportID})})
+		return
+	}
+	if rep.Status != report.StatusCompleted {
+		JSON(w, http.StatusBadRequest, map[string]any{"success": false, "error": "el informe aún no está completado"})
+		return
+	}
+
+	stats := h.Tools.GraphStatistics(rep.GraphID)
+	var posts []oasis.Post
+	var comments []oasis.Comment
+	var actions []oasis.ActionRecord
+	if h.Store != nil {
+		if p, err := h.Store.ListPosts(rep.SimulationID, 2000, 0); err == nil {
+			posts = p
+		} else {
+			h.Logger.Warn("pdf: no se pudieron leer los posts", "error", err)
+		}
+		if c, err := h.Store.ListComments(rep.SimulationID, nil, 2000, 0); err == nil {
+			comments = c
+		}
+		if a, err := h.Store.ListActions(rep.SimulationID, 5000, 0, "", nil, nil); err == nil {
+			actions = a
+		}
+	}
+
+	var buf bytes.Buffer
+	if err := reportpdf.Generate(reportpdf.Data{
+		Report: rep, Stats: stats, Posts: posts, Comments: comments, Actions: actions, Loc: loc,
+	}, &buf); err != nil {
+		h.Logger.Error("pdf: no se pudo generar", "report", reportID, "error", err)
+		JSON(w, http.StatusInternalServerError, map[string]any{"success": false, "error": "no se pudo generar el PDF"})
+		return
+	}
+	w.Header().Set("Content-Type", "application/pdf")
+	w.Header().Set("Content-Disposition", `attachment; filename="`+reportID+`.pdf"`)
+	w.Header().Set("Cache-Control", "no-store")
+	_, _ = w.Write(buf.Bytes())
+}
 
 func (h *ReportHandler) toolsSearch(w http.ResponseWriter, r *http.Request) {
 	loc := locale.Normalize(r.Header.Get("Accept-Language"))
@@ -834,4 +912,66 @@ func (h *ReportHandler) toolsStatistics(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	JSON(w, http.StatusOK, map[string]any{"success": true, "data": h.Tools.GraphStatistics(graphID)})
+}
+
+// toolsForRequest devuelve una copia de las herramientas con la config LLM del
+// usuario y la función de entrevistas. Nunca se muta h.Tools (compartido).
+func (h *ReportHandler) toolsForRequest(llmF func() (*llm.Client, error), loc string) *report.Tools {
+	base := h.Tools
+	if base == nil {
+		base = report.NewTools(h.Client)
+	}
+	tools := *base
+	tools.LLMFactory = llmF
+	tools.Interview = func(simulationID, topic string, maxAgents int) string {
+		return h.runToolInterview(simulationID, topic, maxAgents, loc, llmF)
+	}
+	return &tools
+}
+
+// runToolInterview — entrevistas reales para el agente de informes, en el
+// formato que parsea el frontend (marcadores en español).
+func (h *ReportHandler) runToolInterview(simulationID, topic string, maxAgents int, loc string, llmF func() (*llm.Client, error)) string {
+	state := h.Sim.GetSimulation(simulationID)
+	if state == nil {
+		return "Error: la simulación no existe."
+	}
+	platform := state.GetDefaultPlatform()
+	profiles, err := h.Sim.GetProfiles(simulationID, platform)
+	if err != nil {
+		return "Error al leer los perfiles: " + err.Error()
+	}
+	if len(profiles) == 0 {
+		return "Error: la simulación no tiene perfiles generados; ejecuta la preparación antes de entrevistar."
+	}
+	if maxAgents <= 0 {
+		maxAgents = 10
+	}
+	if maxAgents > len(profiles) {
+		maxAgents = len(profiles)
+	}
+	requirement := ""
+	if p := h.PM.GetProject(state.ProjectID); p != nil && p.SimulationRequirement != nil {
+		requirement = *p.SimulationRequirement
+	}
+	interviews := []oasis.InterviewRequest{}
+	for i := 0; i < maxAgents; i++ {
+		interviews = append(interviews, oasis.InterviewRequest{AgentID: i, Prompt: topic, Platform: platform})
+	}
+	results, err := oasis.InterviewAgents(interviews, profiles, requirement, loc, llmF)
+	if err != nil {
+		return "Error al ejecutar las entrevistas: " + err.Error()
+	}
+	var b strings.Builder
+	b.WriteString("### Entrevistas realizadas\n\n")
+	for i, res := range results {
+		name := fmt.Sprint(profiles[res.AgentID]["name"])
+		fmt.Fprintf(&b, "#### Entrevista #%d: %s (@%s)\n", i+1, name, fmt.Sprint(profiles[res.AgentID]["username"]))
+		if desc := fmt.Sprint(profiles[res.AgentID]["description"]); desc != "" {
+			fmt.Fprintf(&b, "_Perfil:_ %s\n", desc)
+		}
+		fmt.Fprintf(&b, "**Pregunta:** %s\n", topic)
+		fmt.Fprintf(&b, "**Respuesta:** %s\n\n", res.Response)
+	}
+	return b.String()
 }

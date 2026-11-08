@@ -52,11 +52,11 @@ func (s *scriptedLLM) handler() http.Handler {
 
 		content := ""
 		switch {
-		case strings.Contains(system, "报告大纲"):
+		case strings.Contains(system, "informes de predicción de futuro"):
 			content = `{"title":"Informe de prueba","summary":"Resumen de prueba","sections":[{"title":"Hallazgos","description":"d"},{"title":"Riesgos","description":"d"}]}`
-		case strings.Contains(system, "问题分析专家"):
+		case strings.Contains(system, "subconsultas") || strings.Contains(system, "descompone"):
 			content = `{"sub_queries":["Ana","Cafe Mio"]}`
-		case strings.Contains(system, "简洁高效的模拟预测助手"):
+		case strings.Contains(system, "asistente de predicción de simulación"):
 			content = "Respuesta del agente basada en el informe."
 		default:
 			s.mu.Lock()
@@ -64,7 +64,7 @@ func (s *scriptedLLM) handler() http.Handler {
 			n := s.calls
 			s.mu.Unlock()
 			if n%3 == 0 {
-				content = "Final Answer: 正文 del capítulo con datos de la simulación. " +
+				content = "Final Answer: Contenido del capítulo con datos de la simulación. " +
 					"Ana visita Cafe Mio y la discusión crece en la red.\n\n> \"Ana: el ERP cambia la operación\"\n\n" +
 					"Este párrafo añade contexto suficiente para superar el mínimo de contenido exigido."
 			} else {

@@ -85,7 +85,7 @@ func (c *IPCClient) SendCommand(commandType CommandType, args map[string]any, ti
 	if err := os.WriteFile(commandFile, b, 0o644); err != nil {
 		return nil, err
 	}
-	logger.Info(fmt.Sprintf("发送IPC命令: %s, command_id=%s", commandType, commandID))
+	logger.Info(fmt.Sprintf("Enviando comando IPC: %s, command_id=%s", commandType, commandID))
 
 	responseFile := filepath.Join(c.ResponsesDir, commandID+".json")
 	start := time.Now()
@@ -98,17 +98,17 @@ func (c *IPCClient) SendCommand(commandType CommandType, args map[string]any, ti
 					response := ipcResponseFromMap(data)
 					_ = os.Remove(commandFile)
 					_ = os.Remove(responseFile)
-					logger.Info(fmt.Sprintf("收到IPC响应: command_id=%s, status=%s", commandID, response.Status))
+					logger.Info(fmt.Sprintf("Respuesta IPC recibida: command_id=%s, status=%s", commandID, response.Status))
 					return response, nil
 				}
 			}
-			logger.Warn("解析响应失败")
+			logger.Warn("Error al analizar la respuesta")
 		}
 		time.Sleep(time.Duration(pollInterval * float64(time.Second)))
 	}
-	logger.Error(fmt.Sprintf("等待IPC响应超时: command_id=%s", commandID))
+	logger.Error(fmt.Sprintf("Tiempo de espera de respuesta IPC agotado: command_id=%s", commandID))
 	_ = os.Remove(commandFile)
-	return nil, fmt.Errorf("等待命令响应超时 (%v秒)", timeout)
+	return nil, fmt.Errorf("Tiempo de espera de respuesta del comando agotado (%v segundos)", timeout)
 }
 
 // SendInterview replica send_interview.

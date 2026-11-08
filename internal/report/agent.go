@@ -1,8 +1,8 @@
-// Report Agent (port de ReportAgent).
+﻿// Report Agent (port de ReportAgent).
 //
-// Flujo: planificar índice con el LLM → por cada capítulo ejecutar un bucle
-// ReAct (mínimo 3 herramientas, máximo 8) → guardar section_NN.md en cuanto
-// termina → ensamblar full_report.md. Los logs (agent_log.jsonl y
+// Flujo: planificar Ã­ndice con el LLM â†’ por cada capÃ­tulo ejecutar un bucle
+// ReAct (mÃ­nimo 3 herramientas, mÃ¡ximo 8) â†’ guardar section_NN.md en cuanto
+// termina â†’ ensamblar full_report.md. Los logs (agent_log.jsonl y
 // console_log.txt) se escriben durante el proceso para que la UI pueda hacer
 // streaming por polling con from_line.
 package report
@@ -22,13 +22,32 @@ import (
 )
 
 const (
-	maxToolCallsPerSection = 8
-	softToolLimit          = 5
-	maxSectionIterations   = 5
-	minToolCalls           = 3
-	maxToolCallsPerChat    = 2
-	maxSectionTokens       = 4096
+	softToolLimit        = 5
+	minToolCalls         = 3
+	maxToolCallsPerChat  = 2
+	maxSectionTokens     = 4096
 )
+
+// Defaults operativos del agente de informes: se fijan una vez al arrancar
+// desde el .env (REPORT_AGENT_*), no por peticiÃ³n.
+var (
+	maxToolCallsPerSection = 8
+	maxSectionIterations   = 5
+	agentTemperature       = 0.5
+)
+
+// SetAgentDefaults fija los defaults del agente desde la config del .env.
+func SetAgentDefaults(maxToolCalls, maxReflection int, temperature float64) {
+	if maxToolCalls > 0 {
+		maxToolCallsPerSection = maxToolCalls
+	}
+	if maxReflection > 0 {
+		maxSectionIterations = maxReflection
+	}
+	if temperature > 0 {
+		agentTemperature = temperature
+	}
+}
 
 // ProgressCallback replica progress_callback(stage, progress, message).
 type ProgressCallback func(stage string, progress int, message string)
@@ -49,7 +68,7 @@ type Agent struct {
 	console *consoleLogger
 }
 
-// NewAgent crea el agente para una simulación/grafo.
+// NewAgent crea el agente para una simulaciÃ³n/grafo.
 func NewAgent(manager *Manager, tools *Tools, graphID, simulationID, requirement, userID, localeCode string) *Agent {
 	return &Agent{
 		GraphID:               graphID,
@@ -96,41 +115,41 @@ func (a *Agent) toolDefs() map[string]toolDef {
 	return map[string]toolDef{
 		"insight_forge": {
 			Name:        "insight_forge",
-			Description: toolDescInsightForge,
+			Description: ToolDescInsightForge(a.Locale),
 			Parameters: map[string]string{
-				"query":          "你想深入分析的问题或话题",
-				"report_context": "当前报告章节的上下文（可选）",
+				"query":          "La pregunta o tema que quieres analizar en profundidad",
+				"report_context": "Contexto de la secciÃ³n actual del informe (opcional)",
 			},
 		},
 		"panorama_search": {
 			Name:        "panorama_search",
-			Description: toolDescPanoramaSearch,
+			Description: ToolDescPanoramaSearch(a.Locale),
 			Parameters: map[string]string{
-				"query":           "搜索查询，用于相关性排序",
-				"include_expired": "是否包含过期/历史内容（默认True）",
+				"query":           "Consulta de bÃºsqueda, usada para ordenar por relevancia",
+				"include_expired": "Si se incluye contenido expirado o histÃ³rico (por defecto True)",
 			},
 		},
 		"quick_search": {
 			Name:        "quick_search",
-			Description: toolDescQuickSearch,
+			Description: ToolDescQuickSearch(a.Locale),
 			Parameters: map[string]string{
-				"query": "搜索查询字符串",
-				"limit": "返回结果数量（可选，默认10）",
+				"query": "Cadena de consulta de bÃºsqueda",
+				"limit": "NÃºmero de resultados devueltos (opcional, por defecto 10)",
 			},
 		},
 		"interview_agents": {
 			Name:        "interview_agents",
-			Description: toolDescInterviewAgents,
+			Description: ToolDescInterviewAgents(a.Locale),
 			Parameters: map[string]string{
-				"interview_topic": "采访主题或需求描述",
-				"max_agents":      "最多采访的Agent数量（可选，默认5，最大10）",
+				"interview_topic": "Tema de la entrevista o descripciÃ³n de la necesidad",
+				"max_agents":      "NÃºmero mÃ¡ximo de Agentes a entrevistar (opcional, por defecto 5, mÃ¡ximo 10)",
 			},
 		},
 	}
 }
 
 func (a *Agent) toolsDescription() string {
-	parts := []string{"可用工具："}
+	parts := []string{"Herramientas disponibles:"}
 	defs := a.toolDefs()
 	for _, name := range []string{"insight_forge", "panorama_search", "quick_search", "interview_agents"} {
 		tool := defs[name]
@@ -140,7 +159,7 @@ func (a *Agent) toolsDescription() string {
 			params = append(params, k+": "+v)
 		}
 		if len(params) > 0 {
-			parts = append(parts, "  参数: "+strings.Join(params, ", "))
+			parts = append(parts, "  ParÃ¡metros: "+strings.Join(params, ", "))
 		}
 	}
 	return strings.Join(parts, "\n")
@@ -150,7 +169,7 @@ func (a *Agent) toolsDescription() string {
 // propaga errores (los convierte en mensajes de herramienta).
 func (a *Agent) ExecuteTool(name string, params map[string]any, reportContext string) string {
 	if a.console != nil {
-		a.console.Info("执行工具: %s %v", name, params)
+		a.console.Info("Ejecutando herramienta: %s %v", name, params)
 	}
 	switch name {
 	case "insight_forge":
@@ -186,7 +205,7 @@ func (a *Agent) ExecuteTool(name string, params map[string]any, reportContext st
 	case "get_entity_summary":
 		summary := a.Tools.EntitySummary(a.GraphID, paramStr(params, "entity_name"))
 		if summary == nil {
-			return "未找到该实体"
+			return "No se encontrÃ³ la entidad"
 		}
 		b, _ := json.MarshalIndent(summary, "", "  ")
 		return string(b)
@@ -200,7 +219,7 @@ func (a *Agent) ExecuteTool(name string, params map[string]any, reportContext st
 		b, _ := json.MarshalIndent(a.Tools.EntitiesByType(a.GraphID, paramStr(params, "entity_type")), "", "  ")
 		return string(b)
 	default:
-		return "未知工具: " + name + "。请使用以下工具之一: insight_forge, panorama_search, quick_search"
+		return "Herramienta desconocida: " + name + ". Usa una de las siguientes: insight_forge, panorama_search, quick_search"
 	}
 }
 
@@ -215,8 +234,8 @@ var validToolNames = map[string]bool{
 	"insight_forge": true, "panorama_search": true, "quick_search": true, "interview_agents": true,
 }
 
-// ParseToolCalls replica _parse_tool_calls: XML estándar y, como fallback,
-// un objeto JSON suelto que sea una llamada válida.
+// ParseToolCalls replica _parse_tool_calls: XML estÃ¡ndar y, como fallback,
+// un objeto JSON suelto que sea una llamada vÃ¡lida.
 func ParseToolCalls(response string) []toolCall {
 	calls := []toolCall{}
 	for _, match := range reToolCall.FindAllStringSubmatch(response, -1) {
@@ -274,15 +293,15 @@ func StripFakeToolResults(response string) string {
 	return strings.TrimSpace(cleaned)
 }
 
-// ===== planificación =====
+// ===== planificaciÃ³n =====
 
-// PlanOutline replica plan_outline, con índice de respaldo si el LLM falla.
+// PlanOutline replica plan_outline, con Ã­ndice de respaldo si el LLM falla.
 func (a *Agent) PlanOutline(cb ProgressCallback) *Outline {
 	if cb != nil {
 		cb("planning", 0, a.t("progress.analyzingRequirements", nil))
 	}
 	if a.console != nil {
-		a.console.Info("获取模拟上下文: graph_id=%s", a.GraphID)
+		a.console.Info("Obteniendo contexto de simulaciÃ³n: graph_id=%s", a.GraphID)
 	}
 	context := a.Tools.SimulationContext(a.GraphID, a.SimulationRequirement, 30)
 
@@ -302,8 +321,8 @@ func (a *Agent) PlanOutline(cb ProgressCallback) *Outline {
 		facts = facts[:10]
 	}
 	factsJSON, _ := json.MarshalIndent(facts, "", "  ")
-	systemPrompt := planSystemPrompt + "\n\n" + a.langInstruction()
-	userPrompt := fmt.Sprintf(planUserPromptTemplate,
+	systemPrompt := PlanSystemPrompt(a.Locale) + "\n\n" + a.langInstruction()
+	userPrompt := fmt.Sprintf(PlanUserPromptTemplate(a.Locale),
 		a.SimulationRequirement,
 		intFromMap(stats, "total_nodes"),
 		intFromMap(stats, "total_edges"),
@@ -325,7 +344,7 @@ func (a *Agent) PlanOutline(cb ProgressCallback) *Outline {
 	}, 0.3, nil, 2)
 	if err != nil {
 		if a.console != nil {
-			a.console.Warning("规划大纲失败: %v", err)
+			a.console.Warning("Error al planificar el esquema: %v", err)
 		}
 		return defaultOutline()
 	}
@@ -335,7 +354,7 @@ func (a *Agent) PlanOutline(cb ProgressCallback) *Outline {
 	}
 	outline := &Outline{Title: str(response["title"]), Summary: str(response["summary"])}
 	if outline.Title == "" {
-		outline.Title = "模拟分析报告"
+		outline.Title = "Informe de anÃ¡lisis de simulaciÃ³n"
 	}
 	if list, ok := response["sections"].([]any); ok {
 		for _, raw := range list {
@@ -358,24 +377,24 @@ func (a *Agent) PlanOutline(cb ProgressCallback) *Outline {
 		cb("planning", 100, a.t("progress.outlinePlanComplete", nil))
 	}
 	if a.console != nil {
-		a.console.Info("大纲规划完成: %d 个章节", len(outline.Sections))
+		a.console.Info("PlanificaciÃ³n del esquema completada: %d secciones", len(outline.Sections))
 	}
 	return outline
 }
 
 func defaultOutline() *Outline {
 	return &Outline{
-		Title:   "未来预测报告",
-		Summary: "基于模拟预测的未来趋势与风险分析",
+		Title:   "Informe de predicciÃ³n de futuro",
+		Summary: "AnÃ¡lisis de tendencias y riesgos futuros basado en la predicciÃ³n de la simulaciÃ³n",
 		Sections: []Section{
-			{Title: "预测场景与核心发现"},
-			{Title: "人群行为预测分析"},
-			{Title: "趋势展望与风险提示"},
+			{Title: "Escenario de predicciÃ³n y hallazgos clave"},
+			{Title: "AnÃ¡lisis del comportamiento previsto de los grupos"},
+			{Title: "Perspectivas de tendencias y alertas de riesgo"},
 		},
 	}
 }
 
-// ===== sección (ReAct) =====
+// ===== secciÃ³n (ReAct) =====
 
 // GenerateSection replica _generate_section_react.
 func (a *Agent) GenerateSection(section Section, outline *Outline, previousSections []string, cb ProgressCallback, sectionIndex int) string {
@@ -385,14 +404,14 @@ func (a *Agent) GenerateSection(section Section, outline *Outline, previousSecti
 		a.logger.log("section_start", "generating", sectionTitle, &idx, map[string]any{"title": section.Title})
 	}
 	if a.console != nil {
-		a.console.Info("开始生成章节 %d: %s", sectionIndex, section.Title)
+		a.console.Info("Iniciando generaciÃ³n de la secciÃ³n %d: %s", sectionIndex, section.Title)
 	}
 
-	systemPrompt := fmt.Sprintf(sectionSystemPromptTemplate,
+	systemPrompt := fmt.Sprintf(SectionSystemPromptTemplate(a.Locale),
 		outline.Title, outline.Summary, a.SimulationRequirement, section.Title, a.toolsDescription())
 	systemPrompt += "\n\n" + a.langInstruction()
 
-	previousContent := "（这是第一个章节）"
+	previousContent := "(esta es la primera secciÃ³n)"
 	if len(previousSections) > 0 {
 		parts := []string{}
 		for _, sec := range previousSections {
@@ -405,7 +424,7 @@ func (a *Agent) GenerateSection(section Section, outline *Outline, previousSecti
 		}
 		previousContent = strings.Join(parts, "\n\n---\n\n")
 	}
-	userPrompt := fmt.Sprintf(sectionUserPromptTemplate, previousContent, section.Title, section.Title)
+	userPrompt := fmt.Sprintf(SectionUserPromptTemplate(a.Locale), previousContent, section.Title, section.Title)
 
 	messages := []llm.Message{
 		{Role: "system", Content: systemPrompt},
@@ -416,7 +435,7 @@ func (a *Agent) GenerateSection(section Section, outline *Outline, previousSecti
 	conflictRetries := 0
 	usedTools := map[string]bool{}
 	allTools := []string{"insight_forge", "panorama_search", "quick_search", "interview_agents"}
-	reportContext := "章节标题: " + section.Title + "\n模拟需求: " + a.SimulationRequirement
+	reportContext := "TÃ­tulo de la secciÃ³n: " + section.Title + "\nNecesidad de simulaciÃ³n: " + a.SimulationRequirement
 
 	finalAnswer := ""
 	completed := false
@@ -438,15 +457,15 @@ func (a *Agent) GenerateSection(section Section, outline *Outline, previousSecti
 			break
 		}
 		tokenLimit := maxSectionTokens
-		response, err := client.Chat(messages, 0.5, &tokenLimit, nil)
+		response, err := client.Chat(messages, agentTemperature, &tokenLimit, nil)
 		if err != nil {
 			if a.console != nil {
-				a.console.Warning("LLM 调用失败: %v", err)
+				a.console.Warning("Error al llamar al LLM: %v", err)
 			}
 			if iteration < maxSectionIterations-1 {
 				messages = append(messages,
-					llm.Message{Role: "assistant", Content: "（响应为空）"},
-					llm.Message{Role: "user", Content: "请继续生成内容。"})
+					llm.Message{Role: "assistant", Content: "(respuesta vacÃ­a)"},
+					llm.Message{Role: "user", Content: "ContinÃºa generando el contenido."})
 				continue
 			}
 			break
@@ -460,12 +479,12 @@ func (a *Agent) GenerateSection(section Section, outline *Outline, previousSecti
 		if hasToolCalls && hasFinalAnswer {
 			conflictRetries++
 			if a.console != nil {
-				a.console.Warning("章节 %s: conflicto herramienta/Final Answer (#%d)", section.Title, conflictRetries)
+				a.console.Warning("SecciÃ³n %s: conflicto herramienta/Final Answer (#%d)", section.Title, conflictRetries)
 			}
 			if conflictRetries <= 2 {
 				messages = append(messages,
 					llm.Message{Role: "assistant", Content: StripFakeToolResults(response)},
-					llm.Message{Role: "user", Content: "【格式错误】你在一次回复中同时包含了工具调用和 Final Answer，这是不允许的。每次回复只能做以下两件事之一：调用一个工具，或输出以 'Final Answer:' 开头的最终内容。请重新回复，只做其中一件事。"})
+					llm.Message{Role: "user", Content: "ã€Error de formatoã€‘Has incluido en una misma respuesta una llamada a herramienta y un Final Answer, lo cual no estÃ¡ permitido. En cada respuesta solo puedes hacer una de estas dos cosas: llamar a una herramienta o generar el contenido final que empieza con 'Final Answer:'. Vuelve a responder haciendo solo una de ellas."})
 				continue
 			}
 			if end := strings.Index(response, "</tool_call>"); end != -1 {
@@ -490,10 +509,10 @@ func (a *Agent) GenerateSection(section Section, outline *Outline, previousSecti
 		if hasFinalAnswer {
 			cleaned := StripFakeToolResults(response)
 			if toolCallsCount < minToolCalls {
-				hint := unusedToolsHint(allTools, usedTools)
+				hint := unusedToolsHint(a.Locale, allTools, usedTools)
 				messages = append(messages,
 					llm.Message{Role: "assistant", Content: cleaned},
-					llm.Message{Role: "user", Content: fmt.Sprintf(reactInsufficientToolsMsg, toolCallsCount, minToolCalls, hint)})
+					llm.Message{Role: "user", Content: fmt.Sprintf(ReactInsufficientToolsMsg(a.Locale), toolCallsCount, minToolCalls, hint)})
 				continue
 			}
 			finalAnswer = strings.TrimSpace(lastAfter(cleaned, "Final Answer:"))
@@ -516,7 +535,7 @@ func (a *Agent) GenerateSection(section Section, outline *Outline, previousSecti
 				}
 				messages = append(messages,
 					llm.Message{Role: "assistant", Content: StripFakeToolResults(response)},
-					llm.Message{Role: "user", Content: fmt.Sprintf(reactToolLimitMsg, toolCallsCount, maxToolCallsPerSection)})
+					llm.Message{Role: "user", Content: fmt.Sprintf(ReactToolLimitMsg(a.Locale), toolCallsCount, maxToolCallsPerSection)})
 				continue
 			}
 
@@ -531,8 +550,10 @@ func (a *Agent) GenerateSection(section Section, outline *Outline, previousSecti
 			result := a.ExecuteTool(call.Name, call.Parameters, reportContext)
 			if a.logger != nil {
 				a.logger.log("tool_result", "generating", sectionTitle, &idx, map[string]any{
-					"tool_name": call.Name,
-					"result":    truncateRunes(result, 2000),
+					"tool_name":     call.Name,
+					"result":        truncateRunes(result, 2000),
+					"result_length": len([]rune(result)),
+					"message":       "herramienta " + call.Name + " ejecutada",
 				})
 			}
 
@@ -540,11 +561,11 @@ func (a *Agent) GenerateSection(section Section, outline *Outline, previousSecti
 			usedTools[call.Name] = true
 			hint := ""
 			if len(unusedTools(allTools, usedTools)) > 0 && toolCallsCount < maxToolCallsPerSection {
-				hint = fmt.Sprintf(reactUnusedToolsHint, strings.Join(unusedTools(allTools, usedTools), "、"))
+				hint = fmt.Sprintf(ReactUnusedToolsHint(a.Locale), strings.Join(unusedTools(allTools, usedTools), ", "))
 			}
 			messages = append(messages,
 				llm.Message{Role: "assistant", Content: StripFakeToolResults(response)},
-				llm.Message{Role: "user", Content: fmt.Sprintf(reactObservationTemplate,
+				llm.Message{Role: "user", Content: fmt.Sprintf(ReactObservationTemplate(a.Locale),
 					call.Name, result, toolCallsCount, maxToolCallsPerSection,
 					strings.Join(keys(usedTools), ", "), hint)})
 			continue
@@ -554,9 +575,9 @@ func (a *Agent) GenerateSection(section Section, outline *Outline, previousSecti
 		cleaned := StripFakeToolResults(response)
 		messages = append(messages, llm.Message{Role: "assistant", Content: cleaned})
 		if toolCallsCount < minToolCalls {
-			hint := unusedToolsHint(allTools, usedTools)
+			hint := unusedToolsHint(a.Locale, allTools, usedTools)
 			messages = append(messages, llm.Message{Role: "user", Content: fmt.Sprintf(
-				reactInsufficientToolsMsg, toolCallsCount, minToolCalls, hint)})
+				ReactInsufficientToolsMsg(a.Locale), toolCallsCount, minToolCalls, hint)})
 			continue
 		}
 		finalAnswer = cleaned
@@ -565,18 +586,18 @@ func (a *Agent) GenerateSection(section Section, outline *Outline, previousSecti
 	}
 
 	if !completed {
-		messages = append(messages, llm.Message{Role: "user", Content: reactForceFinalMsg})
+		messages = append(messages, llm.Message{Role: "user", Content: ReactForceFinalMsg(a.Locale)})
 		client, err := a.llmClient()
 		if err == nil {
 			tokenLimit := maxSectionTokens
-			if response, err := client.Chat(messages, 0.5, &tokenLimit, nil); err == nil {
+			if response, err := client.Chat(messages, agentTemperature, &tokenLimit, nil); err == nil {
 				finalAnswer = strings.TrimSpace(lastAfter(response, "Final Answer:"))
 			}
 		}
 		if strings.TrimSpace(finalAnswer) == "" {
 			finalAnswer = a.t("report.sectionGenFailedContent", nil)
 			if a.console != nil {
-				a.console.Warning("章节 %s: no se pudo generar contenido", section.Title)
+				a.console.Warning("SecciÃ³n %s: no se pudo generar contenido", section.Title)
 			}
 		}
 		if a.logger != nil {
@@ -608,12 +629,12 @@ func unusedTools(all []string, used map[string]bool) []string {
 	return out
 }
 
-func unusedToolsHint(all []string, used map[string]bool) string {
+func unusedToolsHint(loc string, all []string, used map[string]bool) string {
 	remaining := unusedTools(all, used)
 	if len(remaining) == 0 {
 		return ""
 	}
-	return fmt.Sprintf(reactUnusedToolsHint, strings.Join(remaining, ", "))
+	return fmt.Sprintf(ReactUnusedToolsHint(loc), strings.Join(remaining, ", "))
 }
 
 func keys(m map[string]bool) []string {
@@ -639,9 +660,9 @@ func truncateRunes(s string, n int) string {
 	return string(runes[:n])
 }
 
-// ===== generación completa =====
+// ===== generaciÃ³n completa =====
 
-// GenerateReport replica generate_report: guarda cada capítulo en cuanto está
+// GenerateReport replica generate_report: guarda cada capÃ­tulo en cuanto estÃ¡
 // listo y escribe progress.json para el polling de la UI.
 func (a *Agent) GenerateReport(cb ProgressCallback, reportID string) *Report {
 	if reportID == "" {
@@ -670,7 +691,7 @@ func (a *Agent) GenerateReport(cb ProgressCallback, reportID string) *Report {
 			a.logger.log("error", "failed", nil, nil, map[string]any{"error": msg})
 		}
 		if a.console != nil {
-			a.console.Error("报告生成失败: %s", msg)
+			a.console.Error("Error al generar el informe: %s", msg)
 		}
 		_ = a.Manager.SaveReport(report)
 		_ = a.Manager.UpdateProgress(reportID, "failed", -1,
@@ -686,10 +707,12 @@ func (a *Agent) GenerateReport(cb ProgressCallback, reportID string) *Report {
 	}
 	a.logger = newAgentLogger(a.Manager, reportID)
 	a.console = newConsoleLogger(a.Manager, reportID)
-	a.logger.log("start", "pending", nil, nil, map[string]any{
+	startMsg := a.t("progress.initReport", nil)
+	a.logger.log("report_start", "pending", &startMsg, nil, map[string]any{
 		"simulation_id":          a.SimulationID,
 		"graph_id":               a.GraphID,
 		"simulation_requirement": a.SimulationRequirement,
+		"message":                startMsg,
 	})
 
 	if err := a.Manager.UpdateProgress(reportID, "pending", 0, a.t("progress.initReport", nil), nil, nil); err != nil {
@@ -699,10 +722,13 @@ func (a *Agent) GenerateReport(cb ProgressCallback, reportID string) *Report {
 		return fail(err)
 	}
 
-	// Fase 1: planificación.
+	// Fase 1: planificaciÃ³n.
 	report.Status = StatusPlanning
 	_ = a.Manager.UpdateProgress(reportID, "planning", 5, a.t("progress.startPlanningOutline", nil), nil, nil)
-	a.logger.log("planning_start", "planning", nil, nil, nil)
+	planMsg := a.t("progress.startPlanningOutline", nil)
+	a.logger.log("planning_start", "planning", &planMsg, nil, map[string]any{
+		"message": planMsg,
+	})
 	if cb != nil {
 		cb("planning", 0, a.t("progress.startPlanningOutline", nil))
 	}
@@ -720,7 +746,7 @@ func (a *Agent) GenerateReport(cb ProgressCallback, reportID string) *Report {
 		a.t("progress.outlineDone", map[string]string{"count": fmt.Sprintf("%d", len(outline.Sections))}), nil, nil)
 	_ = a.Manager.SaveReport(report)
 
-	// Fase 2: capítulos.
+	// Fase 2: capÃ­tulos.
 	report.Status = StatusGenerating
 	total := len(outline.Sections)
 	generated := []string{}
@@ -759,10 +785,13 @@ func (a *Agent) GenerateReport(cb ProgressCallback, reportID string) *Report {
 		}
 		completedTitles = append(completedTitles, section.Title)
 		a.logger.log("section_complete", "generating", &section.Title, &sectionNum, map[string]any{
+			// "content" es la clave que consume el frontend (contrato Python).
+			"content":      content,
 			"full_content": "## " + section.Title + "\n\n" + content,
+			"message":      a.t("progress.sectionDone", map[string]string{"title": section.Title}),
 		})
 		if a.console != nil {
-			a.console.Info("章节已保存: section_%02d.md (%s)", sectionNum, section.Title)
+			a.console.Info("SecciÃ³n guardada: section_%02d.md (%s)", sectionNum, section.Title)
 		}
 
 		doneProgress := baseProgress
@@ -799,7 +828,7 @@ func (a *Agent) GenerateReport(cb ProgressCallback, reportID string) *Report {
 		cb("completed", 100, a.t("progress.reportComplete", nil))
 	}
 	if a.console != nil {
-		a.console.Info("报告生成完成: %s (%d 章节)", reportID, total)
+		a.console.Info("Informe generado: %s (%d secciones)", reportID, total)
 		a.console.Close()
 	}
 	return report
@@ -813,16 +842,16 @@ func (a *Agent) Chat(message string, history []map[string]any) map[string]any {
 	if existing := a.Manager.GetReportBySimulation(a.SimulationID); existing != nil && existing.MarkdownContent != "" {
 		runes := []rune(existing.MarkdownContent)
 		if len(runes) > 15000 {
-			reportContent = string(runes[:15000]) + "\n\n... [报告内容已截断] ..."
+			reportContent = string(runes[:15000]) + "\n\n... [contenido del informe truncado] ..."
 		} else {
 			reportContent = existing.MarkdownContent
 		}
 	}
 	if reportContent == "" {
-		reportContent = "（暂无报告）"
+		reportContent = "(aÃºn no hay informe)"
 	}
 
-	systemPrompt := fmt.Sprintf(chatSystemPromptTemplate, a.SimulationRequirement, reportContent, a.toolsDescription())
+	systemPrompt := fmt.Sprintf(ChatSystemPromptTemplate(a.Locale), a.SimulationRequirement, reportContent, a.toolsDescription())
 	systemPrompt += "\n\n" + a.langInstruction()
 
 	messages := []llm.Message{{Role: "system", Content: systemPrompt}}
@@ -851,7 +880,7 @@ func (a *Agent) Chat(message string, history []map[string]any) map[string]any {
 		if err != nil {
 			return map[string]any{"response": "LLM no disponible: " + err.Error(), "tool_calls": toolCallsMade, "sources": sources}
 		}
-		response, err := client.Chat(messages, 0.5, nil, nil)
+		response, err := client.Chat(messages, agentTemperature, nil, nil)
 		if err != nil {
 			return map[string]any{"response": "Error al consultar el LLM: " + err.Error(), "tool_calls": toolCallsMade, "sources": sources}
 		}
@@ -871,7 +900,7 @@ func (a *Agent) Chat(message string, history []map[string]any) map[string]any {
 				break
 			}
 			result := a.ExecuteTool(call.Name, call.Parameters, "")
-			toolResults = append(toolResults, "["+call.Name+"结果]\n"+truncateRunes(result, 1500))
+			toolResults = append(toolResults, "["+call.Name+" resultado]\n"+truncateRunes(result, 1500))
 			toolCallsMade = append(toolCallsMade, map[string]any{
 				"name":       call.Name,
 				"parameters": call.Parameters,
@@ -880,14 +909,14 @@ func (a *Agent) Chat(message string, history []map[string]any) map[string]any {
 		}
 
 		messages = append(messages, llm.Message{Role: "assistant", Content: StripFakeToolResults(response)})
-		messages = append(messages, llm.Message{Role: "user", Content: strings.Join(toolResults, "\n") + chatObservationSuffix})
+		messages = append(messages, llm.Message{Role: "user", Content: strings.Join(toolResults, "\n") + ChatObservationSuffix(a.Locale)})
 	}
 
 	client, err := a.llmClient()
 	if err != nil {
 		return map[string]any{"response": "LLM no disponible: " + err.Error(), "tool_calls": toolCallsMade, "sources": sources}
 	}
-	final, err := client.Chat(messages, 0.5, nil, nil)
+	final, err := client.Chat(messages, agentTemperature, nil, nil)
 	if err != nil {
 		return map[string]any{"response": "Error al consultar el LLM: " + err.Error(), "tool_calls": toolCallsMade, "sources": sources}
 	}
@@ -898,7 +927,7 @@ func (a *Agent) Chat(message string, history []map[string]any) map[string]any {
 	}
 }
 
-// ===== helpers de parámetros =====
+// ===== helpers de parÃ¡metros =====
 
 func paramStr(params map[string]any, key string) string {
 	if v, ok := params[key].(string); ok {
@@ -953,3 +982,4 @@ func intFromMap(m map[string]any, key string) int {
 	}
 	return 0
 }
+

@@ -31,7 +31,7 @@ func PersonalRouter(c *config.Config, logger *slog.Logger) http.Handler {
 	}
 	mux.HandleFunc("GET /ready", newReadinessHandler(client, dbErr, logger))
 
-	registerGraphRoutes(mux, c, logger, client, dbErr)
+	registerGraphRoutes(mux, c, logger, client, dbErr, nil)
 	registerSimulationRoutes(mux, c, logger, client, dbErr)
 	registerReportRoutes(mux, c, logger, client, dbErr)
 

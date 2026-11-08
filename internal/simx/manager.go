@@ -147,26 +147,30 @@ func NewManager(dataDir string) *Manager {
 }
 
 // newProfileGenerator — con factory LLM opcional: config delegada del usuario.
-func (m *Manager) newProfileGenerator(client *graph.Client, graphID string, llmF ...func() (*llm.Client, error)) *ProfileGenerator {
+// localeCode fija el idioma de los prompts del generador (normalizado a es/en).
+func (m *Manager) newProfileGenerator(client *graph.Client, graphID, localeCode string, llmF ...func() (*llm.Client, error)) *ProfileGenerator {
 	var g *ProfileGenerator
 	if m.ProfileGeneratorFactory != nil {
 		g = m.ProfileGeneratorFactory(client, graphID)
 	} else {
 		g = NewProfileGenerator(client, graphID)
 	}
+	g.Locale = locale.Normalize(localeCode)
 	if len(llmF) > 0 && llmF[0] != nil {
 		g.LLMFactory = llmF[0]
 	}
 	return g
 }
 
-func (m *Manager) newConfigGenerator(llmF ...func() (*llm.Client, error)) *ConfigGenerator {
+// newConfigGenerator — localeCode fija el idioma de los prompts del generador.
+func (m *Manager) newConfigGenerator(localeCode string, llmF ...func() (*llm.Client, error)) *ConfigGenerator {
 	var g *ConfigGenerator
 	if m.ConfigGeneratorFactory != nil {
 		g = m.ConfigGeneratorFactory()
 	} else {
 		g = NewConfigGenerator()
 	}
+	g.Locale = locale.Normalize(localeCode)
 	if len(llmF) > 0 && llmF[0] != nil {
 		g.LLMFactory = llmF[0]
 	}
@@ -294,7 +298,7 @@ func (m *Manager) CreateSimulation(projectID, graphID string, enableTwitter, ena
 		UserID:        userID,
 	}
 	m.SaveSimulationState(state)
-	logger.Info(fmt.Sprintf("创建模拟: %s, project=%s, graph=%s", state.SimulationID, projectID, graphID))
+	logger.Info(fmt.Sprintf("Simulación creada: %s, project=%s, graph=%s", state.SimulationID, projectID, graphID))
 	return state
 }
 
@@ -316,7 +320,7 @@ func (m *Manager) PrepareSimulation(
 	loc := localeCode
 	state := m.LoadSimulationState(simulationID)
 	if state == nil {
-		return nil, fmt.Errorf("模拟不存在: %s", simulationID)
+		return nil, fmt.Errorf("Simulación no existe: %s", simulationID)
 	}
 
 	state.Status = SimPreparing
@@ -365,7 +369,7 @@ func (m *Manager) PrepareSimulation(
 
 	if filtered.FilteredCount == 0 {
 		state.Status = SimFailed
-		msg := "没有找到符合条件的实体 (0 entidades usables): el grafo no contiene entidades para esta simulación. Reconstruye el grafo o revisa la ontología del proyecto antes de preparar."
+		msg := "No se encontraron entidades que cumplan los criterios (0 entidades usables): el grafo no contiene entidades para esta simulación. Reconstruye el grafo o revisa la ontología del proyecto antes de preparar."
 		state.Error = &msg
 		m.SaveSimulationState(state)
 		return nil, fmt.Errorf("%s", msg)
@@ -378,7 +382,7 @@ func (m *Manager) PrepareSimulation(
 			map[string]any{"current": 0, "total": totalEntities})
 	}
 
-	generator := m.newProfileGenerator(client, state.GraphID, llmF...)
+	generator := m.newProfileGenerator(client, state.GraphID, loc, llmF...)
 	realtimeOutputPath := ""
 	realtimePlatform := "reddit"
 	if state.EnableReddit {
@@ -433,7 +437,7 @@ func (m *Manager) PrepareSimulation(
 		progressCallback("generating_config", 30, locale.T(loc, "progress.callingLLMConfig", nil), map[string]any{"current": 1, "total": 3})
 	}
 
-	configGenerator := m.newConfigGenerator(llmF...)
+	configGenerator := m.newConfigGenerator(loc, llmF...)
 	simParams, err := configGenerator.GenerateConfig(
 		simulationID, state.ProjectID, state.GraphID,
 		simulationRequirement, documentText, filtered.Entities,
@@ -463,7 +467,7 @@ func (m *Manager) PrepareSimulation(
 
 	state.Status = SimReady
 	m.SaveSimulationState(state)
-	logger.Info(fmt.Sprintf("模拟准备完成: %s, entities=%d, profiles=%d", simulationID, state.EntitiesCount, state.ProfilesCount))
+	logger.Info(fmt.Sprintf("Simulación preparada: %s, entities=%d, profiles=%d", simulationID, state.EntitiesCount, state.ProfilesCount))
 	return state, nil
 }
 
@@ -499,13 +503,13 @@ func (m *Manager) ListSimulations(projectID string) []*SimulationState {
 func (m *Manager) GetProfiles(simulationID string, platform string) ([]map[string]any, error) {
 	state := m.LoadSimulationState(simulationID)
 	if state == nil {
-		return nil, fmt.Errorf("模拟不存在: %s", simulationID)
+		return nil, fmt.Errorf("Simulación no existe: %s", simulationID)
 	}
 	if platform == "" {
 		platform = state.GetDefaultPlatform()
 	}
 	if platform != "twitter" && platform != "reddit" {
-		return nil, fmt.Errorf("不支持的平台: %s", platform)
+		return nil, fmt.Errorf("Plataforma no soportada: %s", platform)
 	}
 
 	simDir := m.SimulationDir(simulationID)
@@ -550,10 +554,9 @@ func (m *Manager) GetSimulationConfig(simulationID string) map[string]any {
 	return out
 }
 
-// GetRunInstructions replica la forma de get_run_instructions. El binario Go
-// todavía no tiene runner nativo (hito 7), así que no se inventan comandos
-// ejecutables: se devuelven vacíos y una nota explícita para que la UI no
-// ofrezca un comando que fallaría.
+// GetRunInstructions replica la forma de get_run_instructions. El motor OASIS
+// corre en proceso (oasis.Engine): no hay scripts externos que ejecutar, así
+// que los comandos van vacíos y la nota lo explica.
 func (m *Manager) GetRunInstructions(simulationID string) map[string]any {
 	simDir := m.SimulationDir(simulationID)
 	configPath := filepath.Join(simDir, "simulation_config.json")
@@ -564,9 +567,9 @@ func (m *Manager) GetRunInstructions(simulationID string) map[string]any {
 		"scripts_dir":    scriptsDir,
 		"config_file":    configPath,
 		"commands":       map[string]string{},
-		"instructions": "La ejecución de la simulación aún no está portada al binario Go: " +
-			"los endpoints /api/simulation/start y /stop responden 501. El archivo de configuración ya " +
-			"está listo en config_file.",
+		"instructions": "La simulación se ejecuta en proceso con el motor OASIS: " +
+			"usa los endpoints /api/simulation/start y /api/simulation/stop. " +
+			"El archivo de configuración está en config_file.",
 	}
 }
 
@@ -599,11 +602,11 @@ var preparedStatuses = map[SimulationStatus]bool{
 // podía considerarse preparada (reintentaba preparar y gastaba LLM cada vez).
 func (m *Manager) CheckPrepared(simulationID string) (bool, map[string]any) {
 	if !m.Exists(simulationID) {
-		return false, map[string]any{"reason": "模拟目录不存在"}
+		return false, map[string]any{"reason": "La carpeta de simulación no existe"}
 	}
 	state := m.LoadSimulationState(simulationID)
 	if state == nil {
-		return false, map[string]any{"reason": "模拟目录不存在"}
+		return false, map[string]any{"reason": "La carpeta de simulación no existe"}
 	}
 
 	dir := m.SimulationDir(simulationID)
@@ -626,7 +629,7 @@ func (m *Manager) CheckPrepared(simulationID string) (bool, map[string]any) {
 	}
 	if len(missing) > 0 {
 		return false, map[string]any{
-			"reason":         "缺少必要文件",
+			"reason":         "Faltan archivos necesarios",
 			"missing_files":  missing,
 			"existing_files": existing,
 		}
@@ -634,7 +637,7 @@ func (m *Manager) CheckPrepared(simulationID string) (bool, map[string]any) {
 
 	if !preparedStatuses[state.Status] || !state.ConfigGenerated {
 		return false, map[string]any{
-			"reason": fmt.Sprintf("状态不在已准备列表中或config_generated为false: status=%s, config_generated=%v",
+			"reason": fmt.Sprintf("El estado no está en la lista de preparados o config_generated es false: status=%s, config_generated=%v",
 				state.Status, state.ConfigGenerated),
 			"status":           string(state.Status),
 			"config_generated": state.ConfigGenerated,
@@ -644,7 +647,7 @@ func (m *Manager) CheckPrepared(simulationID string) (bool, map[string]any) {
 	if state.Status == SimPreparing {
 		state.Status = SimReady
 		m.SaveSimulationState(state)
-		logger.Info(fmt.Sprintf("模拟状态自动更新: %s preparing -> ready", simulationID))
+		logger.Info(fmt.Sprintf("Estado de simulación actualizado automáticamente: %s preparing -> ready", simulationID))
 	}
 
 	profilesCount := state.ProfilesCount

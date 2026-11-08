@@ -32,7 +32,7 @@ func IsSupported(filePath string) bool {
 func ExtractText(filePath string) (string, error) {
 	st, err := os.Stat(filePath)
 	if err != nil {
-		return "", fmt.Errorf("文件不存在: %s", filePath)
+		return "", fmt.Errorf("El archivo no existe: %s", filePath)
 	}
 	_ = st
 
@@ -43,7 +43,7 @@ func ExtractText(filePath string) (string, error) {
 	case ".md", ".markdown", ".txt":
 		return ReadTextWithFallback(filePath)
 	default:
-		return "", fmt.Errorf("不支持的文件格式: %s", suffix)
+		return "", fmt.Errorf("Formato de archivo no soportado: %s", suffix)
 	}
 }
 
@@ -93,17 +93,17 @@ func ReadTextWithFallback(filePath string) (string, error) {
 func utf8Valid(b []byte) bool { return utf8.Valid(b) }
 
 // ExtractFromMultiple replica FileParser.extract_from_multiple:
-// encabezados "=== 文档 N: filename ===", fallos sin abortar el total.
+// encabezados "=== Documento N: filename ===", fallos sin abortar el total.
 func ExtractFromMultiple(filePaths []string) string {
 	parts := make([]string, 0, len(filePaths))
 	for i, filePath := range filePaths {
 		base := filepath.Base(filePath)
 		txt, err := ExtractText(filePath)
 		if err != nil {
-			parts = append(parts, fmt.Sprintf("=== 文档 %d: %s (提取失败: %v) ===", i+1, filePath, err))
+			parts = append(parts, fmt.Sprintf("=== Documento %d: %s (extracción fallida: %v) ===", i+1, filePath, err))
 			continue
 		}
-		parts = append(parts, fmt.Sprintf("=== 文档 %d: %s ===\n%s", i+1, base, txt))
+		parts = append(parts, fmt.Sprintf("=== Documento %d: %s ===\n%s", i+1, base, txt))
 	}
 	return strings.Join(parts, "\n\n")
 }

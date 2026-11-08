@@ -13,11 +13,11 @@ import (
 type ProjectStatus string
 
 const (
-	ProjectCreated           ProjectStatus = "created"            // 刚创建，文件已上传
-	ProjectOntologyGenerated ProjectStatus = "ontology_generated" // 本体已生成
-	ProjectGraphBuilding     ProjectStatus = "graph_building"     // 图谱构建中
-	ProjectGraphCompleted    ProjectStatus = "graph_completed"    // 图谱构建完成
-	ProjectFailed            ProjectStatus = "failed"             // 失败
+	ProjectCreated           ProjectStatus = "created"            // recién creado, archivos subidos
+	ProjectOntologyGenerated ProjectStatus = "ontology_generated" // ontología generada
+	ProjectGraphBuilding     ProjectStatus = "graph_building"     // grafo en construcción
+	ProjectGraphCompleted    ProjectStatus = "graph_completed"    // grafo construido
+	ProjectFailed            ProjectStatus = "failed"             // fallido
 )
 
 // ProjectFile replica Project.files[i] de Python ({"filename", "size"} y,

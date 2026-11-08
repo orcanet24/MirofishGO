@@ -1,206 +1,95 @@
 // Prompts del Report Agent (port de report_agent.py).
 //
-// Se conservan en chino como el original: son instrucciones del sistema, no
-// texto de interfaz, y cambiarlos alteraría la calidad/estructura del informe.
+// Los textos viven en el sistema de locales (internal/locale/*.json) bajo
+// prompt.report.* y se resuelven con locale.T, con fallback a "es". Las
+// plantillas conservan los placeholders de fmt.Sprintf (%s/%d/%v); las llaves
+// { } que aparecen en ejemplos JSON son literales y no se interpolan.
 package report
 
-const toolDescInsightForge = `【深度洞察检索 - 强大的检索工具】
-它会自动将你的问题分解为多个子问题，从多个维度检索模拟图谱中的信息，
-整合语义搜索、实体分析与关系链追踪，返回可直接引用的原文事实、核心实体洞察和关系链。`
+import "mirofish/internal/locale"
 
-const toolDescPanoramaSearch = `【广度搜索 - 获取全貌视图】
-获取所有相关节点和关系，区分当前有效事实与历史/过期事实，
-帮助你了解舆情是如何演变的（适合完整发展脉络、阶段对比）。`
+// defaultPromptLocale se usa cuando el agente no trae locale explícito.
+const defaultPromptLocale = "es"
 
-const toolDescQuickSearch = `【简单搜索 - 快速检索】
-轻量级快速检索，适合查找某个具体信息或验证某个事实。`
-
-const toolDescInterviewAgents = `【深度采访 - 真实Agent采访】
-调用OASIS模拟环境的采访接口获取模拟Agent的原始回答。
-【注意】当前 Go 二进制尚未移植 runner/OASIS：此工具会返回不可用说明，
-请改用检索类工具，不要编造采访内容。`
-
-const planSystemPrompt = `你是一个「未来预测报告」的撰写专家，拥有对模拟世界的「上帝视角」——你可以洞察模拟中每一位Agent的行为、言论和互动。
-
-【核心理念】
-我们构建了一个模拟世界，并向其中注入了特定的「模拟需求」作为变量。模拟世界的演化结果，就是对未来可能发生情况的预测。你正在观察的不是"实验数据"，而是"未来的预演"。
-
-【你的任务】
-撰写一份「未来预测报告」，回答：
-1. 在我们设定的条件下，未来发生了什么？
-2. 各类Agent（人群）是如何反应和行动？
-3. 这个模拟揭示了哪些值得关注的未来趋势和风险？
-
-【报告定位】
-- ✅ 这是一份基于模拟的未来预测报告，揭示"如果这样，未来会怎样"
-- ✅ 聚焦于预测结果：事件走向、群体反应、涌现现象、潜在风险
-- ❌ 不是对现实世界现状的分析
-- ❌ 不是泛泛而谈的舆情综述
-
-【章节数量限制】
-- 最少2个章节，最多5个章节
-- 不需要子章节，每个章节直接撰写完整内容
-- 内容要精炼，聚焦于核心预测发现
-- 章节结构由你根据预测结果自主设计
-
-请输出JSON格式的报告大纲，格式如下：
-{
-    "title": "报告标题",
-    "summary": "报告摘要（一句话概括核心预测发现）",
-    "sections": [
-        {"title": "章节标题", "description": "章节内容描述"}
-    ]
+// promptLocale normaliza el locale del agente, con "es" como valor por defecto.
+func promptLocale(loc string) string {
+	if loc == "" {
+		return defaultPromptLocale
+	}
+	return loc
 }
 
-注意：sections数组最少2个，最多5个元素！`
+// PlanSystemPrompt devuelve el system prompt de planificación del esquema.
+func PlanSystemPrompt(loc string) string {
+	return locale.T(promptLocale(loc), "prompt.report.plan_system", nil)
+}
 
-const planUserPromptTemplate = `【预测场景设定】
-我们向模拟世界注入的变量（模拟需求）：%s
+// PlanUserPromptTemplate devuelve la plantilla del user prompt de planificación.
+func PlanUserPromptTemplate(loc string) string {
+	return locale.T(promptLocale(loc), "prompt.report.plan_user", nil)
+}
 
-【模拟世界规模】
-- 参与模拟的实体数量: %d
-- 实体间产生的关系数量: %d
-- 实体类型分布: %v
-- 活跃Agent数量: %d
+// SectionSystemPromptTemplate devuelve la plantilla del system prompt de sección.
+func SectionSystemPromptTemplate(loc string) string {
+	return locale.T(promptLocale(loc), "prompt.report.section_system", nil)
+}
 
-【模拟预测到的部分未来事实样本】
-%s
+// SectionUserPromptTemplate devuelve la plantilla del user prompt de sección.
+func SectionUserPromptTemplate(loc string) string {
+	return locale.T(promptLocale(loc), "prompt.report.section_user", nil)
+}
 
-请以「上帝视角」审视这个未来预演：
-1. 在我们设定的条件下，未来呈现出了什么样的状态？
-2. 各类人群（Agent）是如何反应和行动的？
-3. 这个模拟揭示了哪些值得关注的未来趋势？
+// ReactObservationTemplate devuelve la plantilla de observación del bucle ReAct.
+func ReactObservationTemplate(loc string) string {
+	return locale.T(promptLocale(loc), "prompt.report.react_observation", nil)
+}
 
-根据预测结果，设计最合适的报告章节结构。
+// ReactInsufficientToolsMsg devuelve el aviso de llamadas a herramientas insuficientes.
+func ReactInsufficientToolsMsg(loc string) string {
+	return locale.T(promptLocale(loc), "prompt.report.react_insufficient", nil)
+}
 
-【再次提醒】报告章节数量：最少2个，最多5个，内容要精炼聚焦于核心预测发现。`
+// ReactToolLimitMsg devuelve el aviso de límite de llamadas a herramientas.
+func ReactToolLimitMsg(loc string) string {
+	return locale.T(promptLocale(loc), "prompt.report.react_tool_limit", nil)
+}
 
-const sectionSystemPromptTemplate = `你是一个「未来预测报告」的撰写专家，正在撰写报告的一个章节。
+// ReactForceFinalMsg devuelve la orden de forzar respuesta final.
+func ReactForceFinalMsg(loc string) string {
+	return locale.T(promptLocale(loc), "prompt.report.react_force_final", nil)
+}
 
-报告标题: %s
-报告摘要: %s
-预测场景（模拟需求）: %s
-当前要撰写的章节: %s
+// ReactUnusedToolsHint devuelve la sugerencia de herramientas sin usar.
+func ReactUnusedToolsHint(loc string) string {
+	return locale.T(promptLocale(loc), "prompt.report.react_unused_hint", nil)
+}
 
-【核心理念】
-模拟世界是对未来的预演。我们向模拟世界注入了特定条件（模拟需求），
-模拟中Agent的行为和互动，就是对未来人群行为的预测。
+// ChatSystemPromptTemplate devuelve la plantilla del system prompt del chat.
+func ChatSystemPromptTemplate(loc string) string {
+	return locale.T(promptLocale(loc), "prompt.report.chat_system", nil)
+}
 
-你的任务是：
-- 揭示在设定条件下，未来发生了什么
-- 预测各类人群（Agent）是如何反应和行动的
-- 发现值得关注的未来趋势、风险和机会
+// ChatObservationSuffix devuelve el sufijo añadido tras una observación en el chat.
+func ChatObservationSuffix(loc string) string {
+	return locale.T(promptLocale(loc), "prompt.report.chat_observation_suffix", nil)
+}
 
-❌ 不要写成对现实世界现状的分析
-✅ 要聚焦于"未来会怎样"——模拟结果就是预测的未来
+// ToolDescInsightForge devuelve la descripción de la herramienta insight_forge.
+func ToolDescInsightForge(loc string) string {
+	return locale.T(promptLocale(loc), "prompt.report.tool.insight_forge", nil)
+}
 
-【最重要的规则 - 必须遵守】
-1. 【必须调用工具观察模拟世界】
-   - 所有内容必须来自模拟世界中发生的事件和Agent言行
-   - 禁止使用你自己的知识来编写报告内容
-   - 每个章节至少调用3次工具（最多8次）
-2. 【必须引用Agent的原始言行】
-   - 使用引用格式展示预测，例如：
-     > "某类人群会表示：原文内容..."
-3. 【语言一致性 - 引用内容必须翻译为报告语言】
-   - 报告必须全部使用与用户指定语言一致的语言撰写
-4. 【忠实呈现预测结果】不要添加模拟中不存在的信息
-5. 【禁止捏造数据】禁止捏造用户名、引用、统计数字或互动数据；
-   禁止在回复中包含 <tool_result> 块，只有系统会提供工具结果
+// ToolDescPanoramaSearch devuelve la descripción de la herramienta panorama_search.
+func ToolDescPanoramaSearch(loc string) string {
+	return locale.T(promptLocale(loc), "prompt.report.tool.panorama_search", nil)
+}
 
-【⚠️ 格式规范 - 极其重要！】
-- 每个章节是报告的最小分块单位
-- ❌ 禁止在章节内使用任何 Markdown 标题（#、##、###、#### 等）
-- ❌ 禁止在内容开头添加章节主标题
-- ✅ 章节标题由系统自动添加，你只需撰写纯正文内容
-- ✅ 使用**粗体**、段落分隔、引用、列表来组织内容
+// ToolDescQuickSearch devuelve la descripción de la herramienta quick_search.
+func ToolDescQuickSearch(loc string) string {
+	return locale.T(promptLocale(loc), "prompt.report.tool.quick_search", nil)
+}
 
-【可用检索工具】（每章节调用3-5次）
-%s
-
-【工作流程】
-每次回复你只能做以下两件事之一（不可同时做）：
-选项A - 调用工具：
-<tool_call>
-{"name": "工具名称", "parameters": {"参数名": "参数值"}}
-</tool_call>
-选项B - 输出最终内容：以 "Final Answer:" 开头输出章节内容。
-
-⚠️ 严格禁止：
-- 禁止在一次回复中同时包含工具调用和 Final Answer
-- 禁止自己编造工具返回结果（Observation）
-- 每次回复最多调用一个工具
-
-【章节内容要求】
-1. 内容必须基于工具检索到的模拟数据
-2. 大量引用原文来展示模拟效果
-3. 使用Markdown格式（但禁止使用标题）：用 **粗体** 标记重点代替子标题
-4. 引用必须独立成段，前后各有一个空行
-5. 保持与其他章节的逻辑连贯性
-6. 避免重复已完成的章节内容`
-
-const sectionUserPromptTemplate = `已完成的章节内容（请仔细阅读，避免重复）：
-%s
-
-【当前任务】撰写章节: %s
-
-【重要提醒】
-1. 仔细阅读上方已完成的章节，避免重复相同的内容
-2. 开始前必须先调用工具获取模拟数据
-3. 请混合使用不同工具，不要只用一种
-4. 报告内容必须来自检索结果，不要使用自己的知识
-
-【⚠️ 格式警告 - 必须遵守】
-- ❌ 不要写任何标题（#、##、###、####都不行）
-- ❌ 不要写"%s"作为开头
-- ✅ 直接写正文，用**粗体**代替小节标题
-
-请开始：
-1. 首先思考（Thought）这个章节需要什么信息
-2. 然后调用工具（Action）获取模拟数据
-3. 收集足够信息后输出 Final Answer（纯正文，无任何标题）`
-
-const reactObservationTemplate = `Observation（检索结果）:
-
-═══ 工具 %s 返回 ═══
-%s
-
-═══════════════════════════════════════════════════════════════
-已调用工具 %d/%d 次（已用: %s）%s
-- 如果信息充分：以 "Final Answer:" 开头输出章节内容（必须引用上述原文）
-- 如果需要更多信息：调用一个工具继续检索
-═══════════════════════════════════════════════════════════════`
-
-const reactInsufficientToolsMsg = "【注意】你只调用了%d次工具，至少需要%d次。请再调用工具获取更多模拟数据，然后再输出 Final Answer。%s"
-const reactToolLimitMsg = "工具调用次数已达上限（%d/%d），不能再调用工具。请立即基于已获取的信息，以 \"Final Answer:\" 开头输出章节内容。"
-const reactForceFinalMsg = "已达到工具调用限制，请直接输出 Final Answer: 并生成章节内容。"
-const reactUnusedToolsHint = "\n💡 你还没有使用过: %s，建议尝试不同工具获取多角度信息"
-
-const chatSystemPromptTemplate = `你是一个简洁高效的模拟预测助手。
-
-【背景】
-预测条件: %s
-
-【已生成的分析报告】
-%s
-
-【规则】
-1. 优先基于上述报告内容回答问题
-2. 直接回答问题，避免冗长的思考论述
-3. 仅在报告内容不足以回答时，才调用工具检索更多数据
-4. 回答要简洁、清晰、有条理
-
-【可用工具】（仅在需要时使用，最多调用1-2次）
-%s
-
-【工具调用格式】
-<tool_call>
-{"name": "工具名称", "parameters": {"参数名": "参数值"}}
-</tool_call>
-
-【回答风格】
-- 简洁直接，不要长篇大论
-- 使用 > 格式引用关键内容
-- 优先给出结论，再解释原因`
-
-const chatObservationSuffix = "\n\n请简洁地回答用户的问题。"
+// ToolDescInterviewAgents devuelve la descripción de la herramienta interview_agents.
+func ToolDescInterviewAgents(loc string) string {
+	return locale.T(promptLocale(loc), "prompt.report.tool.interview_agents", nil)
+}

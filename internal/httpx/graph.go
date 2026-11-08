@@ -164,13 +164,20 @@ func NewGraphHandler(cfg *config.Config, logger *slog.Logger, opts ...GraphHandl
 }
 
 // generator resuelve el generador de ontología por petición. Si el usuario
-// trae config LLM delegada, el generador la usa; si no, la global.
+// trae config LLM delegada, el generador la usa; si no, la global. El locale
+// de la petición define el idioma de los prompts del agente.
 func (h *GraphHandler) generator(r *http.Request) *ontology.Generator {
 	var g *ontology.Generator
 	if h.GeneratorFactory != nil {
 		g = h.GeneratorFactory()
 	} else {
 		g = ontology.NewGenerator()
+	}
+	if g.Locale == "" {
+		g.Locale = "es"
+	}
+	if r != nil {
+		g.Locale = locale.Normalize(r.Header.Get("Accept-Language"))
 	}
 	if f := llmFactory(r); f != nil {
 		g.LLM = f
@@ -226,6 +233,21 @@ func buildLock(projectID string) *sync.Mutex {
 		buildLocksRegistry.m[projectID] = l
 	}
 	return l
+}
+
+// delBuildLock libera la entrada de un proyecto borrado (evita crecimiento
+// ilimitado del registro global).
+func delBuildLock(projectID string) {
+	buildLocksRegistry.Lock()
+	defer buildLocksRegistry.Unlock()
+	delete(buildLocksRegistry.m, projectID)
+}
+
+// delGraphLock libera la entrada de un grafo borrado.
+func delGraphLock(graphID string) {
+	graphLocksRegistry.Lock()
+	defer graphLocksRegistry.Unlock()
+	delete(graphLocksRegistry.m, graphID)
 }
 
 // GraphInUseError replica la excepción del api para grafos con consumidores.
@@ -294,7 +316,7 @@ func deref(s *string) string {
 	return *s
 }
 
-// ===== 项目管理接口 =====
+// ===== Gestión de proyectos =====
 
 func (h *GraphHandler) getProject(w http.ResponseWriter, r *http.Request) {
 	projectID := r.PathValue("project_id")
@@ -388,6 +410,10 @@ func (h *GraphHandler) deleteProject(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
+	delBuildLock(projectID)
+	if graphID != "" {
+		delGraphLock(graphID)
+	}
 
 	JSON(w, http.StatusOK, map[string]any{
 		"success": true,
@@ -471,7 +497,7 @@ func clearProjectGraphReference(p *models.Project) {
 	p.Error = nil
 }
 
-// ===== 接口1：上传文件并生成本体 =====
+// ===== Endpoint 1: subir archivo y generar ontología =====
 
 func (h *GraphHandler) generateOntology(w http.ResponseWriter, r *http.Request) {
 	loc := locale.Normalize(r.Header.Get("Accept-Language"))
@@ -511,8 +537,8 @@ func (h *GraphHandler) generateOntology(w http.ResponseWriter, r *http.Request) 
 	}
 	additionalContext := r.FormValue("additional_context")
 
-	h.Logger.Info("=== 开始生成本体定义 ===")
-	h.Logger.Debug("项目名称: " + projectName)
+	h.Logger.Info("=== Iniciando generación de la ontología ===")
+	h.Logger.Debug("Nombre del proyecto: " + projectName)
 
 	if simulationRequirement == "" {
 		JSON(w, http.StatusBadRequest, map[string]any{
@@ -542,7 +568,7 @@ func (h *GraphHandler) generateOntology(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	project.SimulationRequirement = &simulationRequirement
-	h.Logger.Info("创建项目: " + project.ProjectID)
+	h.Logger.Info("Proyecto creado: " + project.ProjectID)
 
 	documentTexts := []string{}
 	allText := ""
@@ -587,7 +613,7 @@ func (h *GraphHandler) generateOntology(w http.ResponseWriter, r *http.Request) 
 
 	project.TotalTextLength = len([]rune(allText))
 	h.PM.SaveExtractedText(project.ProjectID, allText)
-	h.Logger.Info(fmt.Sprintf("文本提取完成，共 %d 字符", len([]rune(allText))))
+	h.Logger.Info(fmt.Sprintf("Extracción de texto completada, %d caracteres", len([]rune(allText))))
 
 	generator := h.generator(r)
 	result, err := generator.Generate(documentTexts, simulationRequirement, additionalContext)
@@ -598,7 +624,7 @@ func (h *GraphHandler) generateOntology(w http.ResponseWriter, r *http.Request) 
 
 	entityTypes, _ := result["entity_types"].([]any)
 	edgeTypes, _ := result["edge_types"].([]any)
-	h.Logger.Info(fmt.Sprintf("本体生成完成: %d 个实体类型, %d 个关系类型", len(entityTypes), len(edgeTypes)))
+	h.Logger.Info(fmt.Sprintf("Ontología generada: %d tipos de entidad, %d tipos de relación", len(entityTypes), len(edgeTypes)))
 
 	stored, _ := json.Marshal(orderedOntology{EntityTypes: entityTypes, EdgeTypes: edgeTypes})
 	project.Ontology = stored
@@ -609,7 +635,7 @@ func (h *GraphHandler) generateOntology(w http.ResponseWriter, r *http.Request) 
 		h.failOntologyProject(project, w, err, loc)
 		return
 	}
-	h.Logger.Info("=== 本体生成完成 === 项目ID: " + project.ProjectID)
+	h.Logger.Info("=== Ontología generada === ID del proyecto: " + project.ProjectID)
 
 	// El estudio terminó: consume el crédito del usuario (RoleUser). Si no
 	// tiene, ConsumeCredit falla pero el estudio YA está hecho: se registra
@@ -700,7 +726,7 @@ func strOr(v any) string {
 	return ""
 }
 
-// ===== 接口2：构建图谱 =====
+// ===== Endpoint 2: construir grafo =====
 
 type buildRequestBody struct {
 	ProjectID       string
@@ -775,9 +801,9 @@ func (h *GraphHandler) buildGraph(w http.ResponseWriter, r *http.Request) {
 func (h *GraphHandler) buildGraphImpl(w http.ResponseWriter, r *http.Request, loc string, _ map[string]any, parsed buildRequestBody, projectID string) {
 	t := func(key string, args map[string]string) string { return locale.T(loc, key, args) }
 
-	// 检查配置（local: MySQL no requiere ZEP_API_KEY; zep: sí）
+	// Comprobar configuración (local: MySQL no requiere ZEP_API_KEY; zep: sí)
 	if !h.Cfg.UseLocalGraph() && h.Cfg.ZEPAPIKey == "" {
-		h.Logger.Error("配置错误: " + t("api.zepApiKeyMissing", nil))
+		h.Logger.Error("Error de configuración: " + t("api.zepApiKeyMissing", nil))
 		JSON(w, http.StatusInternalServerError, map[string]any{
 			"success": false,
 			"error":   t("api.configError", map[string]string{"details": t("api.zepApiKeyMissing", nil)}),
@@ -974,10 +1000,10 @@ func (h *GraphHandler) buildGraphImpl(w http.ResponseWriter, r *http.Request, lo
 	}
 
 	taskManager := models.GetTaskManager()
-	taskID := taskManager.CreateTask(fmt.Sprintf("构建图谱: %s", graphName), map[string]any{
+	taskID := taskManager.CreateTask(fmt.Sprintf("Construcción de grafo: %s", graphName), map[string]any{
 		"project_id": projectID,
 	})
-	h.Logger.Info(fmt.Sprintf("创建图谱构建任务: task_id=%s, project_id=%s", taskID, projectID))
+	h.Logger.Info(fmt.Sprintf("Creando tarea de construcción de grafo: task_id=%s, project_id=%s", taskID, projectID))
 
 	project.Status = models.ProjectGraphBuilding
 	project.GraphBuildTask = &taskID
@@ -1010,7 +1036,7 @@ func (h *GraphHandler) buildTask(taskID, projectID, loc, graphName string, chunk
 	logger := h.Logger.With("task_id", taskID)
 
 	fail := func(err error) {
-		logger.Error("图谱构建失败", "error", err.Error())
+		logger.Error("Fallo en la construcción del grafo", "error", err.Error())
 		msg := err.Error()
 		lock := buildLock(projectID)
 		lock.Lock()
@@ -1162,7 +1188,7 @@ func (h *GraphHandler) buildTask(taskID, projectID, loc, graphName string, chunk
 
 	nodeCount, _ := graphData["node_count"].(int)
 	edgeCount, _ := graphData["edge_count"].(int)
-	logger.Info(fmt.Sprintf("图谱构建完成: graph_id=%s, 节点=%d, 边=%d", graphID, nodeCount, edgeCount))
+	logger.Info(fmt.Sprintf("Construcción del grafo completada: graph_id=%s, nodos=%d, aristas=%d", graphID, nodeCount, edgeCount))
 
 	lock := buildLock(projectID)
 	lock.Lock()
@@ -1197,7 +1223,7 @@ func (h *GraphHandler) buildTask(taskID, projectID, loc, graphName string, chunk
 
 func intPtr(i int) *int { return &i }
 
-// ===== 任务查询接口 =====
+// ===== Consulta de tareas =====
 
 func (h *GraphHandler) getTask(w http.ResponseWriter, r *http.Request) {
 	taskID := r.PathValue("task_id")
@@ -1245,7 +1271,7 @@ func (h *GraphHandler) listTasks(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// ===== 图谱数据接口 =====
+// ===== Datos del grafo =====
 
 func (h *GraphHandler) getGraphData(w http.ResponseWriter, r *http.Request) {
 	graphID := r.PathValue("graph_id")
@@ -1352,7 +1378,9 @@ func (h *GraphHandler) deleteGraph(w http.ResponseWriter, r *http.Request) {
 			JSON(w, http.StatusInternalServerError, map[string]any{"success": false, "error": err.Error()})
 			return
 		}
+		delBuildLock(p.ProjectID)
 	}
+	delGraphLock(graphID)
 
 	JSON(w, http.StatusOK, map[string]any{
 		"success": true,

@@ -21,10 +21,10 @@ import (
 type TaskStatus string
 
 const (
-	TaskPending    TaskStatus = "pending"    // 等待中
-	TaskProcessing TaskStatus = "processing" // 处理中
-	TaskCompleted  TaskStatus = "completed"  // 已完成
-	TaskFailed     TaskStatus = "failed"     // 失败
+	TaskPending    TaskStatus = "pending"    // en espera
+	TaskProcessing TaskStatus = "processing" // en proceso
+	TaskCompleted  TaskStatus = "completed"  // completada
+	TaskFailed     TaskStatus = "failed"     // fallida
 )
 
 // Task — dataclass interna en memoria; no se serializa tal cual.
@@ -185,14 +185,14 @@ func (m *TaskManager) UpdateTask(id string, up TaskUpdate) {
 // CompleteTask marca un task terminado con progress=100 y result.
 func (m *TaskManager) CompleteTask(id string, result map[string]any) {
 	p := 100
-	msg := locale.T("", "progress.taskComplete", nil)
+	msg := locale.T("es", "progress.taskComplete", nil)
 	status := TaskCompleted
 	m.UpdateTask(id, TaskUpdate{Status: &status, Progress: &p, Message: &msg, Result: result})
 }
 
 // FailTask marca un task fallido.
 func (m *TaskManager) FailTask(id string, errMsg string) {
-	msg := locale.T("", "progress.taskFailed", nil)
+	msg := locale.T("es", "progress.taskFailed", nil)
 	status := TaskFailed
 	errStr := errMsg
 	m.UpdateTask(id, TaskUpdate{Status: &status, Message: &msg, Error: &errStr})

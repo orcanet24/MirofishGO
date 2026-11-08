@@ -211,16 +211,16 @@ func Load() *Config {
 func (c *Config) Validate() []string {
 	var errors []string
 	if c.LLMAPIKey == "" {
-		errors = append(errors, "LLM_API_KEY 未配置")
+		errors = append(errors, "LLM_API_KEY no configurada")
 	}
 	if c.GraphBackend != "local" && c.GraphBackend != "" {
 		errors = append(errors, "GRAPH_BACKEND="+c.GraphBackend+" no está implementado en el binario Go (solo 'local'); usa GRAPH_BACKEND=local")
 	}
 	if c.DBDSN == "" {
-		errors = append(errors, "DB_DSN/DB_NAME 未配置：el grafo requiere MySQL 8 o MariaDB (no hay fallback a SQLite)")
+		errors = append(errors, "DB_DSN/DB_NAME no configurado: el grafo requiere MySQL 8 o MariaDB (no hay fallback a SQLite)")
 	}
 	if os.Getenv("ZEP_API_URL") != "" {
-		errors = append(errors, "ZEP_API_URL 不受支持；usa GRAPH_BACKEND=local o Zep Cloud con ZEP_API_KEY")
+		errors = append(errors, "ZEP_API_URL no soportado; usa GRAPH_BACKEND=local o Zep Cloud con ZEP_API_KEY")
 	}
 	if c.Debug {
 		fmt.Println("warning: FLASK_DEBUG está activado; no usar en producción")

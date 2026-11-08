@@ -186,17 +186,21 @@ func (r RunState) ToMap() map[string]any {
 		"total_rounds":           r.TotalRounds,
 		"progress_percent":       progress,
 		"simulated_hours":        simulatedHours,
-		"total_simulation_hours": r.TotalSimulationHours,
-		"twitter_running":        r.TwitterRunning,
-		"reddit_running":         r.RedditRunning,
-		"twitter_current_round":  r.TwitterCurrentRound,
-		"reddit_current_round":   r.RedditCurrentRound,
-		"twitter_actions_count":  r.TwitterActionsCount,
-		"reddit_actions_count":   r.RedditActionsCount,
-		"total_actions_count":    r.TwitterActionsCount + r.RedditActionsCount,
-		"started_at":             r.StartedAt,
-		"updated_at":             r.UpdatedAt,
-		"error":                  r.Error,
+		"twitter_simulated_hours": simulatedHours,
+		"reddit_simulated_hours":  0,
+		"total_simulation_hours":  r.TotalSimulationHours,
+		"twitter_running":         r.TwitterRunning,
+		"reddit_running":          r.RedditRunning,
+		"twitter_current_round":   r.TwitterCurrentRound,
+		"reddit_current_round":    r.RedditCurrentRound,
+		"twitter_actions_count":   r.TwitterActionsCount,
+		"reddit_actions_count":    r.RedditActionsCount,
+		"total_actions_count":     r.TwitterActionsCount + r.RedditActionsCount,
+		"twitter_completed":       r.RunnerStatus == "completed" && !r.TwitterRunning,
+		"reddit_completed":        false,
+		"started_at":              r.StartedAt,
+		"updated_at":              r.UpdatedAt,
+		"error":                   r.Error,
 	}
 }
 
@@ -210,19 +214,27 @@ type ActionRecord struct {
 	ActionArgs map[string]any `json:"action_args"`
 	Result     any            `json:"result"`
 	Success    bool           `json:"success"`
+	Platform   string         `json:"platform,omitempty"`
 }
 
-// ToMap replica la entrada de action_logger.py.
+// ToMap replica la entrada de action_logger.py. La plataforma es "twitter"
+// cuando no viene registrada: el motor nativo solo produce acciones de
+// Twitter (Reddit no está portado) y el frontend las agrupa por plataforma.
 func (a ActionRecord) ToMap() map[string]any {
+	platform := a.Platform
+	if platform == "" {
+		platform = "twitter"
+	}
 	return map[string]any{
 		"round":       a.Round,
 		"timestamp":   a.Timestamp,
 		"agent_id":    a.AgentID,
 		"agent_name":  a.AgentName,
-		"action_type": a.ActionType,
+		"action_type": strings.ToUpper(a.ActionType),
 		"action_args": a.ActionArgs,
 		"result":      a.Result,
 		"success":     a.Success,
+		"platform":    platform,
 	}
 }
 

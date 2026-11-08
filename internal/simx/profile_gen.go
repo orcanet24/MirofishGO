@@ -287,7 +287,7 @@ type ProfileGenerator struct {
 
 // NewProfileGenerator crea el generador.
 func NewProfileGenerator(client *graph.Client, graphID string) *ProfileGenerator {
-	return &ProfileGenerator{Client: client, GraphID: graphID, Locale: "zh"}
+	return &ProfileGenerator{Client: client, GraphID: graphID, Locale: "es"}
 }
 
 func (g *ProfileGenerator) llmClient() (*llm.Client, error) {
@@ -413,7 +413,7 @@ func (g *ProfileGenerator) searchZepForEntity(entity *EntityNode) map[string]any
 	res := <-out
 
 	if res.errE != nil || res.errN != nil {
-		logger.Warn(fmt.Sprintf("Zep检索失败 (%s): edges=%v nodes=%v", entity.Name, res.errE, res.errN))
+		logger.Warn(fmt.Sprintf("Error en la búsqueda de Zep (%s): edges=%v nodes=%v", entity.Name, res.errE, res.errN))
 		return results
 	}
 
@@ -432,7 +432,7 @@ func (g *ProfileGenerator) searchZepForEntity(entity *EntityNode) map[string]any
 				summariesSet[n.Summary] = true
 			}
 			if n.Name != "" && n.Name != entity.Name {
-				summariesSet["相关实体: "+n.Name] = true
+				summariesSet[g.t("prompt.simx.relatedEntityLabel", nil)+n.Name] = true
 			}
 		}
 	}
@@ -456,7 +456,7 @@ func (g *ProfileGenerator) searchZepForEntity(entity *EntityNode) map[string]any
 			}
 			lines = append(lines, "- "+f)
 		}
-		parts = append(parts, "事实信息:\n"+strings.Join(lines, "\n"))
+		parts = append(parts, g.t("prompt.simx.factsLabel", nil)+strings.Join(lines, "\n"))
 	}
 	if len(summaries) > 0 {
 		lines := []string{}
@@ -466,7 +466,7 @@ func (g *ProfileGenerator) searchZepForEntity(entity *EntityNode) map[string]any
 			}
 			lines = append(lines, "- "+s)
 		}
-		parts = append(parts, "相关实体:\n"+strings.Join(lines, "\n"))
+		parts = append(parts, g.t("prompt.simx.relatedEntitiesLabel", nil)+strings.Join(lines, "\n"))
 	}
 	results["context"] = strings.Join(parts, "\n\n")
 	return results
@@ -493,7 +493,7 @@ func (g *ProfileGenerator) BuildEntityContext(entity *EntityNode) string {
 			}
 		}
 		if len(attrs) > 0 {
-			parts = append(parts, "### 实体属性\n"+strings.Join(attrs, "\n"))
+			parts = append(parts, g.t("prompt.simx.entityAttributesHeader", nil)+strings.Join(attrs, "\n"))
 		}
 	}
 
@@ -509,14 +509,14 @@ func (g *ProfileGenerator) BuildEntityContext(entity *EntityNode) string {
 				existingFacts[fact] = true
 			} else if edgeName != "" {
 				if direction == "outgoing" {
-					relationships = append(relationships, fmt.Sprintf("- %s --[%s]--> (相关实体)", entity.Name, edgeName))
+					relationships = append(relationships, fmt.Sprintf("- %s --[%s]--> "+g.t("prompt.simx.relatedEntity", nil), entity.Name, edgeName))
 				} else {
-					relationships = append(relationships, fmt.Sprintf("- (相关实体) --[%s]--> %s", edgeName, entity.Name))
+					relationships = append(relationships, fmt.Sprintf("- "+g.t("prompt.simx.relatedEntity", nil)+" --[%s]--> %s", edgeName, entity.Name))
 				}
 			}
 		}
 		if len(relationships) > 0 {
-			parts = append(parts, "### 相关事实和关系\n"+strings.Join(relationships, "\n"))
+			parts = append(parts, g.t("prompt.simx.relatedFactsHeader", nil)+strings.Join(relationships, "\n"))
 		}
 	}
 
@@ -543,7 +543,7 @@ func (g *ProfileGenerator) BuildEntityContext(entity *EntityNode) string {
 			}
 		}
 		if len(relatedInfo) > 0 {
-			parts = append(parts, "### 关联实体信息\n"+strings.Join(relatedInfo, "\n"))
+			parts = append(parts, g.t("prompt.simx.relatedEntitiesInfoHeader", nil)+strings.Join(relatedInfo, "\n"))
 		}
 	}
 
@@ -563,7 +563,7 @@ func (g *ProfileGenerator) BuildEntityContext(entity *EntityNode) string {
 				}
 				lines = append(lines, "- "+f)
 			}
-			parts = append(parts, "### Zep检索到的事实信息\n"+strings.Join(lines, "\n"))
+			parts = append(parts, g.t("prompt.simx.zepFactsHeader", nil)+strings.Join(lines, "\n"))
 		}
 	}
 	if summaries, ok := zepResults["node_summaries"].([]string); ok && len(summaries) > 0 {
@@ -574,7 +574,7 @@ func (g *ProfileGenerator) BuildEntityContext(entity *EntityNode) string {
 			}
 			lines = append(lines, "- "+s)
 		}
-		parts = append(parts, "### Zep检索到的相关节点\n"+strings.Join(lines, "\n"))
+		parts = append(parts, g.t("prompt.simx.zepNodesHeader", nil)+strings.Join(lines, "\n"))
 	}
 
 	return strings.Join(parts, "\n\n")
@@ -623,7 +623,7 @@ func (g *ProfileGenerator) generateProfileWithLLM(entityName, entityType, entity
 		}
 		content := llm.ExtractChatCompletionText(resp)
 		if len(resp.Choices) > 0 && resp.Choices[0].FinishReason == "length" {
-			logger.Warn(fmt.Sprintf("LLM输出被截断 (attempt %d), 尝试修复...", attempt+1))
+			logger.Warn(fmt.Sprintf("Salida del LLM truncada (intento %d), intentando reparar...", attempt+1))
 			content = fixTruncatedJSON(content)
 		}
 		var result map[string]any
@@ -639,7 +639,7 @@ func (g *ProfileGenerator) generateProfileWithLLM(entityName, entityType, entity
 				if entitySummary != "" {
 					result["persona"] = entitySummary
 				} else {
-					result["persona"] = fmt.Sprintf("%s是一个%s。", entityName, entityType)
+					result["persona"] = fmt.Sprintf(g.t("prompt.simx.defaultPersona", nil), entityName, entityType)
 				}
 			}
 			return result
@@ -655,7 +655,7 @@ func (g *ProfileGenerator) generateProfileWithLLM(entityName, entityType, entity
 		}
 	}
 
-	logger.Warn(fmt.Sprintf("LLM生成人设失败（%d次尝试）: %v, 使用规则生成", maxAttempts, lastError))
+	logger.Warn(fmt.Sprintf("Error al generar el perfil con el LLM (%d intentos): %v; se usa la generación por reglas", maxAttempts, lastError))
 	return g.generateProfileRuleBased(entityName, entityType, entitySummary, entityAttributes)
 }
 
@@ -715,24 +715,23 @@ func (g *ProfileGenerator) tryFixJSON(content, entityName, entityType, entitySum
 	} else if entitySummary != "" {
 		persona = entitySummary
 	} else {
-		persona = fmt.Sprintf("%s是一个%s。", entityName, entityType)
+		persona = fmt.Sprintf(g.t("prompt.simx.defaultPersona", nil), entityName, entityType)
 	}
 	return map[string]any{"bio": bio, "persona": persona, "_fixed": true}
 }
 
 func (g *ProfileGenerator) systemPrompt(isIndividual bool) string {
-	base := "你是社交媒体用户画像生成专家。生成详细、真实的人设用于舆论模拟,最大程度还原已有现实情况。必须返回有效的JSON格式，所有字符串值不能包含未转义的换行符。"
-	return base + "\n\n" + g.langInstruction()
+	return g.t("prompt.simx.profileSystem", nil) + "\n\n" + g.langInstruction()
 }
 
 func (g *ProfileGenerator) buildIndividualPersonaPrompt(entityName, entityType, entitySummary string, entityAttributes map[string]any, context string) string {
-	attrsStr := "无"
+	attrsStr := g.t("prompt.simx.noAttributes", nil)
 	if len(entityAttributes) > 0 {
 		if b, err := json.Marshal(entityAttributes); err == nil {
 			attrsStr = string(b)
 		}
 	}
-	contextStr := "无额外上下文"
+	contextStr := g.t("prompt.simx.noAdditionalContext", nil)
 	if context != "" {
 		if len([]rune(context)) > 3000 {
 			contextStr = string([]rune(context)[:3000])
@@ -740,51 +739,18 @@ func (g *ProfileGenerator) buildIndividualPersonaPrompt(entityName, entityType, 
 			contextStr = context
 		}
 	}
-	return fmt.Sprintf(`为实体生成详细的社交媒体用户人设,最大程度还原已有现实情况。
-
-实体名称: %s
-实体类型: %s
-实体摘要: %s
-实体属性: %s
-
-上下文信息:
-%s
-
-请生成JSON，包含以下字段:
-
-1. bio: 社交媒体简介，200字
-2. persona: 详细人设描述（2000字的纯文本），需包含:
-   - 基本信息（年龄、职业、教育背景、所在地）
-   - 人物背景（重要经历、与事件的关联、社会关系）
-   - 性格特征（MBTI类型、核心性格、情绪表达方式）
-   - 社交媒体行为（发帖频率、内容偏好、互动风格、语言特点）
-   - 立场观点（对话题的态度、可能被激怒/感动的内容）
-   - 独特特征（口头禅、特殊经历、个人爱好）
-   - 个人记忆（人设的重要部分，要介绍这个个体与事件的关联，以及这个个体在事件中的已有动作与反应）
-3. age: 年龄数字（必须是整数）
-4. gender: 性别，必须是英文: "male" 或 "female"
-5. mbti: MBTI类型（如INTJ、ENFP等）
-6. country: 国家（使用中文，如"中国"）
-7. profession: 职业
-8. interested_topics: 感兴趣话题数组
-
-重要:
-- 所有字段值必须是字符串或数字，不要使用换行符
-- persona必须是一段连贯的文字描述
-- %s (gender字段必须用英文male/female)
-- 内容要与实体信息保持一致
-- age必须是有效的整数，gender必须是"male"或"female"
-`, entityName, entityType, entitySummary, attrsStr, contextStr, g.langInstruction())
+	return fmt.Sprintf(g.t("prompt.simx.individualPersona", nil),
+		entityName, entityType, entitySummary, attrsStr, contextStr, g.langInstruction())
 }
 
 func (g *ProfileGenerator) buildGroupPersonaPrompt(entityName, entityType, entitySummary string, entityAttributes map[string]any, context string) string {
-	attrsStr := "无"
+	attrsStr := g.t("prompt.simx.noAttributes", nil)
 	if len(entityAttributes) > 0 {
 		if b, err := json.Marshal(entityAttributes); err == nil {
 			attrsStr = string(b)
 		}
 	}
-	contextStr := "无额外上下文"
+	contextStr := g.t("prompt.simx.noAdditionalContext", nil)
 	if context != "" {
 		if len([]rune(context)) > 3000 {
 			contextStr = string([]rune(context)[:3000])
@@ -792,40 +758,8 @@ func (g *ProfileGenerator) buildGroupPersonaPrompt(entityName, entityType, entit
 			contextStr = context
 		}
 	}
-	return fmt.Sprintf(`为机构/群体实体生成详细的社交媒体账号设定,最大程度还原已有现实情况。
-
-实体名称: %s
-实体类型: %s
-实体摘要: %s
-实体属性: %s
-
-上下文信息:
-%s
-
-请生成JSON，包含以下字段:
-
-1. bio: 官方账号简介，200字，专业得体
-2. persona: 详细账号设定描述（2000字的纯文本），需包含:
-   - 机构基本信息（正式名称、机构性质、成立背景、主要职能）
-   - 账号定位（账号类型、目标受众、核心功能）
-   - 发言风格（语言特点、常用表达、禁忌话题）
-   - 发布内容特点（内容类型、发布频率、活跃时间段）
-   - 立场态度（对核心话题的官方立场、面对争议的处理方式）
-   - 特殊说明（代表的群体画像、运营习惯）
-   - 机构记忆（机构人设的重要部分，要介绍这个机构与事件的关联，以及这个机构在事件中的已有动作与反应）
-3. age: 固定填30（机构账号的虚拟年龄）
-4. gender: 固定填"other"（机构账号使用other表示非个人）
-5. mbti: MBTI类型，用于描述账号风格，如ISTJ代表严谨保守
-6. country: 国家（使用中文，如"中国"）
-7. profession: 机构职能描述
-8. interested_topics: 关注领域数组
-
-重要:
-- 所有字段值必须是字符串或数字，不允许null值
-- persona必须是一段连贯的文字描述，不要使用换行符
-- %s (gender字段必须用英文"other")
-- age必须是整数30，gender必须是字符串"other"
-- 机构账号发言要符合其身份定位`, entityName, entityType, entitySummary, attrsStr, contextStr, g.langInstruction())
+	return fmt.Sprintf(g.t("prompt.simx.groupPersona", nil),
+		entityName, entityType, entitySummary, attrsStr, contextStr, g.langInstruction())
 }
 
 func (g *ProfileGenerator) generateProfileRuleBased(entityName, entityType, entitySummary string, entityAttributes map[string]any) map[string]any {
@@ -860,7 +794,7 @@ func (g *ProfileGenerator) generateProfileRuleBased(entityName, entityType, enti
 			"age":               30,
 			"gender":            "other",
 			"mbti":              "ISTJ",
-			"country":           "中国",
+			"country":           "China",
 			"profession":        "Media",
 			"interested_topics": []string{"General News", "Current Events", "Public Affairs"},
 		}
@@ -871,7 +805,7 @@ func (g *ProfileGenerator) generateProfileRuleBased(entityName, entityType, enti
 			"age":               30,
 			"gender":            "other",
 			"mbti":              "ISTJ",
-			"country":           "中国",
+			"country":           "China",
 			"profession":        entityType,
 			"interested_topics": []string{"Public Policy", "Community", "Official Announcements"},
 		}
@@ -970,7 +904,7 @@ func (g *ProfileGenerator) GenerateProfilesFromEntities(
 
 			saveRealtime()
 			if progressCallback != nil {
-				progressCallback(current, total, fmt.Sprintf("已完成 %d/%d: %s（%s）", current, total, entity.Name, entityType))
+				progressCallback(current, total, fmt.Sprintf("Completado %d/%d: %s (%s)", current, total, entity.Name, entityType))
 			}
 		}(idx, entities[idx])
 	}
@@ -1004,8 +938,21 @@ func (g *ProfileGenerator) saveTwitterCSV(profiles []*OasisAgentProfile, filePat
 	defer f.Close()
 	w := csv.NewWriter(f)
 	defer w.Flush()
-	if err := w.Write([]string{"user_id", "name", "username", "user_char", "description"}); err != nil {
+	// Columnas extendidas para el frontend (profesión/edad/género/país/MBTI).
+	if err := w.Write([]string{"user_id", "name", "username", "user_char", "description", "profession", "age", "gender", "country", "mbti"}); err != nil {
 		return err
+	}
+	strPtr := func(p *string) string {
+		if p == nil {
+			return ""
+		}
+		return *p
+	}
+	intPtr := func(p *int) string {
+		if p == nil {
+			return ""
+		}
+		return fmt.Sprintf("%d", *p)
 	}
 	for idx, profile := range profiles {
 		userChar := profile.Bio
@@ -1016,6 +963,8 @@ func (g *ProfileGenerator) saveTwitterCSV(profiles []*OasisAgentProfile, filePat
 		description := strings.ReplaceAll(strings.ReplaceAll(profile.Bio, "\n", " "), "\r", " ")
 		if err := w.Write([]string{
 			fmt.Sprintf("%d", idx), profile.Name, profile.UserName, userChar, description,
+			strPtr(profile.Profession), intPtr(profile.Age), strPtr(profile.Gender),
+			strPtr(profile.Country), strPtr(profile.Mbti),
 		}); err != nil {
 			return err
 		}
@@ -1028,11 +977,11 @@ func normalizeGender(gender *string) string {
 		return defaultProfileGender
 	}
 	switch strings.ToLower(strings.TrimSpace(*gender)) {
-	case "男", "male":
+	case "hombre", "masculino", "male":
 		return "male"
-	case "女", "female":
+	case "mujer", "femenino", "female":
 		return "female"
-	case "机构", "其他", "other":
+	case "institucion", "institución", "otro", "other":
 		return "other"
 	default:
 		return "other"

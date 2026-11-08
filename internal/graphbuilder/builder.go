@@ -31,7 +31,7 @@ type BatchSubmission struct {
 // Builder replica GraphBuilderService sobre el backend local.
 type Builder struct {
 	Client *graph.Client
-	Locale string // locale capturado antes de lanzar la goroutine de build
+	Locale string // locale capturado antes de lanzar la goroutine de build (default es)
 
 	// LLMFactory opcional: config LLM delegada del usuario que ejecuta el
 	// build; nil = global del .env (comportamiento histórico).
@@ -39,7 +39,7 @@ type Builder struct {
 }
 
 // New crea el servicio sobre un cliente de grafo local.
-func New(client *graph.Client) *Builder { return &Builder{Client: client, Locale: "zh"} }
+func New(client *graph.Client) *Builder { return &Builder{Client: client, Locale: "es"} }
 
 func (b *Builder) t(key string, args map[string]string) string {
 	return locale.T(b.Locale, key, args)

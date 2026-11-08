@@ -1,7 +1,7 @@
 // Package locale — port of backend/app/utils/locale.py.
 //
 // Carga locales/*.json embebidos en el binario y resuelve traducciones con
-// fallback a zh (igual que Python). El locale por thread/thread-local de
+// fallback a es (español por defecto). El locale por thread/thread-local de
 // Python aquí es explícito: cada llamada pasa el locale o usa un default.
 package locale
 
@@ -24,7 +24,7 @@ var (
 	mu           sync.RWMutex
 	translations = map[string]map[string]any{}
 	languages    = map[string]languageEntry{}
-	defaultKey   = "zh"
+	defaultKey   = "es"
 )
 
 func init() {
@@ -84,7 +84,7 @@ func lookup(m map[string]any, key string) (string, bool) {
 	return s, ok
 }
 
-// T returns the translation for key in locale (fallback zh, then the key
+// T returns the translation for key in locale (fallback es, then the key
 // itself), interpolating {args} — identical semantics to locale.t().
 func T(locale, key string, args map[string]string) string {
 	mu.RLock()
@@ -111,23 +111,23 @@ func GetLanguageInstruction(locale string) string {
 	if !ok {
 		e, ok = languages[defaultKey]
 		if !ok {
-			return "请使用中文回答。"
+			return "Por favor, responde en español."
 		}
 	}
 	if e.LLMInstruction == "" {
-		return "请使用中文回答。"
+		return "Por favor, responde en español."
 	}
 	return e.LLMInstruction
 }
 
 // Normalize picks the locale from an Accept-Language header value like the
-// API layer does ('zh' when unknown).
+// API layer does ('es' when unknown).
 func Normalize(raw string) string {
 	raw = strings.TrimSpace(raw)
 	if raw == "" {
 		return defaultKey
 	}
-	// Accept-Language: es-ES,es;q=0.9,zh;q=0.8 → primer código válido
+	// Accept-Language: es-ES,es;q=0.9,en;q=0.8 → primer código válido
 	parts := strings.Split(raw, ",")
 	for _, p := range parts {
 		code := strings.TrimSpace(strings.SplitN(p, ";", 2)[0])

@@ -1,6 +1,0 @@
-[2026-11-07 13:04:10] INFO [mirofish.simx] 发送IPC命令: interview, command_id=38d565d5-3578-4faf-b68c-d6d6405d6317
-[2026-11-07 13:04:11] INFO [mirofish.simx] 收到IPC响应: command_id=38d565d5-3578-4faf-b68c-d6d6405d6317, status=completed
-[2026-11-07 13:21:55] INFO [mirofish.simx] 发送IPC命令: interview, command_id=4452ee6f-2a85-406e-9b40-3c49310d7049
-[2026-11-07 13:21:56] INFO [mirofish.simx] 收到IPC响应: command_id=4452ee6f-2a85-406e-9b40-3c49310d7049, status=completed
-[2026-11-07 13:40:34] INFO [mirofish.simx] 发送IPC命令: interview, command_id=d67cb6d3-3297-4701-aba0-72c0e9298fad
-[2026-11-07 13:40:34] INFO [mirofish.simx] 收到IPC响应: command_id=d67cb6d3-3297-4701-aba0-72c0e9298fad, status=completed

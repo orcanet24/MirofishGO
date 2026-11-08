@@ -129,7 +129,7 @@ func Router(c *config.Config, logger *slog.Logger) http.Handler {
 	mux.HandleFunc("GET /ready", newReadinessHandler(client, dbErr, logger))
 
 	// Blueprints (registrar progresivamente en darle a cada paquete su API):
-	registerGraphRoutes(mux, c, logger, client, dbErr)
+	registerGraphRoutes(mux, c, logger, client, dbErr, store)
 	registerSimulationRoutes(mux, c, logger, client, dbErr)
 	registerReportRoutes(mux, c, logger, client, dbErr)
 	if store != nil {
@@ -140,6 +140,16 @@ func Router(c *config.Config, logger *slog.Logger) http.Handler {
 	// La SPA embebida es el fallback: las rutas /api/* más específicas siguen
 	// ganando y un /api/* desconocido devuelve 404 JSON, no HTML.
 	mux.Handle("/", webui.Handler())
+
+	// Limpieza periódica de tareas viejas (el TaskManager es un singleton en
+	// memoria; sin recolección crecería para siempre).
+	go func() {
+		ticker := time.NewTicker(time.Hour)
+		defer ticker.Stop()
+		for range ticker.C {
+			models.GetTaskManager().CleanupOldTasks(24)
+		}
+	}()
 
 	var root http.Handler = mux
 	root = reqLogger(logger, root)
@@ -170,7 +180,7 @@ func registerUnavailable(mux *http.ServeMux, prefix string, err error) {
 }
 
 // registerGraphRoutes monta /api/graph/... (port de api/graph.py).
-func registerGraphRoutes(mux *http.ServeMux, c *config.Config, logger *slog.Logger, client *graph.Client, dbErr error) {
+func registerGraphRoutes(mux *http.ServeMux, c *config.Config, logger *slog.Logger, client *graph.Client, dbErr error, store *users.Store) {
 	if dbErr != nil {
 		registerUnavailable(mux, "/api/graph/", dbErr)
 		return
@@ -184,6 +194,7 @@ func registerGraphRoutes(mux *http.ServeMux, c *config.Config, logger *slog.Logg
 		})
 		return
 	}
+	h.UsersStore = store // créditos/estudios por usuario (control de planes)
 	h.Register(mux)
 }
 

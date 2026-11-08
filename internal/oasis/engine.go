@@ -117,7 +117,16 @@ func (e *Engine) Start(cfg *SimulationConfig, profiles []Profile, maxRounds int,
 	e.runners[cfg.SimulationID] = runner
 	e.mu.Unlock()
 
-	go runner.Run(profiles, maxRounds)
+	go func() {
+		runner.Run(profiles, maxRounds)
+		// El runner ya terminó: liberar la entrada (evita retener agentes,
+		// RNG y clientes de simulaciones viejas).
+		e.mu.Lock()
+		if e.runners[cfg.SimulationID] == runner {
+			delete(e.runners, cfg.SimulationID)
+		}
+		e.mu.Unlock()
+	}()
 	return &initial, nil
 }
 
