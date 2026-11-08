@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"log/slog"
 	"net/http"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -16,6 +17,9 @@ import (
 	"mirofish/internal/config"
 	"mirofish/internal/graph"
 	"mirofish/internal/models"
+	"mirofish/internal/oasis"
+	"mirofish/internal/report"
+	"mirofish/internal/simx"
 	"mirofish/internal/users"
 	"mirofish/internal/webui"
 )
@@ -133,7 +137,7 @@ func Router(c *config.Config, logger *slog.Logger) http.Handler {
 	registerSimulationRoutes(mux, c, logger, client, dbErr)
 	registerReportRoutes(mux, c, logger, client, dbErr)
 	if store != nil {
-		(&AuthHandler{Store: store, Secret: c.SecretKey, Logger: logger}).Register(mux)
+		(&AuthHandler{Store: store, Secret: c.SecretKey, Logger: logger, PM: models.NewProjectManager(c.UploadDir)}).Register(mux)
 		(&AdminHandler{Store: store, PM: models.NewProjectManager(c.UploadDir), Logger: logger}).Register(mux)
 	}
 
@@ -195,6 +199,19 @@ func registerGraphRoutes(mux *http.ServeMux, c *config.Config, logger *slog.Logg
 		return
 	}
 	h.UsersStore = store // créditos/estudios por usuario (control de planes)
+	if h.Client != nil {
+		simDir := c.SimDataDir
+		if simDir == "" {
+			simDir = filepath.Join(c.UploadDir, "simulations")
+		}
+		h.Sim = simx.NewManager(simDir)
+		if s, err := oasis.NewStore(h.Client.DB.SQL()); err == nil {
+			h.OasisStore = s
+		}
+	}
+	if h.Reports == nil {
+		h.Reports = report.NewManager(c.UploadDir)
+	}
 	h.Register(mux)
 }
 

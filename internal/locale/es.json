@@ -399,7 +399,10 @@
     "requireGraphIdAndQuery": "Por favor proporciona graph_id y query",
     "initReportAgent": "Inicializando Report Agent...",
     "noProfilesForInterview": "La simulación no tiene perfiles generados; ejecuta la preparación (prepare) primero",
-    "noCredits": "No te quedan estudios disponibles. Contacta al administrador para recargar tu plan."
+    "noCredits": "No te quedan estudios disponibles. Contacta al administrador para recargar tu plan.",
+    "projectPurged": "Estudio borrado por completo: se eliminaron archivos, grafo, simulaciones e informes.",
+    "projectsPurged": "Se borraron {count} estudios por completo.",
+    "legalRequired": "Debes aceptar la política de confidencialidad y usos prohibidos para registrarte."
   },
   "progress": {
     "initGraphService": "Inicializando servicio de construcción de grafo...",
@@ -757,5 +760,8 @@
     "metrics": "Métricas de la simulación",
     "metricsIntro": "Actividad y composición del mundo simulado.",
     "content": "Contenido del informe"
+  },
+  "auth": {
+    "legalCheck": "Acepto la política de confidencialidad y usos prohibidos"
   }
 }

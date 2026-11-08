@@ -21,8 +21,11 @@ import (
 	"mirofish/internal/llm"
 	"mirofish/internal/locale"
 	"mirofish/internal/models"
+	"mirofish/internal/oasis"
 	"mirofish/internal/ontology"
 	tex "mirofish/internal/text"
+	"mirofish/internal/report"
+	"mirofish/internal/simx"
 	"mirofish/internal/users"
 )
 
@@ -35,6 +38,11 @@ type GraphHandler struct {
 
 	// UsersStore — créditos/"estudios" por usuario (nil en tests o sin BD).
 	UsersStore *users.Store
+
+	// Dependencias para el borrado total (nil en tests).
+	Sim        *simx.Manager
+	OasisStore *oasis.Store
+	Reports    *report.Manager
 
 	// GeneratorFactory crea el generador de ontología; inyectable en tests.
 	GeneratorFactory func() *ontology.Generator
@@ -190,6 +198,8 @@ func (h *GraphHandler) Register(mux *http.ServeMux) {
 	mux.HandleFunc("GET /api/graph/project/list", h.listProjects)
 	mux.HandleFunc("GET /api/graph/project/{project_id}", h.getProject)
 	mux.HandleFunc("DELETE /api/graph/project/{project_id}", h.deleteProject)
+	mux.HandleFunc("DELETE /api/graph/project/{project_id}/purge", h.purgeProject)
+	mux.HandleFunc("POST /api/graph/purge-all", h.purgeAll)
 	mux.HandleFunc("POST /api/graph/project/{project_id}/reset", h.resetProject)
 	mux.HandleFunc("POST /api/graph/ontology/generate", h.generateOntology)
 	mux.HandleFunc("POST /api/graph/build", h.buildGraph)

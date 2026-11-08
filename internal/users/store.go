@@ -42,7 +42,8 @@ const schema = `CREATE TABLE IF NOT EXISTS users (
 	is_active      TINYINT NOT NULL DEFAULT 1,
 	created_at     VARCHAR(32) NOT NULL,
 	updated_at     VARCHAR(32) NOT NULL,
-	last_login     VARCHAR(32) NULL
+	last_login     VARCHAR(32) NULL,
+	legal_accepted_at VARCHAR(32) NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin`
 
 // NewStore abre el store y garantiza el esquema.
@@ -50,7 +51,28 @@ func NewStore(db *sql.DB) (*Store, error) {
 	if _, err := db.Exec(schema); err != nil {
 		return nil, err
 	}
+	// Migración: legal_accepted_at puede no existir en BD creadas antes.
+	_ = saddColumn(db, "legal_accepted_at VARCHAR(32) NULL")
 	return &Store{db: db}, nil
+}
+
+// addColumn añade una columna si falta (information_schema).
+func saddColumn(db *sql.DB, def string) error {
+	var name string
+	err := db.QueryRow(
+		"SELECT COLUMN_NAME FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'users' AND column_name = 'legal_accepted_at'",
+	).Scan(&name)
+	if err == nil {
+		return nil
+	}
+	_, err = db.Exec("ALTER TABLE users ADD COLUMN " + def)
+	return err
+}
+
+// MarkLegalAccepted registra la aceptación de la política.
+func (s *Store) MarkLegalAccepted(id string) (*User, error) {
+	res, err := s.db.Exec(`UPDATE users SET legal_accepted_at = ? WHERE id = ?`, now(), id)
+	return s.updated(res, err, id)
 }
 
 func now() string { return time.Now().UTC().Format(time.RFC3339) }

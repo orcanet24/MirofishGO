@@ -582,6 +582,18 @@ func (m *Manager) Exists(simulationID string) bool {
 	return err == nil && st.IsDir()
 }
 
+// DeleteSimulation elimina el directorio de la simulación (borrado total).
+func (m *Manager) DeleteSimulation(simulationID string) bool {
+	if simulationID == "" || strings.ContainsAny(simulationID, `/\`) || simulationID == "." || simulationID == ".." {
+		return false
+	}
+	dir := m.SimulationDir(simulationID)
+	if st, err := os.Stat(dir); err == nil && st.IsDir() {
+		return os.RemoveAll(dir) == nil
+	}
+	return false
+}
+
 // preparedStatuses replica la lista de estados que cuentan como preparados.
 var preparedStatuses = map[SimulationStatus]bool{
 	SimReady:     true,

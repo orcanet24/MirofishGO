@@ -399,7 +399,10 @@
     "requireGraphIdAndQuery": "Please provide graph_id and query",
     "initReportAgent": "Initializing Report Agent...",
     "noProfilesForInterview": "The simulation has no generated profiles; run preparation (prepare) first",
-    "noCredits": "You have no studies left. Contact the administrator to top up your plan."
+    "noCredits": "You have no studies left. Contact the administrator to top up your plan.",
+    "projectPurged": "Study fully deleted: files, graph, simulations and reports removed.",
+    "projectsPurged": "{count} studies fully deleted.",
+    "legalRequired": "You must accept the confidentiality and prohibited-use policy to register."
   },
   "progress": {
     "initGraphService": "Initializing graph build service...",
@@ -757,5 +760,8 @@
     "metrics": "Simulation metrics",
     "metricsIntro": "Activity and composition of the simulated world.",
     "content": "Report content"
+  },
+  "auth": {
+    "legalCheck": "I accept the confidentiality and prohibited-use policy"
   }
 }

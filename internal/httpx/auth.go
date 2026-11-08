@@ -8,6 +8,8 @@ import (
 	"log/slog"
 	"net/http"
 
+	"mirofish/internal/locale"
+	"mirofish/internal/models"
 	"mirofish/internal/users"
 )
 
@@ -15,6 +17,9 @@ type AuthHandler struct {
 	Store  *users.Store
 	Secret string
 	Logger *slog.Logger
+
+	// PM — para impedir borrar la cuenta si quedan estudios sin purgar.
+	PM *models.ProjectManager
 }
 
 func (h *AuthHandler) Register(mux *http.ServeMux) {
@@ -22,6 +27,7 @@ func (h *AuthHandler) Register(mux *http.ServeMux) {
 	mux.HandleFunc("POST /api/auth/login", h.login)
 	mux.HandleFunc("GET /api/auth/me", h.me)
 	mux.HandleFunc("POST /api/auth/password", h.changePassword)
+	mux.HandleFunc("DELETE /api/auth/account", h.deleteAccount)
 }
 
 // tokenResponse — shape común de register/login/me.
@@ -34,14 +40,24 @@ func tokenResponse(token string, u *users.User) map[string]any {
 
 func (h *AuthHandler) register(w http.ResponseWriter, r *http.Request) {
 	var body struct {
-		Email    string `json:"email"`
-		Password string `json:"password"`
+		Email         string `json:"email"`
+		Password      string `json:"password"`
+		LegalAccepted bool   `json:"legal_accepted"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		HTTPError(w, http.StatusBadRequest, "cuerpo JSON inválido")
 		return
 	}
+	if !body.LegalAccepted {
+		HTTPError(w, http.StatusBadRequest, locale.T(locale.Normalize(r.Header.Get("Accept-Language")), "api.legalRequired", nil))
+		return
+	}
 	u, err := h.Store.Create(body.Email, body.Password)
+	if err == nil {
+		if _, err := h.Store.MarkLegalAccepted(u.ID); err != nil {
+			h.Logger.Error("no se pudo registrar la aceptación legal", "user", u.ID, "error", err)
+		}
+	}
 	h.respond(w, err, u)
 }
 
@@ -157,6 +173,27 @@ func (h *AuthHandler) changePassword(w http.ResponseWriter, r *http.Request) {
 		HTTPError(w, http.StatusBadRequest, err.Error())
 		return
 	}
+	JSON(w, http.StatusOK, map[string]any{"status": "success"})
+}
+
+// deleteAccount — borra la cuenta del usuario autenticado (y sus datos).
+// Exige que no queden estudios: primero hay que purgar con purge-all.
+func (h *AuthHandler) deleteAccount(w http.ResponseWriter, r *http.Request) {
+	u := currentUser(r)
+	if u == nil {
+		HTTPError(w, http.StatusBadRequest, "solo para usuarios con sesión")
+		return
+	}
+	if h.PM != nil && len(h.PM.ListProjects(1000, u.ID)) > 0 {
+		HTTPError(w, http.StatusConflict, locale.T(locale.Normalize(r.Header.Get("Accept-Language")), "ui.deleteAccountNeedPurge", nil))
+		return
+	}
+	if err := h.Store.Delete(u.ID); err != nil {
+		h.Logger.Error("no se pudo borrar la cuenta", "user", u.ID, "error", err)
+		HTTPError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	h.Logger.Info("cuenta eliminada por el usuario", "user", u.ID)
 	JSON(w, http.StatusOK, map[string]any{"status": "success"})
 }
 
