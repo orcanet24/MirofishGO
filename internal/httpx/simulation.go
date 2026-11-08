@@ -36,6 +36,7 @@ import (
 	"mirofish/internal/models"
 	"mirofish/internal/oasis"
 	"mirofish/internal/simx"
+	"mirofish/internal/webresearch"
 )
 
 // SimulationHandler concentra el estado del blueprint de simulación.
@@ -876,8 +877,7 @@ func (h *SimulationHandler) prepareSimulation(w http.ResponseWriter, r *http.Req
 
 	// Configuración de población (composición demográfica del mundo simulado).
 	if raw, ok := body["population"].(map[string]any); ok {
-		state.Population = &simx.PopulationSpec{
-			GenderMix:     stringField(raw, "gender_mix"),
+		spec := &simx.PopulationSpec{
 			AgeRange:      stringField(raw, "age_range"),
 			Education:     stringField(raw, "education"),
 			Socioeconomic: stringField(raw, "socioeconomic"),
@@ -885,6 +885,55 @@ func (h *SimulationHandler) prepareSimulation(w http.ResponseWriter, r *http.Req
 			Religion:      stringField(raw, "religion"),
 			OrgMix:        stringField(raw, "organization_mix"),
 			Geographic:    stringField(raw, "geographic"),
+			Politics:      stringField(raw, "politics"),
+		}
+		if g, ok := raw["gender"].([]any); ok {
+			for _, v := range g {
+				spec.Gender = append(spec.Gender, fmt.Sprint(v))
+			}
+		}
+		if b, ok := raw["religion_branches"].([]any); ok {
+			for _, v := range b {
+				spec.ReligionBranches = append(spec.ReligionBranches, fmt.Sprint(v))
+			}
+		}
+		if b, ok := raw["politics_branches"].([]any); ok {
+			for _, v := range b {
+				spec.PoliticsBranches = append(spec.PoliticsBranches, fmt.Sprint(v))
+			}
+		}
+		state.Population = spec
+	}
+
+	// Profundidad de interacción (0-100) para las entrevistas.
+	if d := intFromAny(body["interaction_depth"]); d > 0 {
+		if d > 100 {
+			d = 100
+		}
+		state.InteractionDepth = d
+	}
+
+	// Investigación web en la preparación: re ejecuta/actualiza el contexto
+	// factual del estudio (web_context.json), que la ontología y el informe usan.
+	if raw, ok := body["web_research"].(map[string]any); ok && boolField(raw, "enabled", false) {
+		depth := intFromAny(raw["depth"])
+		if depth <= 0 {
+			depth = 3
+		}
+		results, pages, linkDepth := webresearch.DepthPlan(depth)
+		query := requirement
+		if len([]rune(query)) > 600 {
+			query = string([]rune(query)[:600])
+		}
+		if rep, err := webresearch.Research(query, webresearch.Options{
+			MaxResults: results, MaxPages: pages, MaxLinkDepth: linkDepth, Logger: h.Logger,
+		}); err != nil {
+			h.Logger.Warn("prepare: no se pudo investigar en internet", "error", err)
+		} else {
+			if data, err := json.Marshal(rep); err == nil {
+				h.PM.SaveWebContext(state.ProjectID, data)
+			}
+			h.Logger.Info("prepare: contexto web actualizado", "fuentes", len(rep.Results), "paginas", len(rep.Pages))
 		}
 	}
 
@@ -924,6 +973,14 @@ func activePrepareTask(simulationID string) *models.TaskDict {
 
 // runPrepare replica run_prepare del Python: ejecuta la preparación con
 // callback de progreso ponderado por etapas y publica el resultado en la tarea.
+// studyTypeOf devuelve el tipo de estudio del proyecto (default "general").
+func (h *SimulationHandler) studyTypeOf(projectID string) string {
+	if p := h.PM.GetProject(projectID); p != nil && p.StudyType != "" {
+		return p.StudyType
+	}
+	return "general"
+}
+
 func (h *SimulationHandler) runPrepare(taskID, simulationID, loc, requirement, documentText string,
 	entityTypes []string, useLLM bool, parallelProfileCount int, llmF func() (*llm.Client, error)) {
 
@@ -1005,9 +1062,14 @@ func (h *SimulationHandler) runPrepare(taskID, simulationID, loc, requirement, d
 		})
 	}
 
+	studyType := "general"
+	if simState := h.Manager.GetSimulation(simulationID); simState != nil {
+		studyType = h.studyTypeOf(simState.ProjectID)
+	}
+
 	prepared, err := h.Manager.PrepareSimulation(
 		h.Client, simulationID, requirement, documentText,
-		entityTypes, useLLM, progressCallback, parallelProfileCount, loc, llmF,
+		entityTypes, useLLM, progressCallback, parallelProfileCount, loc, studyType, llmF,
 	)
 	if err != nil {
 		logger.Error("Fallo al preparar la simulación", "error", err)

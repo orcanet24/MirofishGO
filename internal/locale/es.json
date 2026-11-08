@@ -799,7 +799,132 @@
       "18-25": "18 a 25 años",
       "25-40": "25 a 40 años",
       "40-60": "40 a 60 años",
-      "60+": "Más de 60 años"
+      "60+": "Más de 60 años",
+      "hombre": "Hombres",
+      "mujer": "Mujeres",
+      "indefinido": "Indefinido (LGTBI, asexuales, etc.)",
+      "catolico_romano": "Católicos romanos",
+      "evangelico": "Evangélicos",
+      "mormon": "Mormones",
+      "testigo_jehova": "Testigos de Jehová",
+      "judio": "Judíos",
+      "suni": "Musulmanes suníes",
+      "chiita": "Musulmanes chiíes",
+      "otro": "Otros",
+      "cristiano": "Cristianos",
+      "judio_cat": "Judíos",
+      "musulman": "Musulmanes",
+      "ninguna": "Ninguna",
+      "religion_otro": "Otras",
+      "derecha": "Derecha",
+      "centro": "Centro",
+      "izquierda": "Izquierda",
+      "ultra_derecha": "Ultra derecha",
+      "ultra_izquierda": "Ultra izquierda",
+      "democrata": "Demócratas",
+      "republicano": "Republicanos"
+    },
+    "genderChecklist": "Género de los agentes (marca lo que aplique)",
+    "religionCategories": "Religión (categoría)",
+    "religionBranches": "Ramas religiosas (opcional, para perfiles finos)",
+    "politics": "Tendencia política",
+    "politicsCustom": "Con tendencia definida (selecciona las ramas)",
+    "politicsNone": "Sin tendencia política",
+    "politicsNote": "En estudios políticos, los perfiles con tendencia definida pesan más que el resto.",
+    "religionNote": "En estudios médicos, las ramas con restricciones (p. ej. testigos de Jehová y transfusiones) son especialmente relevantes.",
+    "ethnicityHint": "Etnia: texto libre o sugerencias (blancos, indígenas, negros, mestizos,  otros…)."
+  },
+  "studytype": {
+    "general": {
+      "name": "Estudio general",
+      "desc": "Análisis amplio sin un ámbito específico; usa perfiles variados."
+    },
+    "political": {
+      "name": "Político",
+      "desc": "Candidaturas, leyes, campañas: los agentes con tendencia política definida son clave."
+    },
+    "medical": {
+      "name": "Médico / salud",
+      "desc": "Salud, tratamientos, hospitales: las ramas religiosas con restricciones pesan (p. ej. testigos de Jehová)."
+    },
+    "brand": {
+      "name": "Marca",
+      "desc": "Percepción y posicionamiento de marca."
+    },
+    "product": {
+      "name": "Producto",
+      "desc": "Lanzamiento o mejora de un producto."
+    },
+    "entrepreneurship": {
+      "name": "Emprendimiento",
+      "desc": "Modelos de negocio y emprendimientos."
+    },
+    "marketing": {
+      "name": "Marketing",
+      "desc": "Campañas, segmentación y消息 de mercado."
+    },
+    "education": {
+      "name": "Educativo",
+      "desc": "Sistemas, métodos y políticas educativas."
+    },
+    "environment": {
+      "name": "Ambiental",
+      "desc": "Impacto ambiental y sostenibilidad."
+    },
+    "legal": {
+      "name": "Legal / jurídico",
+      "desc": "Normativas, leyes y su aplicación."
+    },
+    "tech": {
+      "name": "Tecnológico",
+      "desc": "Adopción y impacto de tecnología."
+    },
+    "finance": {
+      "name": "Financiero / economía",
+      "desc": "Mercados, precios y economía."
+    },
+    "social": {
+      "name": "Social / comunitario",
+      "desc": "Comunidades, tejido social y opinión pública."
+    },
+    "sports": {
+      "name": "Deportivo",
+      "desc": "Eventos y cultura deportiva."
+    },
+    "tourism": {
+      "name": "Turismo",
+      "desc": "Destinos, servicios y experiencia turística."
+    },
+    "media": {
+      "name": "Medios / comunicación",
+      "desc": "Agenda mediática, narrativas y cobertura."
+    },
+    "urban": {
+      "name": "Urbano / vivienda",
+      "desc": "Ciudades, transporte y vivienda."
+    },
+    "energy": {
+      "name": "Energía",
+      "desc": "Servicios energéticos y su impacto."
+    }
+  },
+  "ui": {
+    "depth": {
+      "sliderLabel": "Profundidad (0-100): a mayor valor, más agentes y rondas",
+      "complexity": {
+        "0": "Muy baja: rápido, análisis superficial",
+        "1": "Baja: pocos agentes, 1 ronda",
+        "2": "Media: equilibrio entre detalle y velocidad",
+        "3": "Alta: muchos agentes y rondas; más lento",
+        "4": "Muy alta: máxima cobertura; puede tardar varios minutos"
+      }
+    },
+    "studyType": {
+      "title": "Tipo de estudio",
+      "hint": "Define el tipo antes de insertar la semilla: los perfiles se adaptan al ámbito."
+    },
+    "worldConfig": {
+      "hint": "Define aquí cómo será la sociedad simulada (población), cuánta profundidad de interacción quieres y si el sistema debe investigar el tema en internet."
     }
   }
 }

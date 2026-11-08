@@ -292,6 +292,10 @@ type ProfileGenerator struct {
 	// Population — composición demográfica pedida por el usuario (opcional).
 	Population *PopulationSpec
 
+	// StudyType — tipo de estudio (político, médico...); decide qué bloques de
+	// población son relevantes y añade una pista al generador.
+	StudyType string
+
 	// LLMFactory inyectable (tests); default: llm.NewDefaultClient.
 	LLMFactory func() (*llm.Client, error)
 }
@@ -317,12 +321,9 @@ func (g *ProfileGenerator) langInstruction() string {
 }
 
 // personaSuffix devuelve el bloque de población para los prompts de persona
-// (vacío si no hay configuración).
+// (vacío si no hay configuración o no aplica al tipo de estudio).
 func (g *ProfileGenerator) personaSuffix() string {
-	if g.Population == nil {
-		return ""
-	}
-	return g.Population.Instruction(g.Locale)
+	return g.populationInstruction()
 }
 
 // GenerateProfileFromEntity replica generate_profile_from_entity.
@@ -764,12 +765,36 @@ func (g *ProfileGenerator) tryFixJSON(content, entityName, entityType, entitySum
 }
 
 func (g *ProfileGenerator) systemPrompt(isIndividual bool) string {
-	pop := g.Population.Instruction(g.Locale)
 	base := g.t("prompt.simx.profileSystem", nil)
-	if pop != "" {
+	if hint := g.studyTypeHint(); hint != "" {
+		base += "\n\n" + hint
+	}
+	if pop := g.populationInstruction(); pop != "" {
 		base += "\n\n" + pop
 	}
 	return base + "\n\n" + g.langInstruction()
+}
+
+// studyTypeHint — pista del tipo de estudio para el generador de perfiles.
+func (g *ProfileGenerator) studyTypeHint() string {
+	if g.StudyType == "" || g.StudyType == "general" {
+		return ""
+	}
+	return locale.T(g.Locale, "studytype."+g.StudyType+".desc", nil)
+}
+
+// populationInstruction — bloques de población que aplican al tipo de estudio.
+func (g *ProfileGenerator) populationInstruction() string {
+	if g.Population == nil {
+		return ""
+	}
+	applyPolitics := false
+	applyReligion := false
+	if st, ok := studyTypesFor(g.StudyType); ok {
+		applyPolitics = st.Politics
+		applyReligion = st.Religion
+	}
+	return g.Population.Instruction(g.Locale, g.StudyType, applyPolitics, applyReligion)
 }
 
 func (g *ProfileGenerator) buildIndividualPersonaPrompt(entityName, entityType, entitySummary string, entityAttributes map[string]any, context string) string {

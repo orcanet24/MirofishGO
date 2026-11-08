@@ -25,35 +25,54 @@ type InterviewRequest struct {
 }
 
 // DepthPlan devuelve (agentes, rondas) según el nivel de profundidad 1-5.
-// Más profundidad: más agentes, más rondas y selección de perfiles expertos.
+// DepthPlan devuelve (agentes, rondas) para una profundidad 0-100 (estilo
+// slider): 0 = mínimo (2 agentes, 1 ronda), 100 = máximo (50 agentes, 5 rondas).
 func DepthPlan(level int) (agents, rounds int) {
-	switch level {
-	case 1:
-		return 5, 1
-	case 2:
-		return 12, 2
-	case 3:
-		return 20, 3
-	case 4:
-		return 35, 4
-	case 5:
-		return 50, 5
+	if level < 0 {
+		level = 0
+	}
+	if level > 100 {
+		level = 100
+	}
+	agents = 2 + int(float64(level)/100*48)
+	rounds = 1 + int(float64(level)/100*4)
+	return
+}
+
+// DepthComplexity devuelve el índice de complejidad 0-4 para una profundidad
+// 0-100 (para la etiqueta de la UI).
+func DepthComplexity(level int) int {
+	switch {
+	case level <= 20:
+		return 0
+	case level <= 40:
+		return 1
+	case level <= 60:
+		return 2
+	case level <= 80:
+		return 3
 	default:
-		if level < 1 {
-			return 5, 1
-		}
-		return 50, 5
+		return 4
 	}
 }
 
-// expertRatio devuelve la fracción de perfiles expertos deseada por nivel.
+// expertRatio devuelve la fracción de perfiles expertos deseada por nivel
+// (0-100; niveles altos priorizan expertos).
 func expertRatio(level int) float64 {
-	switch level {
-	case 1, 2:
+	if level < 0 {
+		level = 0
+	}
+	if level > 100 {
+		level = 100
+	}
+	switch {
+	case level <= 20:
 		return 0
-	case 3:
+	case level <= 40:
+		return 0.1
+	case level <= 60:
 		return 0.35
-	case 4:
+	case level <= 80:
 		return 0.6
 	default:
 		return 0.85

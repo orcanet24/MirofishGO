@@ -26,6 +26,7 @@ import (
 	tex "mirofish/internal/text"
 	"mirofish/internal/report"
 	"mirofish/internal/simx"
+	"mirofish/internal/studytypes"
 	"mirofish/internal/users"
 	"mirofish/internal/webresearch"
 )
@@ -547,6 +548,11 @@ func (h *GraphHandler) generateOntology(w http.ResponseWriter, r *http.Request) 
 		projectName = "Unnamed Project"
 	}
 	additionalContext := r.FormValue("additional_context")
+
+	// Tipo de estudio: define qué dimensiones de perfil son relevantes.
+	if st := strings.TrimSpace(r.FormValue("study_type")); st != "" && studytypes.Exists(st) {
+		project.StudyType = st
+	}
 
 	// Investigación web opcional: contexto factual actual sobre el tema
 	// (controlada por profundidad: resultados/páginas/niveles de enlace).

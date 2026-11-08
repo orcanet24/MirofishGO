@@ -149,6 +149,7 @@ func TestPrepareSimulationEndToEnd(t *testing.T) {
 		func(stage string, progress int, message string, extra map[string]any) {},
 		2,
 		"es",
+		"general",
 	)
 	if err != nil {
 		t.Fatalf("prepare: %v", err)

@@ -54,6 +54,10 @@ type Project struct {
 
 	UserID *string `json:"user_id"`
 
+	// StudyType — tipo de estudio (político, médico, marca...): define qué
+	// dimensiones de perfil son relevantes para los agentes.
+	StudyType string `json:"study_type,omitempty"`
+
 	Error *string `json:"error"`
 }
 

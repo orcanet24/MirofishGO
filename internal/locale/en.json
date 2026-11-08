@@ -799,7 +799,132 @@
       "18-25": "18 to 25 years",
       "25-40": "25 to 40 years",
       "40-60": "40 to 60 years",
-      "60+": "Over 60 years"
+      "60+": "Over 60 years",
+      "hombre": "Men",
+      "mujer": "Women",
+      "indefinido": "Undefined (LGTBI, asexual, etc.)",
+      "catolico_romano": "Roman Catholics",
+      "evangelico": "Evangelicals",
+      "mormon": "Mormons",
+      "testigo_jehova": "Jehovah’s Witnesses",
+      "judio": "Jews",
+      "suni": "Sunni Muslims",
+      "chiita": "Shia Muslims",
+      "otro": "Other",
+      "cristiano": "Christians",
+      "judio_cat": "Jews",
+      "musulman": "Muslims",
+      "ninguna": "None",
+      "religion_otro": "Other",
+      "derecha": "Right",
+      "centro": "Center",
+      "izquierda": "Left",
+      "ultra_derecha": "Far right",
+      "ultra_izquierda": "Far left",
+      "democrata": "Democrats",
+      "republicano": "Republicans"
+    },
+    "genderChecklist": "Agent gender (check all that apply)",
+    "religionCategories": "Religion (category)",
+    "religionBranches": "Religious branches (optional, for fine profiles)",
+    "politics": "Political leaning",
+    "politicsCustom": "With defined leaning (select branches)",
+    "politicsNone": "No political leaning",
+    "politicsNote": "In political studies, profiles with a defined leaning weigh more than the rest.",
+    "religionNote": "In medical studies, branches with restrictions (e.g. Jehovah’s Witnesses and transfusions) are especially relevant.",
+    "ethnicityHint": "Ethnicity: free text or suggestions (white, indigenous, black, mestizo, others…)."
+  },
+  "studytype": {
+    "general": {
+      "name": "General study",
+      "desc": "Broad analysis without a specific scope; uses varied profiles."
+    },
+    "political": {
+      "name": "Political",
+      "desc": "Candidacies, laws, campaigns: agents with a defined political leaning are key."
+    },
+    "medical": {
+      "name": "Medical / health",
+      "desc": "Health, treatments, hospitals: religious branches with restrictions matter (e.g. Jehovah’s Witnesses)."
+    },
+    "brand": {
+      "name": "Brand",
+      "desc": "Brand perception and positioning."
+    },
+    "product": {
+      "name": "Product",
+      "desc": "Product launch or improvement."
+    },
+    "entrepreneurship": {
+      "name": "Entrepreneurship",
+      "desc": "Business models and startups."
+    },
+    "marketing": {
+      "name": "Marketing",
+      "desc": "Campaigns, segmentation and market messaging."
+    },
+    "education": {
+      "name": "Education",
+      "desc": "Systems, methods and education policy."
+    },
+    "environment": {
+      "name": "Environmental",
+      "desc": "Environmental impact and sustainability."
+    },
+    "legal": {
+      "name": "Legal",
+      "desc": "Regulations, laws and enforcement."
+    },
+    "tech": {
+      "name": "Technology",
+      "desc": "Technology adoption and impact."
+    },
+    "finance": {
+      "name": "Finance / economy",
+      "desc": "Markets, prices and economics."
+    },
+    "social": {
+      "name": "Social / community",
+      "desc": "Communities, social fabric and public opinion."
+    },
+    "sports": {
+      "name": "Sports",
+      "desc": "Sports events and culture."
+    },
+    "tourism": {
+      "name": "Tourism",
+      "desc": "Destinations, services and tourist experience."
+    },
+    "media": {
+      "name": "Media / communication",
+      "desc": "Media agenda, narratives and coverage."
+    },
+    "urban": {
+      "name": "Urban / housing",
+      "desc": "Cities, transport and housing."
+    },
+    "energy": {
+      "name": "Energy",
+      "desc": "Energy services and their impact."
+    }
+  },
+  "ui": {
+    "depth": {
+      "sliderLabel": "Depth (0-100): higher means more agents and rounds",
+      "complexity": {
+        "0": "Very low: fast, superficial analysis",
+        "1": "Low: few agents, 1 round",
+        "2": "Medium: balance between detail and speed",
+        "3": "High: many agents and rounds; slower",
+        "4": "Very high: maximum coverage; may take several minutes"
+      }
+    },
+    "studyType": {
+      "title": "Study type",
+      "hint": "Define the type before inserting the seed: profiles adapt to the field."
+    },
+    "worldConfig": {
+      "hint": "Define here how the simulated society will be (population), how much interaction depth you want, and whether the system should research the topic online."
     }
   }
 }

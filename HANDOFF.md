@@ -8,37 +8,36 @@
 ## 0. Ronda del 2026-11-08 (interacción profunda + población + web)
 
 ### Implementado y verificado
-- **Link de GitHub eliminado** de la landing.
-- **Profundidad de interacción (1-5)**: `oasis.DepthPlan` (agentes × rondas:
-  5/12/20/35/50 agentes, 1-5 rondas), `SelectAgents` con puntuación de perfil
-  experto (niveles altos priorizan expertos), entrevistas multi-ronda con
-  seguimientos generados por el LLM, anti-degeneración. UI: selector 1-5 en la
-  encuesta de Step5 y `depth` en /interview/batch|all. Verificado: UI renderiza.
-- **Población demográfica**: `simx.PopulationSpec` (género, edad, educación,
-  estrato, etnia, religión, personas/empresas, región) inyectada en los prompts
-  de generación de perfiles; nuevos atributos en `OasisAgentProfile` y en el CSV
-  (education, socioeconomic_status, ethnicity, religion, organization). UI:
-  panel plegable en Step2 (verificado que renderiza los campos). Guardada en
+- **Panel único "Configuración del mundo"** en Step2 (siempre visible al entrar a
+  la simulación, con borde naranja): **población** (género, edad, educación,
+  estrato, etnia, religión, personas/empresas, región), **profundidad de la
+  interacción** (1-5 con su etiqueta de agentes/rondas) e **investigación web**
+  (toggle + slider 1-5). Precarga los valores guardados de `state.json` antes de
+  auto-arrancar el prepare; se envían con `prepare` (`population`,
+  `interaction_depth`, `web_research`). Verificado en la UI.
+- **Profundidad de interacción (1-5)**: `oasis.DepthPlan` (5/12/20/35/50 agentes,
+  1-5 rondas), `SelectAgents` con puntuación de experto, entrevistas
+  multi-ronda con seguimientos del LLM, anti-degeneración. Selector global en la
+  barra de acción de Step5 (chat + encuesta). Verificado: depth 1 responde con
+  5 agentes coherentes.
+- **Población demográfica**: `simx.PopulationSpec` inyectada en los prompts de
+  generación de perfiles; atributos nuevos en el CSV (education,
+  socioeconomic_status, ethnicity, religion, organization). Guardada en
   `state.json`.
 - **Investigación web con control de profundidad**: `internal/webresearch`
-  (búsqueda DuckDuckGo HTML sin clave + descarga de páginas con BFS por niveles
-  de enlace, mismo dominio). **Verificado en vivo**: 5 resultados reales y 5
-  páginas (~25k caracteres de hechos reales sobre "precios de autopartes en
-  Venezuela"). Se guarda en `web_context.json` del proyecto y se inyecta en:
-  (a) la generación de la ontología (contexto adicional), (b) el agente de
-  informes (contexto + herramienta `web_search`). UI: toggle "Investigar en
-  internet" + slider de profundidad en la pantalla de subida (verificado).
+  (DuckDuckGo HTML + descarga BFS por niveles de enlace). **Verificado en vivo**:
+  5 fuentes y 5 páginas (~25k caracteres de hechos reales de "precios de
+  autopartes en Venezuela"). Se guarda en `web_context.json` y se inyecta en la
+  ontología y en el agente de informes (contexto + herramienta `web_search`).
+  El prepare también puede re ejecutarla (web_research en el body).
+- **Link de GitHub eliminado**.
 
 ### Pendiente de verificación (mañana)
-- **Entrevistas profundas (depth 4-5) son lentas en síncolas**: depth 3 (20
-  agentes × 3 rondas = 60 llamadas LLM) supera el timeout de 5 min del frontend.
-  Depth 1 verificado (5 agentes, respuestas coherentes). **Mejora pendiente:
-  ejecutar entrevistas profundas de forma asíncrona** (task + polling, como los
-  informes) en vez de una petición síncrona.
+- **Entrevistas profundas (depth 4-5) son lentas en síncrono**: depth 3 (60
+  llamadas LLM) supera el timeout de 5 min. **Mejora pendiente: ejecutarlas de
+  forma asíncrona** (task + polling, como los informes).
 - Fluxo completo con web research: crear un estudio con el toggle activado y
-  comprobar que la ontología/informe incorporan los hechos (el paquete está
-  verificado en vivo; el cableado de ontología/informe compila pero no se ha
-  ejecutado un estudio completo con él).
+  comprobar que la ontología/informe incorporan los hechos.
 - `PROGRESO.md` desactualizado; `ADMIN.md` falta añadir legal/borrado/PDF/web.
 - **Política de usos prohibidos (frente 3 original, NO empezado)**.
 

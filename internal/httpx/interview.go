@@ -90,8 +90,11 @@ func (h *SimulationHandler) interviewBatch(w http.ResponseWriter, r *http.Reques
 		return
 	}
 	depth := intFromAny(body["depth"])
-	if depth <= 0 {
-		depth = 3
+	if depth < 0 {
+		depth = 50 // por defecto: profundidad media
+	}
+	if depth > 100 {
+		depth = 100
 	}
 	interviews := []oasis.InterviewRequest{}
 	needsExpansion := false
@@ -175,8 +178,14 @@ func (h *SimulationHandler) interviewAll(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	depth := intFromAny(body["depth"])
-	if depth <= 0 {
-		depth = 3
+	if depth < 0 {
+		depth = 0
+	}
+	if depth > 100 {
+		depth = 100
+	}
+	if depth == 0 {
+		depth = 50
 	}
 	maxAgents, rounds := oasis.DepthPlan(depth)
 	if raw, ok := body["max_agents"]; ok && intFromAny(raw) > 0 {
