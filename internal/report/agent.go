@@ -59,6 +59,9 @@ type Agent struct {
 	SimulationRequirement string
 	UserID                string
 	Locale                string
+	// WebContext — contexto factual actual (inyectado por httpx desde el
+	// web_context.json del estudio).
+	WebContext string
 
 	Manager    *Manager
 	Tools      *Tools
@@ -83,6 +86,14 @@ func NewAgent(manager *Manager, tools *Tools, graphID, simulationID, requirement
 
 func (a *Agent) t(key string, args map[string]string) string {
 	return locale.T(a.Locale, key, args)
+}
+
+// ApplyWebContext enriquece el requisito con el contexto factual verificado.
+func (a *Agent) ApplyWebContext(facts string) {
+	if strings.TrimSpace(facts) == "" {
+		return
+	}
+	a.SimulationRequirement += "\n\nContexto actual verificado en internet (usa estos hechos para fundamentar el analisis):\n" + facts
 }
 
 func (a *Agent) llmClient() (*llm.Client, error) {
@@ -145,13 +156,21 @@ func (a *Agent) toolDefs() map[string]toolDef {
 				"max_agents":      "NÃºmero mÃ¡ximo de Agentes a entrevistar (opcional, por defecto 5, mÃ¡ximo 10)",
 			},
 		},
+		"web_search": {
+			Name:        "web_search",
+			Description: ToolDescWebSearch(a.Locale),
+			Parameters: map[string]string{
+				"query": "Tema o pregunta para buscar contexto actual en internet",
+				"depth": "Nivel de profundidad 1-5 (opcional, por defecto 3)",
+			},
+		},
 	}
 }
 
 func (a *Agent) toolsDescription() string {
 	parts := []string{"Herramientas disponibles:"}
 	defs := a.toolDefs()
-	for _, name := range []string{"insight_forge", "panorama_search", "quick_search", "interview_agents"} {
+	for _, name := range []string{"insight_forge", "panorama_search", "quick_search", "interview_agents", "web_search"} {
 		tool := defs[name]
 		parts = append(parts, "- "+name+": "+tool.Description)
 		params := []string{}
@@ -197,6 +216,10 @@ func (a *Agent) ExecuteTool(name string, params map[string]any, reportContext st
 			maxAgents = 10
 		}
 		return a.Tools.InterviewAgents(a.SimulationID, topic, maxAgents)
+	case "web_search":
+		query := paramStr(params, "query")
+		depth := paramInt(params, "depth", 3)
+		return a.Tools.WebSearch(query, depth)
 	case "search_graph":
 		return a.ExecuteTool("quick_search", params, reportContext)
 	case "get_graph_statistics":
@@ -434,7 +457,7 @@ func (a *Agent) GenerateSection(section Section, outline *Outline, previousSecti
 	toolCallsCount := 0
 	conflictRetries := 0
 	usedTools := map[string]bool{}
-	allTools := []string{"insight_forge", "panorama_search", "quick_search", "interview_agents"}
+	allTools := []string{"insight_forge", "panorama_search", "quick_search", "interview_agents", "web_search"}
 	reportContext := "TÃ­tulo de la secciÃ³n: " + section.Title + "\nNecesidad de simulaciÃ³n: " + a.SimulationRequirement
 
 	finalAnswer := ""

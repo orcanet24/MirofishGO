@@ -696,7 +696,8 @@
         "insight_forge": "【Deep knowledge retrieval - powerful search tool】\nIt automatically breaks your question into several sub-questions and retrieves information from the simulation graph across multiple dimensions. It combines semantic search, entity analysis, and relationship chain tracking, returning directly citable original facts, key entity insights, and relationship chains.",
         "interview_agents": "【In-depth interview - real Agent interviews】\nCalls the OASIS simulation environment's interview interface to obtain the original answers of the simulated Agents.\n【Note】The current Go binary has not yet ported the runner or OASIS engine: this tool will return an unavailable message. Please use the retrieval tools instead and do not fabricate interview content.",
         "panorama_search": "【Panoramic search - big-picture view】\nRetrieves all relevant nodes and relationships, distinguishing between currently valid facts and historical or expired facts, and helps you understand how public opinion evolved (ideal for the full development and stage comparisons).",
-        "quick_search": "【Quick search - fast retrieval】\nLightweight, fast retrieval, ideal for finding a specific piece of information or verifying a fact."
+        "quick_search": "【Quick search - fast retrieval】\nLightweight, fast retrieval, ideal for finding a specific piece of information or verifying a fact.",
+        "web_search": "【Internet search — current context】\nSearch for current, verifiable information on the topic (news, official data, recent studies). Return key facts with their sources. Use it to ground the report in real information, not only simulated opinions."
       }
     },
     "ontology": {
@@ -745,7 +746,8 @@
       "system": "You are an agent in a social media simulation. Answer the interview fully embodying the character described below: keep their voice, opinions and style at all times. Do not reveal you are an AI and never break character. Answer in the user’s language.",
       "context": "Simulation context (requirement): {requirement}",
       "no_agent": "The specified agent does not exist in this simulation.",
-      "anti_repeat": "Strictly avoid repeating phrases or loops. Answer once, with new and concrete ideas."
+      "anti_repeat": "Strictly avoid repeating phrases or loops. Answer once, with new and concrete ideas.",
+      "probeSystem": "You are an expert interviewer. Generate ONE short, concrete follow-up question that digs deeper into the interviewee’s answer (motives, context, examples or contradictions). Return only the question, without prefixes or numbering."
     }
   },
   "pdf": {
@@ -763,5 +765,41 @@
   },
   "auth": {
     "legalCheck": "I accept the confidentiality and prohibited-use policy"
+  },
+  "population": {
+    "instruction": "Simulated population composition (follow this distribution when creating profiles):",
+    "genderMix": "Gender",
+    "ageRange": "Age",
+    "education": "Education level",
+    "socioeconomic": "Socioeconomic status",
+    "ethnicity": "Ethnicity",
+    "religion": "Religion",
+    "orgMix": "Agent type",
+    "geographic": "Region / states",
+    "opt": {
+      "mixed": "Mixed (free distribution)",
+      "men": "Men only",
+      "women": "Women only",
+      "nonbinary": "Non-binary people",
+      "basic": "Basic education",
+      "professional": "Professional (technical / university)",
+      "highly_educated": "Highly educated (graduate / expert)",
+      "low": "Lower class",
+      "middle": "Middle class",
+      "high": "Upper class",
+      "white": "White",
+      "indigenous": "Indigenous",
+      "black": "Black / Afro-descendant",
+      "other": "Other",
+      "catholic": "Catholic",
+      "evangelical": "Evangelical",
+      "none": "No religion",
+      "people": "People only",
+      "companies": "Companies / organizations only",
+      "18-25": "18 to 25 years",
+      "25-40": "25 to 40 years",
+      "40-60": "40 to 60 years",
+      "60+": "Over 60 years"
+    }
   }
 }

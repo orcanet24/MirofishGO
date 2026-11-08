@@ -5,6 +5,7 @@ package oasis
 
 import (
 	"fmt"
+	"math/rand"
 	"strconv"
 	"strings"
 
@@ -17,6 +18,46 @@ type InterviewRequest struct {
 	AgentID  int    `json:"agent_id"`
 	Prompt   string `json:"prompt"`
 	Platform string `json:"platform,omitempty"`
+	// Depth (1-5) — nivel de profundidad pedido por el usuario para esta tanda.
+	Depth int `json:"depth,omitempty"`
+	// Rounds — rondas de preguntas por agente (0 = derivar de Depth).
+	Rounds int `json:"rounds,omitempty"`
+}
+
+// DepthPlan devuelve (agentes, rondas) según el nivel de profundidad 1-5.
+// Más profundidad: más agentes, más rondas y selección de perfiles expertos.
+func DepthPlan(level int) (agents, rounds int) {
+	switch level {
+	case 1:
+		return 5, 1
+	case 2:
+		return 12, 2
+	case 3:
+		return 20, 3
+	case 4:
+		return 35, 4
+	case 5:
+		return 50, 5
+	default:
+		if level < 1 {
+			return 5, 1
+		}
+		return 50, 5
+	}
+}
+
+// expertRatio devuelve la fracción de perfiles expertos deseada por nivel.
+func expertRatio(level int) float64 {
+	switch level {
+	case 1, 2:
+		return 0
+	case 3:
+		return 0.35
+	case 4:
+		return 0.6
+	default:
+		return 0.85
+	}
 }
 
 // InterviewResult — respuesta generada en el persona del agente.
@@ -73,7 +114,11 @@ func InterviewAgents(interviews []InterviewRequest, profiles []map[string]any, r
 		system := locale.T(loc, "prompt.interview.system", nil) + "\n\n" +
 			profileText(profile) + "\n\n" +
 			locale.T(loc, "prompt.interview.context", map[string]string{"requirement": requirement})
-		content, err := chatWithDegeneracyGuard(client, system, iv.Prompt, loc)
+		rounds := iv.Rounds
+		if rounds <= 0 && iv.Depth > 0 {
+			_, rounds = DepthPlan(iv.Depth)
+		}
+		content, err := interviewOne(client, system, iv.Prompt, rounds, loc)
 		if err != nil {
 			return nil, fmt.Errorf("el LLM no pudo responder la entrevista del agente %d: %w", iv.AgentID, err)
 		}
@@ -82,6 +127,123 @@ func InterviewAgents(interviews []InterviewRequest, profiles []map[string]any, r
 		})
 	}
 	return results, nil
+}
+
+// interviewOne ejecuta una entrevista de N rondas a un agente: pregunta
+// inicial + seguimientos generados por el LLM (más profundidad = más rondas).
+func interviewOne(client *llm.Client, system, question string, rounds int, loc string) (string, error) {
+	if rounds <= 1 {
+		return chatWithDegeneracyGuard(client, system, question, loc)
+	}
+	var b strings.Builder
+	messages := []llm.Message{
+		{Role: "system", Content: system},
+		{Role: "user", Content: question},
+	}
+	answer, err := chatWithDegeneracyGuard(client, system, question, loc)
+	if err != nil {
+		return "", err
+	}
+	fmt.Fprintf(&b, "Pregunta 1: %s\nRespuesta 1: %s", question, answer)
+	messages = append(messages,
+		llm.Message{Role: "assistant", Content: answer},
+	)
+	for r := 2; r <= rounds; r++ {
+		probeSystem := locale.T(loc, "prompt.interview.probeSystem", nil)
+		probe, err := client.Chat([]llm.Message{
+			{Role: "system", Content: probeSystem},
+			{Role: "user", Content: answer},
+		}, 0.5, nil, nil)
+		if err != nil || strings.TrimSpace(probe) == "" {
+			break
+		}
+		probe = cleanProbe(probe)
+		messages = append(messages, llm.Message{Role: "user", Content: probe})
+		next, err := chatWithDegeneracyGuard(client, system, probe, loc)
+		if err != nil {
+			break
+		}
+		fmt.Fprintf(&b, "\n\nPregunta %d: %s\nRespuesta %d: %s", r, probe, r, next)
+		messages = append(messages, llm.Message{Role: "assistant", Content: next})
+		answer = next
+	}
+	return b.String(), nil
+}
+
+// cleanProbe deja la pregunta de seguimiento en una sola línea y sin prefijos.
+func cleanProbe(s string) string {
+	s = strings.TrimSpace(s)
+	if i := strings.IndexAny(s, "\n"); i >= 0 {
+		s = s[:i]
+	}
+	s = strings.TrimPrefix(s, "- ")
+	return strings.TrimSpace(s)
+}
+
+// SelectAgents elige índices de perfiles según la profundidad: niveles altos
+// priorizan perfiles expertos (profesión/educación), niveles bajos cotidianos.
+func SelectAgents(profiles []map[string]any, level, count int) []int {
+	if count <= 0 {
+		count, _ = DepthPlan(level)
+	}
+	n := len(profiles)
+	if n == 0 {
+		return []int{}
+	}
+	if count >= n {
+		count = n
+	}
+	idx := make([]int, n)
+	for i := range idx {
+		idx[i] = i
+	}
+	rand.Shuffle(n, func(i, j int) { idx[i], idx[j] = idx[j], idx[i] })
+	if expertRatio(level) <= 0 {
+		return idx[:count]
+	}
+	// Ordena por puntuación experta y toma la élite requerida + aleatorios.
+	scores := make([]int, n)
+	for i, p := range profiles {
+		scores[i] = expertScore(p)
+	}
+	rand.Shuffle(n, func(i, j int) {
+		idx[i], idx[j] = idx[j], idx[i]
+		scores[i], scores[j] = scores[j], scores[i]
+	})
+	// insertion sort descendente por score (estable con aleatorio previo)
+	for i := 1; i < n; i++ {
+		for j := i; j > 0 && scores[j] > scores[j-1]; j-- {
+			scores[j], scores[j-1] = scores[j-1], scores[j]
+			idx[j], idx[j-1] = idx[j-1], idx[j]
+		}
+	}
+	expertCount := int(float64(count) * expertRatio(level))
+	if expertCount > count {
+		expertCount = count
+	}
+	_ = expertCount // los expertos quedan primeros por el orden de score
+	return idx[:count]
+}
+
+// expertScore puntúa rasgos de "perfil experto" (0-3).
+func expertScore(p map[string]any) int {
+	score := 0
+	prof := strings.ToLower(fmt.Sprint(p["profession"]))
+	edu := strings.ToLower(fmt.Sprint(p["education"]))
+	expertWords := []string{"doctor", "doctora", "ingenier", "profesor", "abogad", "economista",
+		"científic", "cientific", "ceo", "director", "directora", "experto", "experta",
+		"analista", "polític", "politic", "gerente", "ejecutiv", "investigador", "investigadora",
+		"consultor", "consultora", "magíster", "magister", "phd", "licenciad"}
+	for _, w := range expertWords {
+		if strings.Contains(prof, w) {
+			score += 2
+			break
+		}
+	}
+	if strings.Contains(edu, "highly") || strings.Contains(edu, "professional") || strings.Contains(edu, "universit") {
+		score++
+	}
+	return score
 }
 
 // chatWithDegeneracyGuard evita las respuestas con bucles de repetición: si el

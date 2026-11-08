@@ -66,6 +66,13 @@ type OasisAgentProfile struct {
 	Profession      *string  `json:"profession"`
 	InterestedTopics []string `json:"interested_topics"`
 
+	// Atributos demográficos detallados (configuración de población).
+	Education           *string `json:"education,omitempty"`
+	SocioeconomicStatus *string `json:"socioeconomic_status,omitempty"`
+	Ethnicity           *string `json:"ethnicity,omitempty"`
+	Religion            *string `json:"religion,omitempty"`
+	Organization        bool    `json:"organization,omitempty"`
+
 	SourceEntityUUID *string `json:"source_entity_uuid"`
 	SourceEntityType *string `json:"source_entity_type"`
 
@@ -276,10 +283,14 @@ func coerceStrList(v any) []string {
 // ===== generador =====
 
 // ProfileGenerator replica OasisProfileGenerator.
+// ProfileGenerator replica ProfileGeneratorService.
 type ProfileGenerator struct {
 	Client *graph.Client
 	GraphID string
 	Locale  string
+
+	// Population — composición demográfica pedida por el usuario (opcional).
+	Population *PopulationSpec
 
 	// LLMFactory inyectable (tests); default: llm.NewDefaultClient.
 	LLMFactory func() (*llm.Client, error)
@@ -303,6 +314,15 @@ func (g *ProfileGenerator) t(key string, args map[string]string) string {
 
 func (g *ProfileGenerator) langInstruction() string {
 	return locale.GetLanguageInstruction(g.Locale)
+}
+
+// personaSuffix devuelve el bloque de población para los prompts de persona
+// (vacío si no hay configuración).
+func (g *ProfileGenerator) personaSuffix() string {
+	if g.Population == nil {
+		return ""
+	}
+	return g.Population.Instruction(g.Locale)
 }
 
 // GenerateProfileFromEntity replica generate_profile_from_entity.
@@ -366,6 +386,29 @@ func (g *ProfileGenerator) GenerateProfileFromEntity(entity *EntityNode, userID 
 		if s := coerceStr(v); s != "" {
 			p.Profession = &s
 		}
+	}
+	if v, ok := profileData["education"]; ok {
+		if s := coerceStr(v); s != "" {
+			p.Education = &s
+		}
+	}
+	if v, ok := profileData["socioeconomic_status"]; ok {
+		if s := coerceStr(v); s != "" {
+			p.SocioeconomicStatus = &s
+		}
+	}
+	if v, ok := profileData["ethnicity"]; ok {
+		if s := coerceStr(v); s != "" {
+			p.Ethnicity = &s
+		}
+	}
+	if v, ok := profileData["religion"]; ok {
+		if s := coerceStr(v); s != "" {
+			p.Religion = &s
+		}
+	}
+	if v, ok := profileData["organization"]; ok {
+		p.Organization = boolField(v, false)
 	}
 	if v, ok := profileData["interested_topics"]; ok {
 		p.InterestedTopics = coerceStrList(v)
@@ -721,7 +764,12 @@ func (g *ProfileGenerator) tryFixJSON(content, entityName, entityType, entitySum
 }
 
 func (g *ProfileGenerator) systemPrompt(isIndividual bool) string {
-	return g.t("prompt.simx.profileSystem", nil) + "\n\n" + g.langInstruction()
+	pop := g.Population.Instruction(g.Locale)
+	base := g.t("prompt.simx.profileSystem", nil)
+	if pop != "" {
+		base += "\n\n" + pop
+	}
+	return base + "\n\n" + g.langInstruction()
 }
 
 func (g *ProfileGenerator) buildIndividualPersonaPrompt(entityName, entityType, entitySummary string, entityAttributes map[string]any, context string) string {
@@ -739,8 +787,12 @@ func (g *ProfileGenerator) buildIndividualPersonaPrompt(entityName, entityType, 
 			contextStr = context
 		}
 	}
+	tail := g.personaSuffix()
+	if tail != "" {
+		tail += "\n\n"
+	}
 	return fmt.Sprintf(g.t("prompt.simx.individualPersona", nil),
-		entityName, entityType, entitySummary, attrsStr, contextStr, g.langInstruction())
+		entityName, entityType, entitySummary, attrsStr, contextStr, tail+g.langInstruction())
 }
 
 func (g *ProfileGenerator) buildGroupPersonaPrompt(entityName, entityType, entitySummary string, entityAttributes map[string]any, context string) string {
@@ -758,8 +810,12 @@ func (g *ProfileGenerator) buildGroupPersonaPrompt(entityName, entityType, entit
 			contextStr = context
 		}
 	}
+	tail := g.personaSuffix()
+	if tail != "" {
+		tail += "\n\n"
+	}
 	return fmt.Sprintf(g.t("prompt.simx.groupPersona", nil),
-		entityName, entityType, entitySummary, attrsStr, contextStr, g.langInstruction())
+		entityName, entityType, entitySummary, attrsStr, contextStr, tail+g.langInstruction())
 }
 
 func (g *ProfileGenerator) generateProfileRuleBased(entityName, entityType, entitySummary string, entityAttributes map[string]any) map[string]any {
@@ -938,8 +994,9 @@ func (g *ProfileGenerator) saveTwitterCSV(profiles []*OasisAgentProfile, filePat
 	defer f.Close()
 	w := csv.NewWriter(f)
 	defer w.Flush()
-	// Columnas extendidas para el frontend (profesión/edad/género/país/MBTI).
-	if err := w.Write([]string{"user_id", "name", "username", "user_char", "description", "profession", "age", "gender", "country", "mbti"}); err != nil {
+	// Columnas extendidas para el frontend (profesión/edad/género/país/MBTI y
+	// atributos demográficos de la población configurada).
+	if err := w.Write([]string{"user_id", "name", "username", "user_char", "description", "profession", "age", "gender", "country", "mbti", "education", "socioeconomic_status", "ethnicity", "religion", "organization"}); err != nil {
 		return err
 	}
 	strPtr := func(p *string) string {
@@ -954,6 +1011,12 @@ func (g *ProfileGenerator) saveTwitterCSV(profiles []*OasisAgentProfile, filePat
 		}
 		return fmt.Sprintf("%d", *p)
 	}
+	boolStr := func(b bool) string {
+		if b {
+			return "true"
+		}
+		return "false"
+	}
 	for idx, profile := range profiles {
 		userChar := profile.Bio
 		if profile.Persona != "" && profile.Persona != profile.Bio {
@@ -965,6 +1028,8 @@ func (g *ProfileGenerator) saveTwitterCSV(profiles []*OasisAgentProfile, filePat
 			fmt.Sprintf("%d", idx), profile.Name, profile.UserName, userChar, description,
 			strPtr(profile.Profession), intPtr(profile.Age), strPtr(profile.Gender),
 			strPtr(profile.Country), strPtr(profile.Mbti),
+			strPtr(profile.Education), strPtr(profile.SocioeconomicStatus),
+			strPtr(profile.Ethnicity), strPtr(profile.Religion), boolStr(profile.Organization),
 		}); err != nil {
 			return err
 		}

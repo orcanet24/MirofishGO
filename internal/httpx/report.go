@@ -11,6 +11,7 @@ package httpx
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -29,6 +30,7 @@ import (
 	"mirofish/internal/report"
 	"mirofish/internal/reportpdf"
 	"mirofish/internal/simx"
+	"mirofish/internal/webresearch"
 )
 
 // ReportAgentFactory permite inyectar el agente en tests.
@@ -449,6 +451,18 @@ func (h *ReportHandler) runGenerate(taskID, reportID, simulationID, graphID, req
 	// API keys entre usuarios con distinta config LLM delegada).
 	tools := h.toolsForRequest(llmF, loc)
 	agent.Tools = tools
+
+	// Contexto factual verificado del estudio (web_context.json).
+	if simState := h.Sim.GetSimulation(simulationID); simState != nil {
+		if raw := h.PM.GetWebContext(simState.ProjectID); len(raw) > 0 {
+			var wr struct {
+				Facts string `json:"facts"`
+			}
+			if json.Unmarshal(raw, &wr) == nil && wr.Facts != "" {
+				agent.ApplyWebContext(wr.Facts)
+			}
+		}
+	}
 
 	reportResult := agent.GenerateReport(func(stage string, progress int, message string) {
 		msg := "[" + stage + "] " + message
@@ -925,6 +939,16 @@ func (h *ReportHandler) toolsForRequest(llmF func() (*llm.Client, error), loc st
 	tools.LLMFactory = llmF
 	tools.Interview = func(simulationID, topic string, maxAgents int) string {
 		return h.runToolInterview(simulationID, topic, maxAgents, loc, llmF)
+	}
+	tools.WebSearchFn = func(query string, depth int) string {
+		results, pages, linkDepth := webresearch.DepthPlan(depth)
+		rep, err := webresearch.Research(query, webresearch.Options{
+			MaxResults: results, MaxPages: pages, MaxLinkDepth: linkDepth, Logger: h.Logger,
+		})
+		if err != nil {
+			return "Error al buscar en internet: " + err.Error()
+		}
+		return rep.Facts
 	}
 	return &tools
 }

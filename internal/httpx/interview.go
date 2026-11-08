@@ -89,7 +89,12 @@ func (h *SimulationHandler) interviewBatch(w http.ResponseWriter, r *http.Reques
 		JSON(w, http.StatusBadRequest, map[string]any{"success": false, "error": t("api.requireInterviews", nil)})
 		return
 	}
+	depth := intFromAny(body["depth"])
+	if depth <= 0 {
+		depth = 3
+	}
 	interviews := []oasis.InterviewRequest{}
+	needsExpansion := false
 	for i, raw := range rawList {
 		m, ok := raw.(map[string]any)
 		if !ok {
@@ -101,11 +106,42 @@ func (h *SimulationHandler) interviewBatch(w http.ResponseWriter, r *http.Reques
 			JSON(w, http.StatusBadRequest, map[string]any{"success": false, "error": t("api.interviewListMissingPrompt", map[string]string{"index": strconv.Itoa(i + 1)})})
 			return
 		}
+		agentID := intFromAny(m["agent_id"])
+		if agentID < 0 {
+			// Selección asistida por profundidad: el backend elige los agentes.
+			needsExpansion = true
+			interviews = append(interviews, oasis.InterviewRequest{AgentID: -1, Prompt: prompt, Platform: strings.TrimSpace(stringField(m, "platform")), Depth: depth})
+			continue
+		}
 		interviews = append(interviews, oasis.InterviewRequest{
-			AgentID:  intFromAny(m["agent_id"]),
-			Prompt:   prompt,
+			AgentID: agentID, Prompt: prompt,
 			Platform: strings.TrimSpace(stringField(m, "platform")),
+			Depth:    depth, Rounds: intFromAny(m["rounds"]),
 		})
+	}
+	if needsExpansion {
+		// Carga perfiles y expande las peticiones sin agente concreto (agent_id < 0)
+		// a la selección de agentes que corresponde a la profundidad pedida.
+		_, profiles := h.interviewProfiles(simulationID)
+		if len(profiles) == 0 {
+			h.writeInterviewError(w, &interviewHTTPError{status: http.StatusBadRequest, msg: t("api.noProfilesForInterview", nil)})
+			return
+		}
+		maxAgents, _ := oasis.DepthPlan(depth)
+		selected := oasis.SelectAgents(profiles, depth, maxAgents)
+		expanded := []oasis.InterviewRequest{}
+		for _, iv := range interviews {
+			if iv.AgentID >= 0 {
+				expanded = append(expanded, iv)
+				continue
+			}
+			for _, idx := range selected {
+				expanded = append(expanded, oasis.InterviewRequest{
+					AgentID: idx, Prompt: iv.Prompt, Platform: iv.Platform, Depth: depth, Rounds: iv.Rounds,
+				})
+			}
+		}
+		interviews = expanded
 	}
 	out, err := h.runInterviews(r, simulationID, interviews)
 	if err != nil {
@@ -138,34 +174,23 @@ func (h *SimulationHandler) interviewAll(w http.ResponseWriter, r *http.Request)
 		JSON(w, http.StatusBadRequest, map[string]any{"success": false, "error": t("api.requirePrompt", nil)})
 		return
 	}
-	maxAgents := intFromAny(body["max_agents"])
-	if maxAgents <= 0 {
-		maxAgents = 50
+	depth := intFromAny(body["depth"])
+	if depth <= 0 {
+		depth = 3
 	}
-	state := h.Manager.GetSimulation(simulationID)
-	if state == nil {
-		JSON(w, http.StatusNotFound, map[string]any{"success": false, "error": t("api.simulationNotFound", map[string]string{"id": simulationID})})
-		return
+	maxAgents, rounds := oasis.DepthPlan(depth)
+	if raw, ok := body["max_agents"]; ok && intFromAny(raw) > 0 {
+		maxAgents = intFromAny(raw)
 	}
-	platform := strings.TrimSpace(stringField(body, "platform"))
-	if platform == "" {
-		platform = state.GetDefaultPlatform()
-	}
-	profiles, err := h.Manager.GetProfiles(simulationID, platform)
-	if err != nil {
-		h.writeInterviewError(w, err)
-		return
-	}
+	platform, profiles := h.interviewProfiles(simulationID)
 	if len(profiles) == 0 {
 		h.writeInterviewError(w, &interviewHTTPError{status: http.StatusBadRequest, msg: t("api.noProfilesForInterview", nil)})
 		return
 	}
-	if len(profiles) > maxAgents {
-		profiles = profiles[:maxAgents]
-	}
+	selected := oasis.SelectAgents(profiles, depth, maxAgents)
 	interviews := []oasis.InterviewRequest{}
-	for i := range profiles {
-		interviews = append(interviews, oasis.InterviewRequest{AgentID: i, Prompt: prompt, Platform: platform})
+	for _, idx := range selected {
+		interviews = append(interviews, oasis.InterviewRequest{AgentID: idx, Prompt: prompt, Platform: platform, Depth: depth, Rounds: rounds})
 	}
 	out, err := h.runInterviews(r, simulationID, interviews)
 	if err != nil {
@@ -173,6 +198,20 @@ func (h *SimulationHandler) interviewAll(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	JSON(w, http.StatusOK, map[string]any{"success": true, "data": out})
+}
+
+// interviewProfiles — plataforma + perfiles de una simulación (helper).
+func (h *SimulationHandler) interviewProfiles(simulationID string) (string, []map[string]any) {
+	state := h.Manager.GetSimulation(simulationID)
+	if state == nil {
+		return "twitter", nil
+	}
+	platform := state.GetDefaultPlatform()
+	profiles, err := h.Manager.GetProfiles(simulationID, platform)
+	if err != nil {
+		return platform, nil
+	}
+	return platform, profiles
 }
 
 // runInterviews — valida perfiles y requisito, y genera las respuestas.

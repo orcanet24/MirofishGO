@@ -27,6 +27,7 @@ import (
 	"mirofish/internal/report"
 	"mirofish/internal/simx"
 	"mirofish/internal/users"
+	"mirofish/internal/webresearch"
 )
 
 // GraphHandler concentra el estado del blueprint de grafo.
@@ -546,6 +547,38 @@ func (h *GraphHandler) generateOntology(w http.ResponseWriter, r *http.Request) 
 		projectName = "Unnamed Project"
 	}
 	additionalContext := r.FormValue("additional_context")
+
+	// Investigación web opcional: contexto factual actual sobre el tema
+	// (controlada por profundidad: resultados/páginas/niveles de enlace).
+	if enabled, _ := strconv.ParseBool(r.FormValue("web_research")); enabled {
+		depth := 3
+		if n, err := strconv.Atoi(strings.TrimSpace(r.FormValue("web_research_depth"))); err == nil && n > 0 {
+			depth = n
+		}
+		results, pages, linkDepth := webresearch.DepthPlan(depth)
+		query := simulationRequirement
+		if len([]rune(query)) > 600 {
+			query = string([]rune(query)[:600])
+		}
+		rep, err := webresearch.Research(query, webresearch.Options{
+			MaxResults: results, MaxPages: pages, MaxLinkDepth: linkDepth,
+			Logger: h.Logger,
+		})
+		if err != nil {
+			h.Logger.Warn("no se pudo investigar en internet; se continúa sin contexto web", "error", err)
+		} else {
+			if data, err := json.Marshal(rep); err == nil {
+				h.PM.SaveWebContext(project.ProjectID, data)
+			}
+			urls := make([]string, 0, len(rep.Results))
+			for _, r := range rep.Results {
+				urls = append(urls, r.URL)
+			}
+			additionalContext += "\n\n## Contexto actual verificado en internet\n" + rep.Facts +
+				"\n\nFuentes: " + strings.Join(urls, ", ")
+			h.Logger.Info("contexto web incorporado", "fuentes", len(rep.Results), "paginas", len(rep.Pages))
+		}
+	}
 
 	h.Logger.Info("=== Iniciando generación de la ontología ===")
 	h.Logger.Debug("Nombre del proyecto: " + projectName)

@@ -74,6 +74,9 @@ type SimulationState struct {
 	Error *string
 
 	UserID *string
+
+	// Population — composición demográfica configurada para esta simulación.
+	Population *PopulationSpec `json:",omitempty"`
 }
 
 // ToDict replica to_dict completo.
@@ -98,6 +101,7 @@ func (s *SimulationState) ToDict() map[string]any {
 		"updated_at":         s.UpdatedAt,
 		"error":              s.Error,
 		"user_id":            s.UserID,
+		"population":         s.Population,
 	}
 }
 
@@ -148,7 +152,7 @@ func NewManager(dataDir string) *Manager {
 
 // newProfileGenerator — con factory LLM opcional: config delegada del usuario.
 // localeCode fija el idioma de los prompts del generador (normalizado a es/en).
-func (m *Manager) newProfileGenerator(client *graph.Client, graphID, localeCode string, llmF ...func() (*llm.Client, error)) *ProfileGenerator {
+func (m *Manager) newProfileGenerator(client *graph.Client, graphID, localeCode string, statePopulation *PopulationSpec, llmF ...func() (*llm.Client, error)) *ProfileGenerator {
 	var g *ProfileGenerator
 	if m.ProfileGeneratorFactory != nil {
 		g = m.ProfileGeneratorFactory(client, graphID)
@@ -156,6 +160,7 @@ func (m *Manager) newProfileGenerator(client *graph.Client, graphID, localeCode 
 		g = NewProfileGenerator(client, graphID)
 	}
 	g.Locale = locale.Normalize(localeCode)
+	g.Population = statePopulation
 	if len(llmF) > 0 && llmF[0] != nil {
 		g.LLMFactory = llmF[0]
 	}
@@ -265,6 +270,18 @@ func (m *Manager) LoadSimulationState(simulationID string) *SimulationState {
 	}
 	if s, ok := data["user_id"].(string); ok {
 		state.UserID = &s
+	}
+	if raw, ok := data["population"].(map[string]any); ok {
+		state.Population = &PopulationSpec{
+			GenderMix:     strOr(raw["gender_mix"]),
+			AgeRange:      strOr(raw["age_range"]),
+			Education:     strOr(raw["education"]),
+			Socioeconomic: strOr(raw["socioeconomic"]),
+			Ethnicity:     strOr(raw["ethnicity"]),
+			Religion:      strOr(raw["religion"]),
+			OrgMix:        strOr(raw["organization_mix"]),
+			Geographic:    strOr(raw["geographic"]),
+		}
 	}
 	if state.CreatedAt == "" {
 		state.CreatedAt = timex.Now()
@@ -382,7 +399,7 @@ func (m *Manager) PrepareSimulation(
 			map[string]any{"current": 0, "total": totalEntities})
 	}
 
-	generator := m.newProfileGenerator(client, state.GraphID, loc, llmF...)
+	generator := m.newProfileGenerator(client, state.GraphID, loc, state.Population, llmF...)
 	realtimeOutputPath := ""
 	realtimePlatform := "reddit"
 	if state.EnableReddit {

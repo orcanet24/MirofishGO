@@ -22,6 +22,9 @@ type Tools struct {
 	// Interview genera entrevistas reales a agentes simulados (lo inyecta
 	// httpx, que conoce el gestor de simulaciones y el LLM del usuario).
 	Interview func(simulationID, topic string, maxAgents int) string
+
+	// WebSearchFn busca contexto factual actual en internet (inyectado por httpx).
+	WebSearchFn func(query string, depth int) string
 }
 
 // NewTools crea el servicio de herramientas.
@@ -667,4 +670,12 @@ func (t *Tools) InterviewAgents(simulationID, interviewRequirement string, maxAg
 	}
 	return "Error al ejecutar la herramienta: interview_agents no está disponible en este contexto. " +
 		"Usa insight_forge, panorama_search o quick_search para basar el informe en el grafo de conocimiento."
+}
+
+// WebSearch busca contexto actual en internet (inyectado por httpx).
+func (t *Tools) WebSearch(query string, depth int) string {
+	if t.WebSearchFn == nil {
+		return "Error al ejecutar la herramienta: web_search no está disponible en este contexto."
+	}
+	return t.WebSearchFn(query, depth)
 }

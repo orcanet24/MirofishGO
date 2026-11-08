@@ -93,3 +93,8 @@ func ToolDescQuickSearch(loc string) string {
 func ToolDescInterviewAgents(loc string) string {
 	return locale.T(promptLocale(loc), "prompt.report.tool.interview_agents", nil)
 }
+
+// ToolDescWebSearch devuelve la descripción de la herramienta web_search.
+func ToolDescWebSearch(loc string) string {
+	return locale.T(promptLocale(loc), "prompt.report.tool.web_search", nil)
+}

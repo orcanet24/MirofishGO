@@ -696,7 +696,8 @@
         "insight_forge": "【Análisis profundo de conocimiento - herramienta de recuperación potente】\nDescompone automáticamente tu pregunta en varias subpreguntas y recupera información del grafo de simulación desde múltiples dimensiones. Combina búsqueda semántica, análisis de entidades y seguimiento de cadenas de relación, y devuelve hechos originales directamente citables, ideas clave de las entidades principales y cadenas de relación.",
         "interview_agents": "【Entrevista profunda - entrevistas reales con Agentes】\nLlama a la interfaz de entrevistas del entorno de simulación OASIS para obtener las respuestas originales de los Agentes simulados.\n【Atención】El binario actual de Go aún no ha portado el runner ni OASIS: esta herramienta devolverá un mensaje de indisponibilidad. Usa mejor las herramientas de recuperación y no inventes contenido de entrevistas.",
         "panorama_search": "【Búsqueda panorámica - vista de conjunto】\nObtiene todos los nodos y relaciones relevantes, distinguiendo entre hechos vigentes y hechos históricos o expirados, y te ayuda a comprender cómo evolucionó la opinión pública (ideal para el desarrollo completo y la comparación por etapas).",
-        "quick_search": "【Búsqueda rápida - recuperación ágil】\nRecuperación ligera y rápida, ideal para encontrar una información concreta o verificar un hecho."
+        "quick_search": "【Búsqueda rápida - recuperación ágil】\nRecuperación ligera y rápida, ideal para encontrar una información concreta o verificar un hecho.",
+        "web_search": "【Búsqueda en internet — contexto actual】\nBusca información actual y verificable sobre el tema (noticias, datos oficiales, estudios recientes). Devuelve los hechos clave con sus fuentes. Úsala para fundamentar el informe en información real, no solo en opiniones de la simulación."
       }
     },
     "ontology": {
@@ -745,7 +746,8 @@
       "system": "Eres un agente de una simulación de redes sociales. Responde a la entrevista adoptando totalmente el personaje descrito a continuación: mantén su voz, opiniones y estilo en todo momento. No reveles que eres una IA ni rompas el personaje. Responde en el idioma del usuario.",
       "context": "Contexto de la simulación (requisito): {requirement}",
       "no_agent": "El agente indicado no existe en esta simulación.",
-      "anti_repeat": "Evita estrictamente repetir frases o bucles. Responde una sola vez, con ideas nuevas y concretas."
+      "anti_repeat": "Evita estrictamente repetir frases o bucles. Responde una sola vez, con ideas nuevas y concretas.",
+      "probeSystem": "Eres un entrevistador experto. Genera UNA sola pregunta de seguimiento, breve y concreta, que profundice en la respuesta del entrevistado (motivos, contexto, ejemplos o contradicciones). Devuelve solo la pregunta, sin prefijos ni numeración."
     }
   },
   "pdf": {
@@ -763,5 +765,41 @@
   },
   "auth": {
     "legalCheck": "Acepto la política de confidencialidad y usos prohibidos"
+  },
+  "population": {
+    "instruction": "Composición de la población simulada (respeta esta distribución al crear los perfiles):",
+    "genderMix": "Género",
+    "ageRange": "Edad",
+    "education": "Nivel educativo",
+    "socioeconomic": "Estrato socioeconómico",
+    "ethnicity": "Etnia",
+    "religion": "Religión",
+    "orgMix": "Tipo de agentes",
+    "geographic": "Región / estados",
+    "opt": {
+      "mixed": "Variado (distribución libre)",
+      "men": "Solo hombres",
+      "women": "Solo mujeres",
+      "nonbinary": "Personas no binarias",
+      "basic": "Educación básica",
+      "professional": "Profesional (técnico / universitario)",
+      "highly_educated": "Altamente educado (posgrado / experto)",
+      "low": "Estrato bajo",
+      "middle": "Estrato medio",
+      "high": "Estrato alto",
+      "white": "Blancos",
+      "indigenous": "Indígenas",
+      "black": "Negros / afrodescendientes",
+      "other": "Otras",
+      "catholic": "Católica",
+      "evangelical": "Evangélica",
+      "none": "Sin religión",
+      "people": "Solo personas",
+      "companies": "Solo empresas / organizaciones",
+      "18-25": "18 a 25 años",
+      "25-40": "25 a 40 años",
+      "40-60": "40 a 60 años",
+      "60+": "Más de 60 años"
+    }
   }
 }

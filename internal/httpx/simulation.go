@@ -874,6 +874,20 @@ func (h *SimulationHandler) prepareSimulation(w http.ResponseWriter, r *http.Req
 		"project_id":    state.ProjectID,
 	})
 
+	// Configuración de población (composición demográfica del mundo simulado).
+	if raw, ok := body["population"].(map[string]any); ok {
+		state.Population = &simx.PopulationSpec{
+			GenderMix:     stringField(raw, "gender_mix"),
+			AgeRange:      stringField(raw, "age_range"),
+			Education:     stringField(raw, "education"),
+			Socioeconomic: stringField(raw, "socioeconomic"),
+			Ethnicity:     stringField(raw, "ethnicity"),
+			Religion:      stringField(raw, "religion"),
+			OrgMix:        stringField(raw, "organization_mix"),
+			Geographic:    stringField(raw, "geographic"),
+		}
+	}
+
 	state.Status = simx.SimPreparing
 	h.Manager.SaveSimulationState(state)
 

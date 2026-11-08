@@ -60,6 +60,28 @@ func (m *ProjectManager) textPath(projectID string) string {
 	return filepath.Join(m.projectDir(projectID), "extracted_text.txt")
 }
 
+func (m *ProjectManager) webContextPath(projectID string) string {
+	return filepath.Join(m.projectDir(projectID), "web_context.json")
+}
+
+// SaveWebContext guarda la investigación web del estudio (contexto factual).
+func (m *ProjectManager) SaveWebContext(projectID string, data []byte) {
+	dir := m.projectDir(projectID)
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		return
+	}
+	_ = fsx.WriteFileAtomic(m.webContextPath(projectID), data, 0o644)
+}
+
+// GetWebContext devuelve el contexto web o nil si no existe.
+func (m *ProjectManager) GetWebContext(projectID string) []byte {
+	b, err := os.ReadFile(m.webContextPath(projectID))
+	if err != nil {
+		return nil
+	}
+	return b
+}
+
 // Initdir ensures dirs (equiv _ensure_projects_dir).
 func (m *ProjectManager) ensureProjectsDir() {
 	_ = os.MkdirAll(m.ProjectsDir, 0o755)
