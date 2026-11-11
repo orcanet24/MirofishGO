@@ -7,6 +7,8 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+
+	"mirofish/internal/dbx"
 )
 
 // ftsSafeQuery replica _fts_safe_query: tokens (alfanum/CJK/underscore) con OR.
@@ -197,6 +199,13 @@ func (d *Database) Search(graphID, query string, limit int, scope string) Search
 	}
 
 	result := SearchResult{Edges: []LocalEdge{}, Nodes: []LocalNode{}}
+
+	// En SQLite no hay FULLTEXT de MySQL: el fallback léxico (ScanSearch,
+	// con puntuación) es también el resultado principal.
+	if dbx.Active() == dbx.SQLite {
+		return d.ScanSearch(graphID, query, limit)
+	}
+
 	queryEdges := func() ([]LocalEdge, error) {
 		rows, err := d.db.Query(
 			`SELECT uuid, graph_id, name, fact, source_node_uuid, target_node_uuid,

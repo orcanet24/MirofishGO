@@ -1,5 +1,6 @@
-// Port del LocalGraphDatabase de local_graph.py sobre MySQL 8 / MariaDB:
-// esquema, migraciones, nodos/aristas. Episodios/batches en db2.go.
+// Port del LocalGraphDatabase de local_graph.py sobre MySQL 8 / MariaDB
+// (y sobre SQLite en la variante personal: dbx.Set(dbx.SQLite) antes de abrir).
+// Esquema, migraciones, nodos/aristas. Episodios/batches en db2.go.
 package graph
 
 import (
@@ -7,20 +8,21 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 	"time"
 
-	mysqldriver "github.com/go-sql-driver/mysql"
-
 	"mirofish/internal/config"
+	"mirofish/internal/dbx"
 	"mirofish/internal/logx"
 	"mirofish/internal/timex"
 )
 
 var logger = logx.Get("mirofish.local_graph")
 
-// Database es la base MySQL de grafos de conocimiento.
+// Database es la base de grafos de conocimiento (MySQL o SQLite).
 type Database struct {
 	db *sql.DB
 
@@ -30,16 +32,35 @@ type Database struct {
 }
 
 // NewDatabase abre la BD y aplica el esquema+migraciones. dsn vacío es error:
-// el binario no cae de vuelta a SQLite.
+// el binario no cae de vuelta a SQLite. En variante SQLite el dsn se ignora
+// y el fichero sale de mirofishSQLitePath() (MIROFISH_SQLITE_PATH o <base>).
 func NewDatabase(dsn string) (*Database, error) {
-	if strings.TrimSpace(dsn) == "" {
-		return nil, fmt.Errorf("DB_DSN requerido: configura MySQL en .env (DB_DSN o DB_HOST/DB_PORT/DB_USER/DB_PASSWORD/DB_NAME)")
-	}
-	db, err := sql.Open("mysql", dsn)
-	if err != nil {
-		return nil, err
-	}
 	cfg := config.Load()
+	var (
+		db  *sql.DB
+		err error
+	)
+	if dbx.Active() == dbx.SQLite {
+		path := mirofishSQLitePath(cfg)
+		// WAL permite lecturas concurrentes; busy_timeout absorbe la
+		// contención de escritura; foreign_keys activa los CASCADE.
+		dsnSQLite := path +
+			"?_pragma=busy_timeout(10000)" +
+			"&_pragma=journal_mode(WAL)" +
+			"&_pragma=foreign_keys(ON)"
+		db, err = sql.Open("sqlite", dsnSQLite)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		if strings.TrimSpace(dsn) == "" {
+			return nil, fmt.Errorf("DB_DSN requerido: configura MySQL en .env (DB_DSN o DB_HOST/DB_PORT/DB_USER/DB_PASSWORD/DB_NAME)")
+		}
+		db, err = sql.Open("mysql", dsn)
+		if err != nil {
+			return nil, err
+		}
+	}
 	db.SetMaxOpenConns(cfg.DBMaxOpenConns)
 	db.SetMaxIdleConns(cfg.DBMaxIdleConns)
 	db.SetConnMaxLifetime(5 * time.Minute)
@@ -51,6 +72,15 @@ func NewDatabase(dsn string) (*Database, error) {
 	return d, nil
 }
 
+// mirofishSQLitePath — fichero de la BD SQLite de la variante personal:
+// MIROFISH_SQLITE_PATH si está definida; si no <BaseDir>/mirofish.db.
+func mirofishSQLitePath(cfg *config.Config) string {
+	if p := strings.TrimSpace(os.Getenv("MIROFISH_SQLITE_PATH")); p != "" {
+		return p
+	}
+	return filepath.Join(cfg.BaseDir, "mirofish.db")
+}
+
 // Close libera el pool.
 func (d *Database) Close() error { return d.db.Close() }
 
@@ -58,7 +88,7 @@ func (d *Database) Close() error { return d.db.Close() }
 // conexión MySQL en vez de abrir un pool paralelo por subsistema.
 func (d *Database) SQL() *sql.DB { return d.db }
 
-var schemaStatements = []string{
+var mysqlSchemaStatements = []string{
 	`CREATE TABLE IF NOT EXISTS graphs (
 		graph_id VARCHAR(64) NOT NULL,
 		name TEXT,
@@ -147,10 +177,97 @@ var schemaStatements = []string{
 	) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin`,
 }
 
+// sqliteSchemaStatements — mismo esquema (columnas idénticas) en dialecto
+// SQLite: sin FULLTEXT (la búsqueda usa el fallback léxico ScanSearch) y
+// con índices CREATE INDEX independientes.
+var sqliteSchemaStatements = []string{
+	`CREATE TABLE IF NOT EXISTS graphs (
+		graph_id TEXT NOT NULL PRIMARY KEY,
+		name TEXT,
+		description TEXT,
+		ontology TEXT,
+		created_at TEXT NOT NULL DEFAULT ''
+	)`,
+	`CREATE TABLE IF NOT EXISTS nodes (
+		uuid TEXT NOT NULL PRIMARY KEY,
+		graph_id TEXT NOT NULL,
+		name TEXT NOT NULL,
+		labels TEXT,
+		summary TEXT,
+		attributes TEXT,
+		created_at TEXT NOT NULL DEFAULT '',
+		UNIQUE (graph_id, name),
+		FOREIGN KEY (graph_id) REFERENCES graphs(graph_id) ON DELETE CASCADE
+	)`,
+	`CREATE INDEX IF NOT EXISTS idx_nodes_graph ON nodes(graph_id)`,
+	`CREATE TABLE IF NOT EXISTS edges (
+		uuid TEXT NOT NULL PRIMARY KEY,
+		graph_id TEXT NOT NULL,
+		name TEXT,
+		fact TEXT,
+		source_node_uuid TEXT,
+		target_node_uuid TEXT,
+		attributes TEXT,
+		created_at TEXT NOT NULL DEFAULT '',
+		valid_at TEXT,
+		invalid_at TEXT,
+		expired_at TEXT,
+		FOREIGN KEY (graph_id) REFERENCES graphs(graph_id) ON DELETE CASCADE
+	)`,
+	`CREATE INDEX IF NOT EXISTS idx_edges_graph ON edges(graph_id)`,
+	`CREATE INDEX IF NOT EXISTS idx_edges_source ON edges(source_node_uuid)`,
+	`CREATE INDEX IF NOT EXISTS idx_edges_target ON edges(target_node_uuid)`,
+	`CREATE TABLE IF NOT EXISTS episodes (
+		uuid TEXT NOT NULL PRIMARY KEY,
+		graph_id TEXT NOT NULL,
+		data TEXT NOT NULL,
+		data_type TEXT,
+		source_description TEXT,
+		episode_metadata TEXT,
+		processed INTEGER NOT NULL DEFAULT 1,
+		created_at TEXT NOT NULL DEFAULT '',
+		FOREIGN KEY (graph_id) REFERENCES graphs(graph_id) ON DELETE CASCADE
+	)`,
+	`CREATE INDEX IF NOT EXISTS idx_episodes_graph ON episodes(graph_id)`,
+	`CREATE INDEX IF NOT EXISTS idx_episodes_processed ON episodes(processed)`,
+	`CREATE TABLE IF NOT EXISTS batches (
+		batch_id TEXT NOT NULL PRIMARY KEY,
+		graph_id TEXT,
+		batch_metadata TEXT,
+		status TEXT DEFAULT 'draft',
+		created_at TEXT NOT NULL DEFAULT '',
+		FOREIGN KEY (graph_id) REFERENCES graphs(graph_id) ON DELETE CASCADE
+	)`,
+	`CREATE INDEX IF NOT EXISTS idx_batches_graph ON batches(graph_id)`,
+	`CREATE INDEX IF NOT EXISTS idx_batches_created ON batches(created_at)`,
+	`CREATE TABLE IF NOT EXISTS batch_items (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		batch_id TEXT NOT NULL,
+		episode_uuid TEXT,
+		sequence_index INTEGER,
+		status TEXT DEFAULT 'succeeded',
+		error TEXT,
+		graph_id TEXT,
+		data TEXT,
+		chunk_index INTEGER,
+		chunk_sha256 TEXT,
+		FOREIGN KEY (batch_id) REFERENCES batches(batch_id) ON DELETE CASCADE
+	)`,
+	`CREATE INDEX IF NOT EXISTS idx_batch_items_batch ON batch_items(batch_id)`,
+}
+
+// schemaStatements elige el conjunto según el motor activo.
+func schemaStatements() []string {
+	if dbx.Active() == dbx.SQLite {
+		return sqliteSchemaStatements
+	}
+	return mysqlSchemaStatements
+}
+
 func (d *Database) initDB() error {
-	for _, stmt := range schemaStatements {
+	for _, stmt := range schemaStatements() {
 		if _, err := d.db.Exec(stmt); err != nil {
-			return fmt.Errorf("esquema MySQL: %w", err)
+			return fmt.Errorf("esquema %s: %w", dbx.Active(), err)
 		}
 	}
 	return d.migrate()
@@ -159,6 +276,11 @@ func (d *Database) initDB() error {
 // migrate añade columnas nuevas sobre BD creadas con versiones anteriores.
 // information_schema sustituye al PRAGMA table_info de SQLite.
 func (d *Database) migrate() error {
+	if dbx.Active() == dbx.SQLite {
+		// La variante SQLite crea BD nuevas desde cero: el esquema ya trae
+		// todas las columnas. No hay BD legacy que migrar.
+		return nil
+	}
 	var count int
 	err := d.db.QueryRow(
 		`SELECT COUNT(*) FROM information_schema.columns
@@ -186,7 +308,7 @@ func (d *Database) CreateGraph(graphID, name, description string) error {
 	d.writeMu.Lock()
 	defer d.writeMu.Unlock()
 	_, err := d.db.Exec(
-		"INSERT IGNORE INTO graphs (graph_id, name, description, created_at) VALUES (?, ?, ?, ?)",
+		dbx.InsertIgnore()+" graphs (graph_id, name, description, created_at) VALUES (?, ?, ?, ?)",
 		graphID, name, description, timex.Now(),
 	)
 	return err
@@ -265,10 +387,10 @@ func (d *Database) AddNode(graphID, name string, labels []string, summary string
 	if err == nil {
 		return nodeUUID, nil
 	}
-	// 1062 = ER_DUP_ENTRY (el UNIQUE de (graph_id, name)); MySQL no nombra la
-	// restricción en el mensaje, así que se comprueba el código.
-	var mysqlErr *mysqldriver.MySQLError
-	if !errors.As(err, &mysqlErr) || mysqlErr.Number != 1062 {
+	// El UNIQUE de (graph_id, name) falla con entrada duplicada; los motores
+	// no nombran la restricción igual en el mensaje, así que se comprueba
+	// vía dbx.IsDuplicate (1062 en MySQL, UNIQUE constraint en SQLite).
+	if !dbx.IsDuplicate(err) {
 		return "", err
 	}
 	var existingUUID, existingSummary string

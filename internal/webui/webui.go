@@ -103,6 +103,41 @@ func Handler() http.Handler {
 // seguiría mostrando la página en blanco hasta un Ctrl+F5 o limpiar caché.
 const assetVersion = "mimefix-1"
 
+// extraBodyHTML — fragmento HTML (<script>...</script>) que se inyecta en el
+// index.html antes de </body>. Solo lo activa la variante SQLite personal
+// (botón ⚙ Config + salto directo a /app sin la landing de planes); en los
+// demás binarios es nil y el servido es byte-idéntico al build original.
+var extraBodyHTML []byte
+
+// SetExtraBodyHTML activa (o desactiva con "") la inyección del fragmento.
+func SetExtraBodyHTML(fragment string) {
+	if strings.TrimSpace(fragment) == "" {
+		extraBodyHTML = nil
+		return
+	}
+	extraBodyHTML = []byte(fragment)
+}
+
+var reBodyClose = regexp.MustCompile(`(?i)</body\s*>`)
+
+// withExtraBodyHTML inserta el fragmento antes de </body> (o lo añade al final
+// si el HTML no lo trae).
+func withExtraBodyHTML(data []byte) []byte {
+	if extraBodyHTML == nil || len(data) == 0 {
+		return data
+	}
+	frag := append(append([]byte{byte(10)}, extraBodyHTML...), byte(10))
+	loc := reBodyClose.FindIndex(data)
+	if loc == nil {
+		return append(data, frag...)
+	}
+	out := make([]byte, 0, len(data)+len(frag))
+	out = append(out, data[:loc[0]]...)
+	out = append(out, frag...)
+	out = append(out, data[loc[0]:]...)
+	return out
+}
+
 var assetRef = regexp.MustCompile(`(?i)(src|href)=("|')(/assets/[^"']+\.(?:js|css))("|')`)
 
 func serveIndex(w http.ResponseWriter, r *http.Request, dist fs.FS) {
@@ -114,6 +149,7 @@ func serveIndex(w http.ResponseWriter, r *http.Request, dist fs.FS) {
 	// Añade ?v=<assetVersion> a las referencias de assets: nueva clave de
 	// caché, se pide la respuesta fresca del servidor.
 	data = assetRef.ReplaceAll(data, []byte(`$1=$2$3?v=`+assetVersion+`$4`))
+	data = withExtraBodyHTML(data)
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.Header().Set("Cache-Control", "no-cache")
 	http.ServeContent(w, r, "index.html", time.Time{}, bytes.NewReader(data))

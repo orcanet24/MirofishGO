@@ -11,7 +11,9 @@ import (
 
 	"mirofish/internal/authx"
 	"mirofish/internal/config"
+	"mirofish/internal/dbx"
 	"mirofish/internal/graph"
+	"mirofish/internal/oasis"
 	"mirofish/internal/webui"
 )
 
@@ -27,17 +29,30 @@ func PersonalRouter(c *config.Config, logger *slog.Logger) http.Handler {
 
 	client, dbErr := graph.NewClient("")
 	if dbErr != nil {
-		logger.Error("no se pudo conectar a MySQL; los blueprints responderán 500", "error", dbErr)
+		logger.Error("no se pudo conectar a la BD; los blueprints responderán 500", "error", dbErr)
 	}
 	mux.HandleFunc("GET /ready", newReadinessHandler(client, dbErr, logger))
+
+	if dbx.Active() == dbx.SQLite {
+		// Variante SQLite personal: ajustes LLM editables desde la app
+		// (botón ⚙ →/api/config) y esquema social disponible desde el
+		// arranque para que /ready esté verde.
+		if client != nil && client.DB != nil {
+			if _, err := oasis.NewStore(client.DB.SQL()); err != nil {
+				logger.Error("no se pudo inicializar el esquema OASIS", "error", err)
+			}
+		}
+		registerSQLiteSettingsRoutes(mux, client, c, logger)
+		activateSQLiteFrontend()
+	}
 
 	registerGraphRoutes(mux, c, logger, client, dbErr, nil)
 	registerSimulationRoutes(mux, c, logger, client, dbErr)
 	registerReportRoutes(mux, c, logger, client, dbErr)
 
-	// Sonda de modo personal para el frontend: 200 solo con la ACCESS_KEY
-	// válida (el middleware corre antes). Data mínima: el frontend usa el
-	// modo clave y nunca REGISTER/LOGIN.
+	// Sonda de modo personal para el frontend: 200 informativo. La SPA
+	// decide por la presencia de mirofish_access_key en localStorage (la
+	// siembra el script inyectado); la clave real se valida vía /api/auth/validate.
 	mux.HandleFunc("GET /api/auth/me", func(w http.ResponseWriter, _ *http.Request) {
 		JSON(w, http.StatusOK, map[string]any{
 			"status": "success",

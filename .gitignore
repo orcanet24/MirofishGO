@@ -1,8 +1,17 @@
 *.rar
 *.exe
 *.log
-/bin
+/bin/*
 bin/.env
 *.log
 bin/logs/2026-11-07.log
 /bin/logs
+# La variante personal SQLite (bin\personal) versiona sus fuentes/scripts:
+!/bin/personal/
+bin/personal/*
+!bin/personal/main.go
+!bin/personal/README.md
+!bin/personal/build.bat
+!bin/personal/start.bat
+!bin/personal/wait-and-build.ps1
+!bin/personal/.env.example

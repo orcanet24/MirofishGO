@@ -1,4 +1,5 @@
-// Persistencia de la simulación social en MySQL, aislada por simulation_id.
+// Persistencia de la simulación social en MySQL (o SQLite en la variante
+// personal), aislada por simulation_id.
 package oasis
 
 import (
@@ -9,8 +10,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/go-sql-driver/mysql"
-
+	"mirofish/internal/dbx"
 	"mirofish/internal/timex"
 )
 
@@ -26,7 +26,7 @@ type Store struct {
 // NewStore valida la conexión y crea el esquema si falta.
 func NewStore(db *sql.DB) (*Store, error) {
 	if db == nil {
-		return nil, fmt.Errorf("OASIS requiere una conexión MySQL")
+		return nil, fmt.Errorf("OASIS requiere una conexión de base de datos")
 	}
 	s := &Store{db: db}
 	if err := s.init(); err != nil {
@@ -35,7 +35,7 @@ func NewStore(db *sql.DB) (*Store, error) {
 	return s, nil
 }
 
-var socialSchema = []string{
+var socialSchemaMySQL = []string{
 	`CREATE TABLE IF NOT EXISTS oasis_users (
 		id BIGINT NOT NULL AUTO_INCREMENT,
 		simulation_id VARCHAR(64) NOT NULL,
@@ -162,10 +162,130 @@ var socialSchema = []string{
 	) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin`,
 }
 
+// socialSchemaSQLite — mismo esquema (columnas idénticas) en dialecto
+// SQLite: AUTOINCREMENT, UNIQUE/Índices explícitos y FK sintaxis SQLite.
+var socialSchemaSQLite = []string{
+	`CREATE TABLE IF NOT EXISTS oasis_users (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		simulation_id TEXT NOT NULL,
+		agent_id INTEGER NOT NULL,
+		user_name TEXT NOT NULL,
+		name TEXT NOT NULL,
+		bio TEXT,
+		persona TEXT,
+		created_at TEXT NOT NULL DEFAULT '',
+		num_followings INTEGER NOT NULL DEFAULT 0,
+		num_followers INTEGER NOT NULL DEFAULT 0,
+		UNIQUE (simulation_id, agent_id)
+	)`,
+	`CREATE INDEX IF NOT EXISTS idx_oasis_users_sim ON oasis_users(simulation_id)`,
+	`CREATE TABLE IF NOT EXISTS oasis_posts (
+		post_id INTEGER PRIMARY KEY AUTOINCREMENT,
+		simulation_id TEXT NOT NULL,
+		user_id INTEGER NOT NULL,
+		original_post_id INTEGER,
+		content TEXT,
+		quote_content TEXT,
+		created_at TEXT NOT NULL DEFAULT '',
+		num_likes INTEGER NOT NULL DEFAULT 0,
+		num_dislikes INTEGER NOT NULL DEFAULT 0,
+		num_shares INTEGER NOT NULL DEFAULT 0,
+		num_reports INTEGER NOT NULL DEFAULT 0,
+		FOREIGN KEY (user_id) REFERENCES oasis_users(id) ON DELETE CASCADE,
+		FOREIGN KEY (original_post_id) REFERENCES oasis_posts(post_id) ON DELETE SET NULL
+	)`,
+	`CREATE INDEX IF NOT EXISTS idx_oasis_posts_sim ON oasis_posts(simulation_id, post_id)`,
+	`CREATE INDEX IF NOT EXISTS idx_oasis_posts_user ON oasis_posts(user_id)`,
+	`CREATE TABLE IF NOT EXISTS oasis_comments (
+		comment_id INTEGER PRIMARY KEY AUTOINCREMENT,
+		simulation_id TEXT NOT NULL,
+		post_id INTEGER NOT NULL,
+		user_id INTEGER NOT NULL,
+		content TEXT,
+		created_at TEXT NOT NULL DEFAULT '',
+		num_likes INTEGER NOT NULL DEFAULT 0,
+		num_dislikes INTEGER NOT NULL DEFAULT 0,
+		FOREIGN KEY (post_id) REFERENCES oasis_posts(post_id) ON DELETE CASCADE,
+		FOREIGN KEY (user_id) REFERENCES oasis_users(id) ON DELETE CASCADE
+	)`,
+	`CREATE INDEX IF NOT EXISTS idx_oasis_comments_sim ON oasis_comments(simulation_id, comment_id)`,
+	`CREATE INDEX IF NOT EXISTS idx_oasis_comments_post ON oasis_comments(post_id, created_at)`,
+	`CREATE TABLE IF NOT EXISTS oasis_follows (
+		follow_id INTEGER PRIMARY KEY AUTOINCREMENT,
+		simulation_id TEXT NOT NULL,
+		follower_id INTEGER NOT NULL,
+		followee_id INTEGER NOT NULL,
+		created_at TEXT NOT NULL DEFAULT '',
+		UNIQUE (simulation_id, follower_id, followee_id),
+		FOREIGN KEY (follower_id) REFERENCES oasis_users(id) ON DELETE CASCADE,
+		FOREIGN KEY (followee_id) REFERENCES oasis_users(id) ON DELETE CASCADE
+	)`,
+	`CREATE INDEX IF NOT EXISTS idx_oasis_follows_followee ON oasis_follows(followee_id)`,
+	`CREATE TABLE IF NOT EXISTS oasis_likes (
+		like_id INTEGER PRIMARY KEY AUTOINCREMENT,
+		simulation_id TEXT NOT NULL,
+		user_id INTEGER NOT NULL,
+		post_id INTEGER NOT NULL,
+		created_at TEXT NOT NULL DEFAULT '',
+		UNIQUE (simulation_id, user_id, post_id),
+		FOREIGN KEY (user_id) REFERENCES oasis_users(id) ON DELETE CASCADE,
+		FOREIGN KEY (post_id) REFERENCES oasis_posts(post_id) ON DELETE CASCADE
+	)`,
+	`CREATE INDEX IF NOT EXISTS idx_oasis_likes_post ON oasis_likes(post_id)`,
+	`CREATE TABLE IF NOT EXISTS oasis_traces (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		simulation_id TEXT NOT NULL,
+		user_id INTEGER NOT NULL,
+		created_at TEXT NOT NULL DEFAULT '',
+		action TEXT NOT NULL,
+		info TEXT,
+		FOREIGN KEY (user_id) REFERENCES oasis_users(id) ON DELETE CASCADE
+	)`,
+	`CREATE INDEX IF NOT EXISTS idx_oasis_traces_sim ON oasis_traces(simulation_id, id)`,
+	`CREATE INDEX IF NOT EXISTS idx_oasis_traces_user ON oasis_traces(simulation_id, user_id, action)`,
+	`CREATE TABLE IF NOT EXISTS oasis_rec (
+		simulation_id TEXT NOT NULL,
+		user_id INTEGER NOT NULL,
+		post_id INTEGER NOT NULL,
+		PRIMARY KEY (simulation_id, user_id, post_id),
+		FOREIGN KEY (user_id) REFERENCES oasis_users(id) ON DELETE CASCADE,
+		FOREIGN KEY (post_id) REFERENCES oasis_posts(post_id) ON DELETE CASCADE
+	)`,
+	`CREATE INDEX IF NOT EXISTS idx_oasis_rec_post ON oasis_rec(post_id)`,
+	`CREATE TABLE IF NOT EXISTS oasis_actions (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		simulation_id TEXT NOT NULL,
+		round_num INTEGER NOT NULL DEFAULT 0,
+		agent_id INTEGER NOT NULL,
+		agent_name TEXT,
+		action_type TEXT NOT NULL,
+		action_args TEXT,
+		result TEXT,
+		success INTEGER NOT NULL DEFAULT 1,
+		created_at TEXT NOT NULL DEFAULT ''
+	)`,
+	`CREATE INDEX IF NOT EXISTS idx_oasis_actions_sim ON oasis_actions(simulation_id, id)`,
+	`CREATE INDEX IF NOT EXISTS idx_oasis_actions_round ON oasis_actions(simulation_id, round_num)`,
+	`CREATE INDEX IF NOT EXISTS idx_oasis_actions_agent ON oasis_actions(simulation_id, agent_id)`,
+	`CREATE TABLE IF NOT EXISTS oasis_runs (
+		simulation_id TEXT NOT NULL PRIMARY KEY,
+		state_json TEXT NOT NULL,
+		updated_at TEXT NOT NULL DEFAULT ''
+	)`,
+}
+
+// socialSchema elige el conjunto según el motor activo.
+func socialSchema() []string {
+	if dbx.Active() == dbx.SQLite {
+		return socialSchemaSQLite
+	}
+	return socialSchemaMySQL
+}
+
 func (s *Store) init() error {
-	for _, stmt := range socialSchema {
+	for _, stmt := range socialSchema() {
 		if _, err := s.db.Exec(stmt); err != nil {
-			return fmt.Errorf("esquema OASIS: %w", err)
+			return fmt.Errorf("esquema OASIS (%s): %w", dbx.Active(), err)
 		}
 	}
 	return nil
@@ -217,8 +337,8 @@ func (s *Store) SignUp(simulationID string, agentID int, userName, name, bio, pe
 		simulationID, agentID, userName, name, bio, persona, createdAt,
 	)
 	if err != nil {
-		var myErr *mysql.MySQLError
-		if errors.As(err, &myErr) && myErr.Number == 1062 {
+		// Segundo signup del mismo agent_id → devuelve el usuario existente.
+		if dbx.IsDuplicate(err) {
 			return s.userByAgentLocked(simulationID, agentID)
 		}
 		return nil, err
@@ -518,10 +638,10 @@ func (s *Store) AddCounter(simulationID string, postID int64, column string, del
 	if !allowed[column] {
 		return fmt.Errorf("contador no permitido: %s", column)
 	}
-	// GREATEST evita contadores negativos si una acción se repite por un
-	// reintento tras un fallo de red.
+	// El máximo con 0 evita contadores negativos si una acción se repite por
+	// un reintento tras un fallo de red (GREATEST en MySQL, max() en SQLite).
 	_, err := s.db.Exec(
-		"UPDATE oasis_posts SET "+column+" = GREATEST("+column+" + ?, 0) WHERE simulation_id = ? AND post_id = ?",
+		"UPDATE oasis_posts SET "+column+" = "+dbx.Greatest(column+" + ?", "0")+" WHERE simulation_id = ? AND post_id = ?",
 		delta, simulationID, postID,
 	)
 	return err
@@ -543,8 +663,8 @@ func (s *Store) AddLike(simulationID string, userID, postID int64, createdAt str
 		simulationID, userID, postID, createdAt,
 	)
 	if err != nil {
-		var myErr *mysql.MySQLError
-		if errors.As(err, &myErr) && myErr.Number == 1062 {
+		// Like repetido: no es error, reporta false.
+		if dbx.IsDuplicate(err) {
 			return 0, false, nil
 		}
 		return 0, false, err
@@ -579,7 +699,7 @@ func (s *Store) RemoveLike(simulationID string, userID, postID int64) (int64, bo
 		return 0, false, err
 	}
 	if _, err := s.db.Exec(
-		"UPDATE oasis_posts SET num_likes = GREATEST(num_likes - 1, 0) WHERE simulation_id = ? AND post_id = ?",
+		"UPDATE oasis_posts SET num_likes = "+dbx.Greatest("num_likes - 1", "0")+" WHERE simulation_id = ? AND post_id = ?",
 		simulationID, postID,
 	); err != nil {
 		return 0, false, err
@@ -608,8 +728,8 @@ func (s *Store) AddFollow(simulationID string, followerID, followeeID int64, cre
 		simulationID, followerID, followeeID, createdAt,
 	)
 	if err != nil {
-		var myErr *mysql.MySQLError
-		if errors.As(err, &myErr) && myErr.Number == 1062 {
+		// Follow repetido: no es error, reporta false.
+		if dbx.IsDuplicate(err) {
 			return 0, false, nil
 		}
 		return 0, false, err
@@ -648,12 +768,12 @@ func (s *Store) RemoveFollow(simulationID string, followerID, followeeID int64) 
 		return 0, false, err
 	}
 	if _, err := s.db.Exec(
-		"UPDATE oasis_users SET num_followings = GREATEST(num_followings - 1, 0) WHERE id = ?", followerID,
+		"UPDATE oasis_users SET num_followings = "+dbx.Greatest("num_followings - 1", "0")+" WHERE id = ?", followerID,
 	); err != nil {
 		return 0, false, err
 	}
 	if _, err := s.db.Exec(
-		"UPDATE oasis_users SET num_followers = GREATEST(num_followers - 1, 0) WHERE id = ?", followeeID,
+		"UPDATE oasis_users SET num_followers = "+dbx.Greatest("num_followers - 1", "0")+" WHERE id = ?", followeeID,
 	); err != nil {
 		return 0, false, err
 	}
@@ -748,7 +868,7 @@ func (s *Store) ReplaceRec(simulationID string, byUser map[int64][]int64) error 
 	if _, err := tx.Exec("DELETE FROM oasis_rec WHERE simulation_id = ?", simulationID); err != nil {
 		return err
 	}
-	stmt, err := tx.Prepare("INSERT IGNORE INTO oasis_rec (simulation_id, user_id, post_id) VALUES (?, ?, ?)")
+	stmt, err := tx.Prepare(dbx.InsertIgnore() + " oasis_rec (simulation_id, user_id, post_id) VALUES (?, ?, ?)")
 	if err != nil {
 		return err
 	}
@@ -874,12 +994,17 @@ func (s *Store) SaveRunState(simulationID string, state RunState) error {
 	if err != nil {
 		return err
 	}
-	_, err = s.db.Exec(
-		`INSERT INTO oasis_runs (simulation_id, state_json, updated_at)
-		 VALUES (?, ?, ?)
-		 ON DUPLICATE KEY UPDATE state_json = VALUES(state_json), updated_at = VALUES(updated_at)`,
-		simulationID, string(b), timex.Now(),
-	)
+	q := `INSERT INTO oasis_runs (simulation_id, state_json, updated_at)
+		 VALUES (?, ?, ?)`
+	if dbx.Active() == dbx.SQLite {
+		q += `
+		 ON CONFLICT(simulation_id) DO UPDATE SET
+		   state_json = excluded.state_json, updated_at = excluded.updated_at`
+	} else {
+		q += `
+		 ON DUPLICATE KEY UPDATE state_json = VALUES(state_json), updated_at = VALUES(updated_at)`
+	}
+	_, err = s.db.Exec(q, simulationID, string(b), timex.Now())
 	return err
 }
 

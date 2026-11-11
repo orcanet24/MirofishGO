@@ -11,8 +11,11 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/joho/godotenv"
+
+	"mirofish/internal/dbx"
 )
 
 // Config replicates the Python backend Config class.
@@ -204,19 +207,71 @@ func Load() *Config {
 		}
 		c.GraphBackend = "local"
 	}
+
+	c.applyRuntimeOverrides()
 	return c
+}
+
+// runtimeSettings — overrides de configuración en tiempo de ejecución inyectados
+// por el almacén de ajustes de la variante SQLite personal: los valores guardados
+// en la BD (LLM_API_KEY/BASE_URL/MODEL editables desde la app) prevalecen sobre
+// .env/entorno en cada config.Load(). En los demás binarios queda vacío y
+// Load() se comporta exactamente como antes.
+var (
+	runtimeMu       sync.RWMutex
+	runtimeSettings map[string]string
+)
+
+// SetRuntimeSettings reemplaza el mapa de overrides (lo copia). Solo lo usan
+// la variante SQLite personal tras leer/escribir la tabla settings.
+func SetRuntimeSettings(values map[string]string) {
+	runtimeMu.Lock()
+	defer runtimeMu.Unlock()
+	runtimeSettings = values
+}
+
+// runtimeValue devuelve el override actual para key ("" si no hay).
+func runtimeValue(key string) (string, bool) {
+	runtimeMu.RLock()
+	defer runtimeMu.RUnlock()
+	if runtimeSettings == nil {
+		return "", false
+	}
+	v, ok := runtimeSettings[key]
+	return v, ok
+}
+
+// applyRuntimeOverrides aplica los overrides inyectados al Config recién
+// construido.
+func (c *Config) applyRuntimeOverrides() {
+	if v, ok := runtimeValue("LLM_API_KEY"); ok {
+		c.LLMAPIKey = v
+	}
+	if v, ok := runtimeValue("LLM_BASE_URL"); ok {
+		c.LLMBaseURL = v
+	}
+	if v, ok := runtimeValue("LLM_MODEL_NAME"); ok {
+		c.LLMModel = v
+	}
 }
 
 // Validate returns configuration errors, mirroring Config.validate().
 func (c *Config) Validate() []string {
 	var errors []string
-	if c.LLMAPIKey == "" {
+	skipForceRequired := false
+	if dbx.Active() == dbx.SQLite {
+		// Variante SQLite personal: sin MySQL y sin LLM_API_KEY obligatoria
+		// (la API key se configura desde la app en "⚙ Config"; mientras
+		// falte, las llamadas LLM fallan con su propio mensaje).
+		skipForceRequired = true
+	}
+	if c.LLMAPIKey == "" && !skipForceRequired {
 		errors = append(errors, "LLM_API_KEY no configurada")
 	}
 	if c.GraphBackend != "local" && c.GraphBackend != "" {
 		errors = append(errors, "GRAPH_BACKEND="+c.GraphBackend+" no está implementado en el binario Go (solo 'local'); usa GRAPH_BACKEND=local")
 	}
-	if c.DBDSN == "" {
+	if c.DBDSN == "" && !skipForceRequired {
 		errors = append(errors, "DB_DSN/DB_NAME no configurado: el grafo requiere MySQL 8 o MariaDB (no hay fallback a SQLite)")
 	}
 	if os.Getenv("ZEP_API_URL") != "" {

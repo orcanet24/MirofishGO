@@ -14,6 +14,7 @@ import (
 	"strings"
 	"time"
 
+	"mirofish/internal/dbx"
 	"mirofish/internal/graph"
 )
 
@@ -23,6 +24,15 @@ var requiredTables = []string{
 	"oasis_users", "oasis_posts", "oasis_comments", "oasis_follows", "oasis_likes",
 	"oasis_traces", "oasis_rec", "oasis_actions", "oasis_runs",
 	"users",
+}
+
+// requiredTablesSQLite — variante personal SQLite: sin tabla users (no hay
+// cuentas); settings es creada por el almacén de configuración al arrancar.
+var requiredTablesSQLite = []string{
+	"graphs", "nodes", "edges", "episodes", "batches", "batch_items",
+	"oasis_users", "oasis_posts", "oasis_comments", "oasis_follows", "oasis_likes",
+	"oasis_traces", "oasis_rec", "oasis_actions", "oasis_runs",
+	"settings",
 }
 
 // newReadinessHandler devuelve el handler de /ready. dbErr es el fallo de
@@ -96,18 +106,26 @@ func newReadinessHandler(client *graph.Client, dbErr error, logger *slog.Logger)
 	}
 }
 
-// missingTables compara las tablas esperadas con information_schema.
+// missingTables compara las tablas esperadas con el catálogo del motor:
+// information_schema en MySQL, sqlite_master en SQLite.
 func missingTables(ctx context.Context, db *sql.DB) ([]string, error) {
-	placeholders := strings.TrimSuffix(strings.Repeat("?,", len(requiredTables)), ",")
-	args := make([]any, 0, len(requiredTables))
-	for _, table := range requiredTables {
+	tables := requiredTables
+	if dbx.Active() == dbx.SQLite {
+		tables = requiredTablesSQLite
+	}
+	placeholders := strings.TrimSuffix(strings.Repeat("?,", len(tables)), ",")
+	args := make([]any, 0, len(tables))
+	for _, table := range tables {
 		args = append(args, table)
 	}
-	rows, err := db.QueryContext(ctx,
-		"SELECT table_name FROM information_schema.tables "+
-			"WHERE table_schema = DATABASE() AND table_name IN ("+placeholders+")",
-		args...,
-	)
+	var query string
+	if dbx.Active() == dbx.SQLite {
+		query = "SELECT name FROM sqlite_master WHERE type = 'table' AND name IN (" + placeholders + ")"
+	} else {
+		query = "SELECT table_name FROM information_schema.tables " +
+			"WHERE table_schema = DATABASE() AND table_name IN (" + placeholders + ")"
+	}
+	rows, err := db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -126,7 +144,7 @@ func missingTables(ctx context.Context, db *sql.DB) ([]string, error) {
 	}
 
 	missing := []string{}
-	for _, table := range requiredTables {
+	for _, table := range tables {
 		if !present[table] {
 			missing = append(missing, table)
 		}
